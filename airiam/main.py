@@ -3,6 +3,7 @@ import argparse
 
 from airiam.version import version
 from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
+from airiam.UserOrganizer import UserOrganizer
 
 
 def configure_logger():
@@ -30,4 +31,9 @@ def run():
         logging.info('AirIAM v{}'.format(version))
         return
 
-    RuntimeIamEvaluator(logger, args.profile).evaluate_runtime_iam(args.refresh)
+    iam_data = RuntimeIamEvaluator(logger, args.profile).evaluate_runtime_iam(args.refresh)
+
+    clusters = UserOrganizer(logger).get_user_clusters(iam_data)
+
+    print(clusters)
+
