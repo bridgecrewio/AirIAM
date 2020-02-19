@@ -27,7 +27,10 @@ class RuntimeIamEvaluator:
         return user_clusters
 
     def get_iam_data(self, should_refresh):
-        if should_refresh or not os.path.exists(IAM_DATA_FILE_NAME):
+        current_dir, filename = os.path.split(os.path.abspath(__file__))
+        if not should_refresh and os.path.exists("{0}/{1}".format(current_dir, IAM_DATA_FILE_NAME)):
+            self.logger.info("Reusing local data")
+        else:
             iam = self.get_aws_iam_client()
             iam.generate_credential_report()
             self.logger.info("Getting all IAM configurations in the account")
@@ -66,10 +69,7 @@ class RuntimeIamEvaluator:
             with open(IAM_DATA_FILE_NAME, "w") as iam_file:
                 json.dump(json.dumps(iam_data, indent=4, sort_keys=True, default=str), iam_file)
 
-        else:
-            self.logger.info("Reusing local data")
-
-        with open(IAM_DATA_FILE_NAME) as iam_data_file:
+        with open("{0}/{1}".format(current_dir, IAM_DATA_FILE_NAME)) as iam_data_file:
             iam_data = json.loads(json.load(iam_data_file))
 
         account_id = iam_data['AccountUsers'][0]['Arn'].split(":")[4]

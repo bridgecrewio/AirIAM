@@ -1,8 +1,8 @@
 import logging
 import argparse
 
-from src.version import version
-from src.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
+from airiam.version import version
+from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
 
 
 def configure_logger():

@@ -1,5 +1,22 @@
 .idea
+
+# Outputs
 *.json
 *.csv
-.terraform
-**.tfstate
+
+# Terraform
+*.tfstate*
+*.terraform*
+*.tfvars
+*.tfbackend
+
+# Unit tests + coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
