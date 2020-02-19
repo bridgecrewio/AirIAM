@@ -9,7 +9,7 @@ from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
 class TestRuntimeIamEvaluator(unittest.TestCase):
 
     def test_evaluator(self):
-        current_dir, filename = os.path.split(os.path.abspath(__file__))
+        current_dir = os.path.abspath(os.path.dirname(__file__))
         evaluator_dir = current_dir[:current_dir.index("tests")] + 'airiam/runtime_iam_evaluator'
         shutil.copyfile(current_dir + "/iam_data.json", evaluator_dir + "/iam_data.json")
         logger = configure_logger()

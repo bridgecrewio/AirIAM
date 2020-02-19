@@ -27,7 +27,7 @@ class RuntimeIamEvaluator:
         return user_clusters
 
     def get_iam_data(self, should_refresh):
-        current_dir, filename = os.path.split(os.path.abspath(__file__))
+        current_dir = os.path.abspath(os.path.dirname(__file__))
         if not should_refresh and os.path.exists("{0}/{1}".format(current_dir, IAM_DATA_FILE_NAME)):
             self.logger.info("Reusing local data")
         else:
