@@ -13,6 +13,6 @@ class TestUserOrganizer(unittest.TestCase):
             iam_data = json.loads(json.load(f))
         logger = configure_logger()
         clusters = UserOrganizer(logger).get_user_clusters(iam_data)
-        self.assertEquals(len(clusters.keys()), 26)
+        self.assertEqual(len(clusters.keys()), 26)
         self.assertTrue('arn:aws:iam::aws:policy/AdministratorAccess' in clusters.keys())
         self.assertEqual(len(clusters['arn:aws:iam::aws:policy/AdministratorAccess'].split(', ')), 6)

@@ -14,7 +14,6 @@ class TestRuntimeIamEvaluator(unittest.TestCase):
         shutil.copyfile(current_dir + "/../iam_data.json", evaluator_dir + "/iam_data.json")
         logger = configure_logger()
         RuntimeIamEvaluator(logger).evaluate_runtime_iam(False)
-        self.assertTrue(os.path.exists('user_clusters.csv'))
 
 
 if __name__ == '__main__':
