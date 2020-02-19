@@ -7,3 +7,5 @@ omit =
     */.local/*
     docs/*
     hooks/*
+    .github/*
+    bin/*
