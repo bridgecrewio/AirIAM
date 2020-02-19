@@ -1,6 +1,6 @@
+import datetime as dt
 import json
 import os
-import datetime as dt
 
 import boto3
 from botocore.exceptions import ClientError
@@ -12,11 +12,7 @@ class RuntimeIamEvaluator:
     def __init__(self, logger, profile=None, unused_threshold=90):
         self.unused_threshold = unused_threshold
         self.logger = logger
-        if profile:
-            session = boto3.Session(profile_name=profile)
-        else:
-            session = boto3.Session()
-        self.iam = session.client('iam')
+        self.profile = profile
 
     def evaluate_runtime_iam(self, should_refresh):
         iam_data = self.get_iam_data(should_refresh)
@@ -32,16 +28,17 @@ class RuntimeIamEvaluator:
 
     def get_iam_data(self, should_refresh):
         if should_refresh or not os.path.exists(IAM_DATA_FILE_NAME):
-            self.iam.generate_credential_report()
+            iam = self.get_aws_iam_client()
+            iam.generate_credential_report()
             self.logger.info("Getting all IAM configurations in the account")
-            account_users, account_roles, account_groups, account_policies = self.get_account_iam_configuration()
+            account_users, account_roles, account_groups, account_policies = RuntimeIamEvaluator.get_account_iam_configuration(iam)
             self.logger.info("Getting IAM credential report")
-            csv_credential_report = self.iam.get_credential_report()['Content'].decode('utf-8')
+            csv_credential_report = iam.get_credential_report()['Content'].decode('utf-8')
             credential_report = RuntimeIamEvaluator.convert_csv_to_json(csv_credential_report)
 
             entity_arn_list = list(map(lambda e: e['Arn'], account_users + account_roles))
             self.logger.info("Getting service last accessed report for every user & role in the account")
-            last_accessed_map = self.generate_last_access(entity_arn_list)
+            last_accessed_map = self.generate_last_access(iam, entity_arn_list)
 
             for arn, last_accessed_list in last_accessed_map.items():
                 entity = next(entity for entity in account_users + account_roles if entity['Arn'] == arn)
@@ -50,13 +47,13 @@ class RuntimeIamEvaluator:
             self.logger.info("Collecting password configurations for all users in the account")
             for user in account_users:
                 try:
-                    self.iam.get_login_profile(UserName=user['UserName'])
+                    iam.get_login_profile(UserName=user['UserName'])
                     user['LoginProfileExists'] = True
-                except ClientError as e:
-                    if e.response['Error']['Code'] == 'NoSuchEntity':
+                except ClientError as exception:
+                    if exception.response['Error']['Code'] == 'NoSuchEntity':
                         user['LoginProfileExists'] = False
                     else:
-                        raise e
+                        raise exception
 
             self.logger.info("Completed data collection, writing to local file...")
             iam_data = {
@@ -71,13 +68,29 @@ class RuntimeIamEvaluator:
 
         else:
             self.logger.info("Reusing local data")
-            with open(IAM_DATA_FILE_NAME) as iam_data_file:
-                iam_data = json.loads(json.load(iam_data_file))
+
+        with open(IAM_DATA_FILE_NAME) as iam_data_file:
+            iam_data = json.loads(json.load(iam_data_file))
+
+        account_id = iam_data['AccountUsers'][0]['Arn'].split(":")[4]
+
+        self.logger.info("Analyzing data for account {}".format(account_id))
 
         return iam_data
 
-    def get_account_iam_configuration(self):
-        paginator = self.iam.get_paginator('get_account_authorization_details')
+    def get_aws_iam_client(self):
+        if self.profile:
+            session = boto3.Session(profile_name=self.profile)
+        else:
+            session = boto3.Session()
+        caller_identity = session.client('sts').get_caller_identity()
+        scanned_account = caller_identity['Account']
+        self.logger.info("Scanning account {}".format(scanned_account))
+        return session.client('iam')
+
+    @staticmethod
+    def get_account_iam_configuration(iam):
+        paginator = iam.get_paginator('get_account_authorization_details')
         account_users = []
         account_roles = []
         account_policies = []
@@ -121,13 +134,16 @@ class RuntimeIamEvaluator:
             for group_name in user['GroupList']:
                 group_managed_policies = next(g['AttachedManagedPolicies'] for g in account_groups if g['GroupName'] == group_name)
                 user_attached_managed_policies.extend(group_managed_policies)
-            user_attached_managed_policies = list(set(map(lambda policy_obj: policy_obj['PolicyArn'], user_attached_managed_policies)))
+            user_attached_managed_policies = list(set(map(lambda p: p['PolicyArn'], user_attached_managed_policies)))
             user_attached_managed_policies.sort()
 
             services_in_use = list(
                 map(
                     lambda last_access: last_access['ServiceNamespace'],
-                    filter(lambda last_access: RuntimeIamEvaluator.days_from_today(last_access['LastAccessed']) < self.unused_threshold, user['LastAccessed'])
+                    filter(
+                        lambda last_access: RuntimeIamEvaluator.days_from_today(last_access['LastAccessed']) < self.unused_threshold,
+                        user['LastAccessed']
+                    )
                 )
             )
 
@@ -142,7 +158,7 @@ class RuntimeIamEvaluator:
                     services_allowed = list(set(services_allowed + list(map(lambda action: action.split(":")[0], actions))))
                 policy_in_use = False
                 for service in services_allowed:
-                    if service in services_in_use:
+                    if service in services_in_use or service == "*":
                         policy_in_use = True
                         break
                 if policy_in_use:
@@ -167,16 +183,16 @@ class RuntimeIamEvaluator:
             return list_or_single_object
         return [list_or_single_object]
 
-    def generate_last_access(self, arn_list):
+    def generate_last_access(self, iam, arn_list):
         results = {}
         for arn in arn_list:
-            job_id = self.iam.generate_service_last_accessed_details(Arn=arn)['JobId']
+            job_id = iam.generate_service_last_accessed_details(Arn=arn)['JobId']
             results[arn] = job_id
 
         for arn in results:
             job_id = results[arn]
             results[arn] = RuntimeIamEvaluator.simplify_service_access_result(
-                self.iam.get_service_last_accessed_details(JobId=job_id)['ServicesLastAccessed']
+                iam.get_service_last_accessed_details(JobId=job_id)['ServicesLastAccessed']
             )
         self.logger.info(results)
         return results
