@@ -13,7 +13,6 @@ dpath = "==1.5.0"
 
 [packages]
 boto3 = "*"
-main = "*"
 
 [requires]
 python_version = "3.7"
