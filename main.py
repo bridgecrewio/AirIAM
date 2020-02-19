@@ -1,8 +1,8 @@
 import logging
 import argparse
 
-from airiam.version import version
-from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
+from version import version
+from runtime_iam_evaluator import RuntimeIamEvaluator
 
 
 logging.basicConfig(level=logging.INFO)
