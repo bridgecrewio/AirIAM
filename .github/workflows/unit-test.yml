@@ -3,7 +3,9 @@ name: Unit tests
 on:
   # Trigger the workflow on push to master or any pull request,
   # Based on https://help.github.com/en/actions/reference/events-that-trigger-workflows
-  pull_request
+  pull_request:
+    branches:
+      - master
   push:
     branches:
       - master
