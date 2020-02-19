@@ -3,7 +3,7 @@ import argparse
 
 from airiam.version import version
 from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
-from airiam.UserOrganizer import UserOrganizer
+from airiam.runtime_iam_evaluator.UserOrganizer import UserOrganizer
 
 
 def configure_logger():
@@ -21,10 +21,10 @@ def configure_logger():
 def run():
     logger = configure_logger()
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--version', help='Get AirIAM\'s version')
-    parser.add_argument('-p', '--profile', help='The AWS profile to be used', default=None)
+    parser.add_argument('-v', '--version', help='Get AirIAM\'s version', action='store_true')
+    parser.add_argument('-p', '--profile', help='The AWS profile to be used', action='store_const', const=None)
     parser.add_argument('-r', '--refresh', help='Do not use local data, get fresh data from AWS API', action='store_true')
-    parser.add_argument('-t', '--threshold', help='The unused threshold, in days', default=None)
+    parser.add_argument('-t', '--threshold', help='The unused threshold, in days', action='store_const', const=90)
 
     args = parser.parse_args()
     if args.version:
@@ -35,5 +35,4 @@ def run():
 
     clusters = UserOrganizer(logger).get_user_clusters(iam_data)
 
-    print(clusters)
-
+    logger.info(clusters)

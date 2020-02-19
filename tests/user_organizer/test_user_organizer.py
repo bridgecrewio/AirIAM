@@ -3,7 +3,7 @@ import unittest
 import json
 
 from airiam.main import configure_logger
-from airiam.UserOrganizer import UserOrganizer
+from airiam.runtime_iam_evaluator.UserOrganizer import UserOrganizer
 
 
 class TestUserOrganizer(unittest.TestCase):

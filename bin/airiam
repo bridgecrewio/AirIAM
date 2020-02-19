@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+from airiam.main import run
+
+if __name__ == '__main__':
+    run()
