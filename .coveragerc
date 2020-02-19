@@ -1,0 +1,9 @@
+[run]
+branch = True
+[report]
+omit =
+    tests/*
+    */.pytest_cache/*
+    */.local/*
+    docs/*
+    hooks/*
