@@ -9,10 +9,10 @@ class UserOrganizer:
         self.unused_threshold = unused_threshold
 
     def get_user_clusters(self, iam_data):
-        unused_users, human_users, service_users = self.separate_user_types(iam_data['AccountUsers'], iam_data['CredentialReport'])
-        simple_user_clusters = self.create_simple_user_clusters(human_users, iam_data['AccountGroups'], iam_data['AccountPolicies'])
+        unused_users, human_users, service_users = self._separate_user_types(iam_data['AccountUsers'], iam_data['CredentialReport'])
+        simple_user_clusters = self._create_simple_user_clusters(human_users, iam_data['AccountGroups'], iam_data['AccountPolicies'])
 
-        user_clusters = self.consolidate_user_clusters(simple_user_clusters)
+        user_clusters = self._consolidate_user_clusters(simple_user_clusters)
 
         cluster_csv_str = "Users,Policies Attached\n" + "\n".join(
             list(map(lambda cluster_id: "\"{}\",\"{}\"".format(user_clusters[cluster_id], cluster_id), user_clusters))
@@ -20,9 +20,9 @@ class UserOrganizer:
         with open("user_clusters.csv", "w") as user_clusters_file:
             user_clusters_file.write(cluster_csv_str)
 
-        return user_clusters
+        return user_clusters, unused_users, service_users, human_users
 
-    def create_simple_user_clusters(self, users, account_groups, account_policies):
+    def _create_simple_user_clusters(self, users, account_groups, account_policies):
         clusters = {ADMIN_POLICY_ARN: []}
 
         for user in users:
@@ -91,17 +91,19 @@ class UserOrganizer:
 
         return delta.days
 
-    def separate_user_types(self, account_users, credential_report):
+    def _separate_user_types(self, account_users, credential_report):
         human_users = []
         service_users = []
         unused_users = []
         for user in account_users:
-            in_use = any(map(
-                lambda last_access: UserOrganizer.days_from_today(last_access['LastAccessed']) < self.unused_threshold, user['LastAccessed']
-            ))
+            credentials = next(creds for creds in credential_report if creds['user'] == user['UserName'])
+            in_use = min(
+                UserOrganizer.days_from_today(credentials.get('access_key_1_last_used_date', 'N/A')),
+                UserOrganizer.days_from_today(credentials.get('access_key_2_last_used_date', 'N/A')),
+                UserOrganizer.days_from_today(credentials.get('password_last_used', 'N/A')),
+            ) < 90
             if not in_use:
                 unused_users.append(user)
-            credentials = next(creds for creds in credential_report if creds['user'] == user['UserName'])
             if user['LoginProfileExists'] and UserOrganizer.days_from_today(credentials['password_last_used']) < self.unused_threshold:
                 human_users.append(user)
             else:
@@ -109,7 +111,7 @@ class UserOrganizer:
 
         return unused_users, human_users, service_users
 
-    def consolidate_user_clusters(self, simple_user_clusters):
+    def _consolidate_user_clusters(self, simple_user_clusters):
         admin_cluster = simple_user_clusters.pop(ADMIN_POLICY_ARN)
         start_number_of_clusters = 0
         end_number_of_clusters = len(simple_user_clusters.keys())
