@@ -6,11 +6,6 @@ ADMIN_POLICY_ARN = 'arn:aws:iam::aws:policy/AdministratorAccess'
 READ_ONLY_ARN = 'arn:aws:iam::aws:policy/ReadOnlyAccess'
 
 
-def take(n, iterable):
-    """Return first n items of the iterable as a list"""
-    return list(islice(iterable, n))
-
-
 class UserOrganizer(BaseOrganizer):
     def __init__(self, logger, unused_threshold=90):
         self.logger = logger
@@ -73,7 +68,7 @@ class UserOrganizer(BaseOrganizer):
                 clusters['ReadOnly'].append(user["UserName"])
         policies_sorted = {k: v for k, v in sorted(policies_in_use.items(), key=lambda item: -item[1])}
 
-        top_10_policies = list(map(lambda item: item[0], take(10, policies_sorted.items())))
+        top_10_policies = list(islice(map(lambda item: item[0], policies_sorted.items()), 10))
         clusters["Powerusers"] = top_10_policies
         return clusters
 
