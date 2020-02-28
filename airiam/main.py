@@ -1,9 +1,9 @@
-import logging
 import argparse
+import logging
 
-from airiam.version import version
 from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
-from airiam.runtime_iam_evaluator.UserOrganizer import UserOrganizer
+from airiam.terraformer.TerraformTransformer import TerraformTransformer
+from airiam.version import version
 
 
 def configure_logger():
@@ -31,6 +31,6 @@ def run():
         logging.info('AirIAM v{}'.format(version))
         return
 
-    RuntimeIamEvaluator(logger, args.profile).evaluate_runtime_iam(args.refresh)
+    results = RuntimeIamEvaluator(logger, args.profile).evaluate_runtime_iam(args.refresh)
 
-    # todo: use the results of the evaluator to generate terraform code
+    TerraformTransformer(logger, args.profile).transform(results)

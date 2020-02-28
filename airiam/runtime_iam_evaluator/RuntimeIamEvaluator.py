@@ -33,26 +33,32 @@ class RuntimeIamEvaluator:
         account_id = iam_data['AccountUsers'][0]['Arn'].split(":")[4]
         self.logger.info("Analyzing data for account {}".format(account_id))
 
-        user_clusters, unused_users, service_users, human_users = UserOrganizer(self.logger).get_user_clusters(iam_data)
-        unused_roles, role_rightsizing = RoleOrganizer(self.logger).rightsize_privileges(iam_data['AccountRoles'] + service_users)
-
-        groups_with_no_privilege = list(filter(lambda g: len(g['AttachedManagedPolicies'] + g['GroupPolicyList']) == 0, iam_data['AccountGroups']))
+        unused_users, human_users, service_users, simple_user_clusters = UserOrganizer(self.logger).get_user_clusters(iam_data)
+        # unused_roles, role_rightsizing = RoleOrganizer(self.logger).rightsize_privileges(iam_data['AccountRoles'] + service_users,
+        #                                                                                  iam_data['AccountPolicies'], iam_data['AccountGroups'])
 
         active_users = human_users + service_users
         groups_with_no_active_members = self._find_groups_with_no_members(iam_data['AccountGroups'], active_users)
+        groups_with_no_privilege = list(filter(lambda g: len(g['AttachedManagedPolicies'] + g['GroupPolicyList']) == 0, iam_data['AccountGroups']))
         redundant_groups = groups_with_no_active_members + groups_with_no_privilege
 
         unattached_policies = list(filter(lambda policy: policy['AttachmentCount'] > 0, iam_data['AccountPolicies']))
         return {
             "Unused": {
                 "UnusedUsers": unused_users,
-                "UnusedRoles": unused_roles,
+                # "UnusedRoles": unused_roles,
                 "UnattachedPolicies": unattached_policies,
                 "RedundantGroups": redundant_groups
             },
             "Rightsizing": {
-                "UserOrganization": user_clusters,
-                "AutomationRightsizing": role_rightsizing
+                "UserOrganization": simple_user_clusters
+                # "AutomationRightsizing": role_rightsizing
+            },
+            "RawData": {
+                "Policies": iam_data['AccountPolicies'],
+                "Groups": iam_data['AccountGroups'],
+                "Users": iam_data['AccountUsers'],
+                "Roles": iam_data['AccountRoles']
             }
         }
 

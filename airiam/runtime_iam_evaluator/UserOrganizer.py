@@ -1,9 +1,17 @@
-import datetime as dt
+from airiam.runtime_iam_evaluator.BaseOrganizer import BaseOrganizer
+from itertools import islice
+
 
 ADMIN_POLICY_ARN = 'arn:aws:iam::aws:policy/AdministratorAccess'
+READ_ONLY_ARN = 'arn:aws:iam::aws:policy/ReadOnlyAccess'
 
 
-class UserOrganizer:
+def take(n, iterable):
+    """Return first n items of the iterable as a list"""
+    return list(islice(iterable, n))
+
+
+class UserOrganizer(BaseOrganizer):
     def __init__(self, logger, unused_threshold=90):
         self.logger = logger
         self.unused_threshold = unused_threshold
@@ -11,20 +19,12 @@ class UserOrganizer:
     def get_user_clusters(self, iam_data):
         unused_users, human_users, service_users = self._separate_user_types(iam_data['AccountUsers'], iam_data['CredentialReport'])
         simple_user_clusters = self._create_simple_user_clusters(human_users, iam_data['AccountGroups'], iam_data['AccountPolicies'])
-
-        user_clusters = self._consolidate_user_clusters(simple_user_clusters)
-
-        cluster_csv_str = "Users,Policies Attached\n" + "\n".join(
-            list(map(lambda cluster_id: "\"{}\",\"{}\"".format(user_clusters[cluster_id], cluster_id), user_clusters))
-        )
-        with open("user_clusters.csv", "w") as user_clusters_file:
-            user_clusters_file.write(cluster_csv_str)
-
-        return user_clusters, unused_users, service_users, human_users
+        return unused_users, human_users, service_users, simple_user_clusters
 
     def _create_simple_user_clusters(self, users, account_groups, account_policies):
-        clusters = {ADMIN_POLICY_ARN: []}
+        clusters = {"Admins": [], "ReadOnly": []}
 
+        policies_in_use = {}
         for user in users:
             user_attached_managed_policies = []
             user_attached_managed_policies.extend(user['AttachedManagedPolicies'])
@@ -34,7 +34,7 @@ class UserOrganizer:
             user_attached_managed_policies = list(set(map(lambda p: p['PolicyArn'], user_attached_managed_policies)))
             user_attached_managed_policies.sort()
             if ADMIN_POLICY_ARN in user_attached_managed_policies:
-                clusters[ADMIN_POLICY_ARN].append(user['UserName'])
+                clusters["Admins"].append(user['UserName'])
             else:
                 services_in_use = list(
                     map(
@@ -66,30 +66,16 @@ class UserOrganizer:
                 if user['LoginProfileExists'] and 'arn:aws:iam::aws:policy/IAMUserChangePassword' not in user_attached_managed_policies_in_use:
                     user_attached_managed_policies_in_use.append('arn:aws:iam::aws:policy/IAMUserChangePassword')
 
-                user_policies_str = ", ".join(user_attached_managed_policies_in_use)
-                if user_policies_str in clusters:
-                    clusters[user_policies_str].append(user['UserName'])
-                else:
-                    clusters[user_policies_str] = [user['UserName']]
-        for cluster_id, cluster_users in clusters.items():
-            clusters[cluster_id] = ", ".join(cluster_users)
+                for pol in user_attached_managed_policies_in_use:
+                    if pol not in policies_in_use:
+                        policies_in_use[pol] = 0
+                    policies_in_use[pol] += 1
+                clusters['ReadOnly'].append(user["UserName"])
+        policies_sorted = {k: v for k, v in sorted(policies_in_use.items(), key=lambda item: -item[1])}
 
+        top_10_policies = list(map(lambda item: item[0], take(10, policies_sorted.items())))
+        clusters["Powerusers"] = top_10_policies
         return clusters
-
-    @staticmethod
-    def convert_to_list(list_or_single_object):
-        if isinstance(list_or_single_object, list):
-            return list_or_single_object
-        return [list_or_single_object]
-
-    @staticmethod
-    def days_from_today(str_date_from_today):
-        if str_date_from_today in ['no_information', 'N/A']:
-            return 365
-        date = dt.datetime.fromisoformat(str_date_from_today).replace(tzinfo=None)
-        delta = dt.datetime.now() - date
-
-        return delta.days
 
     def _separate_user_types(self, account_users, credential_report):
         human_users = []
