@@ -9,3 +9,4 @@ omit =
     hooks/*
     .github/*
     bin/*
+    **.tf

@@ -4,10 +4,11 @@ import logging
 from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
 from airiam.terraformer.TerraformTransformer import TerraformTransformer
 from airiam.version import version
+from airiam.Reporter import Reporter
 
 
 def configure_logger():
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.ERROR)
     # define a Handler which writes INFO messages or higher to the sys.stderr
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
@@ -31,6 +32,15 @@ def run():
         logging.info('AirIAM v{}'.format(version))
         return
 
-    results = RuntimeIamEvaluator(logger, args.profile).evaluate_runtime_iam(args.refresh)
+    runtime_results = RuntimeIamEvaluator(logger, args.profile).evaluate_runtime_iam(args.refresh, args.threshold)
 
-    TerraformTransformer(logger, args.profile).transform(results)
+    if not runtime_results.get('Success', False):
+        logger.error("Failed to collect runtime IAM data")
+        exit(1)
+
+    terraform_results = TerraformTransformer(logger, args.profile).transform(runtime_results)
+    if not terraform_results.get('Success', False):
+        logger.error("Failed to create the terraform module")
+        exit(1)
+
+    Reporter().report_cli(runtime_results, terraform_results)

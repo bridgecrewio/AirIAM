@@ -1,15 +1,10 @@
 resource "aws_iam_group" "developers_group" {
-  name = "hippo-developers"
+  name = "developers"
 }
 
 resource "aws_iam_group_policy_attachment" "developers_read_only" {
   group      = aws_iam_group.developers_group.name
   policy_arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
-}
-
-resource "aws_iam_group_policy_attachment" "developers_sns_sqs" {
-  group      = aws_iam_group.developers_group.name
-  policy_arn = "arn:aws:iam::079818613942:policy/Hippo-SQS-SNS-Developer-Readonly"
 }
 
 resource "aws_iam_group_policy_attachment" "self_credentials_attachment" {

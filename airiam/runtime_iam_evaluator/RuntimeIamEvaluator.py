@@ -21,9 +21,10 @@ class RuntimeIamEvaluator:
         self.logger = logger
         self.profile = profile
 
-    def evaluate_runtime_iam(self, should_refresh: bool):
+    def evaluate_runtime_iam(self, should_refresh: bool, unused_threshold=90):
         """
         This method encapsulates all Runtime IAM data capture & classification
+        :param unused_threshold: The threshold, in days, for IAM entities to be considered unused. Default is 90
         :param should_refresh:  A boolean indicating whether to get data from AWS APIs or use local data (if exists).
                                 Calling the AWS APIs may take a few minutes
         :return: An object which describes which resources need to be reconfigured (and how), and which resources should be removed
@@ -33,26 +34,27 @@ class RuntimeIamEvaluator:
         account_id = iam_data['AccountUsers'][0]['Arn'].split(":")[4]
         self.logger.info("Analyzing data for account {}".format(account_id))
 
-        unused_users, human_users, service_users, simple_user_clusters = UserOrganizer(self.logger).get_user_clusters(iam_data)
-        # unused_roles, role_rightsizing = RoleOrganizer(self.logger).rightsize_privileges(iam_data['AccountRoles'] + service_users,
-        #                                                                                  iam_data['AccountPolicies'], iam_data['AccountGroups'])
+        unused_users, human_users, simple_user_clusters, entities_to_detach = UserOrganizer(self.logger, unused_threshold).get_user_clusters(iam_data)
+        unused_roles, role_rightsizing = RoleOrganizer(self.logger).rightsize_privileges(iam_data['AccountRoles'], iam_data['AccountPolicies'],
+                                                                                         iam_data['AccountGroups'])
 
-        active_users = human_users + service_users
-        groups_with_no_active_members = self._find_groups_with_no_members(iam_data['AccountGroups'], active_users)
+        groups_with_no_active_members = self._find_groups_with_no_members(iam_data['AccountGroups'], human_users)
         groups_with_no_privilege = list(filter(lambda g: len(g['AttachedManagedPolicies'] + g['GroupPolicyList']) == 0, iam_data['AccountGroups']))
         redundant_groups = groups_with_no_active_members + groups_with_no_privilege
 
         unattached_policies = list(filter(lambda policy: policy['AttachmentCount'] > 0, iam_data['AccountPolicies']))
         return {
+            "Success": True,
+            "AccountId": account_id,
             "Unused": {
                 "UnusedUsers": unused_users,
-                # "UnusedRoles": unused_roles,
+                "UnusedRoles": unused_roles,
                 "UnattachedPolicies": unattached_policies,
                 "RedundantGroups": redundant_groups
             },
             "Rightsizing": {
-                "UserOrganization": simple_user_clusters
-                # "AutomationRightsizing": role_rightsizing
+                "UserOrganization": simple_user_clusters,
+                "RoleRightsizing": role_rightsizing
             },
             "RawData": {
                 "Policies": iam_data['AccountPolicies'],

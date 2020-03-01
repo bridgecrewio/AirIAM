@@ -13,6 +13,8 @@ dpath = "==1.5.0"
 
 [packages]
 boto3 = "*"
+parliament = "*"
+termcolor = "*"
 
 [requires]
 python_version = "3.7"
