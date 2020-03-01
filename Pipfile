@@ -8,12 +8,9 @@ pytest = "*"
 coverage ="*"
 coverage-badge = "*"
 pipenv-setup = "*"
-GitPython = "*"
-dpath = "==1.5.0"
 
 [packages]
 boto3 = "*"
-parliament = "*"
 termcolor = "*"
 pandas = "*"
 
