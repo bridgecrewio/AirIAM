@@ -20,6 +20,7 @@ nosetests.xml
 coverage.xml
 *,cover
 .hypothesis/
+tests/terraform/
 
 # Distribution / packaging
 .Python

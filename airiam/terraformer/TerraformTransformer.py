@@ -10,7 +10,7 @@ boilerplate_files = ["admins.tf", "developers.tf", "power_users.tf"]
 
 
 class TerraformTransformer:
-    def __init__(self, logger, profile):
+    def __init__(self, logger, profile=None):
         self.logger = logger
         self.profile = profile
 
