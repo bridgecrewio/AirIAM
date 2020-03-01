@@ -7,6 +7,7 @@ from botocore.exceptions import ClientError
 
 from airiam.runtime_iam_evaluator.RoleOrganizer import RoleOrganizer
 from airiam.runtime_iam_evaluator.UserOrganizer import UserOrganizer
+from airiam.models.RuntimeReport import RuntimeReport
 
 IAM_DATA_FILE_NAME = "iam_data.json"
 
@@ -27,14 +28,17 @@ class RuntimeIamEvaluator:
         :param unused_threshold: The threshold, in days, for IAM entities to be considered unused. Default is 90
         :param should_refresh:  A boolean indicating whether to get data from AWS APIs or use local data (if exists).
                                 Calling the AWS APIs may take a few minutes
-        :return: An object which describes which resources need to be reconfigured (and how), and which resources should be removed
+        :return: An instance of the report which describes which resources need to be reconfigured (and how),
+                                and which resources should be removed
+        :rtype: RuntimeReport
         """
         iam_data = self._get_data_from_aws(should_refresh)
 
         account_id = iam_data['AccountUsers'][0]['Arn'].split(":")[4]
         self.logger.info("Analyzing data for account {}".format(account_id))
 
-        unused_users, human_users, simple_user_clusters, entities_to_detach = UserOrganizer(self.logger, unused_threshold).get_user_clusters(iam_data)
+        unused_users, human_users, simple_user_clusters, entities_to_detach, unchanged_users = \
+            UserOrganizer(self.logger, unused_threshold).get_user_clusters(iam_data)
         unused_roles, role_rightsizing = RoleOrganizer(self.logger).rightsize_privileges(iam_data['AccountRoles'], iam_data['AccountPolicies'],
                                                                                          iam_data['AccountGroups'])
 
@@ -43,26 +47,8 @@ class RuntimeIamEvaluator:
         redundant_groups = groups_with_no_active_members + groups_with_no_privilege
 
         unattached_policies = list(filter(lambda policy: policy['AttachmentCount'] > 0, iam_data['AccountPolicies']))
-        return {
-            "Success": True,
-            "AccountId": account_id,
-            "Unused": {
-                "UnusedUsers": unused_users,
-                "UnusedRoles": unused_roles,
-                "UnattachedPolicies": unattached_policies,
-                "RedundantGroups": redundant_groups
-            },
-            "Rightsizing": {
-                "UserOrganization": simple_user_clusters,
-                "RoleRightsizing": role_rightsizing
-            },
-            "RawData": {
-                "Policies": iam_data['AccountPolicies'],
-                "Groups": iam_data['AccountGroups'],
-                "Users": iam_data['AccountUsers'],
-                "Roles": iam_data['AccountRoles']
-            }
-        }
+        return RuntimeReport(account_id, unused_users, unused_roles, unattached_policies,  redundant_groups, simple_user_clusters, unchanged_users,
+                             role_rightsizing)
 
     def _get_data_from_aws(self, should_refresh: bool):
         """

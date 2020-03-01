@@ -35,10 +35,6 @@ def run():
 
     runtime_results = RuntimeIamEvaluator(logger, args.profile).evaluate_runtime_iam(args.refresh, args.threshold)
 
-    if not runtime_results.get('Success', False):
-        logger.error("Failed to collect runtime IAM data")
-        exit(1)
-
     Reporter.report_runtime(runtime_results)
 
     terraform_results = TerraformTransformer(logger, args.profile).transform(runtime_results)

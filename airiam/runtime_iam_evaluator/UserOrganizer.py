@@ -27,10 +27,10 @@ class UserOrganizer(BaseOrganizer):
             self.action_map[action_obj['service']].append(action_obj)
 
     def get_user_clusters(self, iam_data):
-        unused_users, human_users = self._separate_user_types(iam_data['AccountUsers'], iam_data['CredentialReport'])
+        unused_users, human_users, unchanged_users = self._separate_user_types(iam_data['AccountUsers'], iam_data['CredentialReport'])
         simple_user_clusters = self._create_simple_user_clusters(human_users, iam_data['AccountGroups'], iam_data['AccountPolicies'])
         entities_to_detach = UserOrganizer.calculate_detachments(human_users)
-        return unused_users, human_users, simple_user_clusters, entities_to_detach
+        return unused_users, human_users, simple_user_clusters, entities_to_detach, unchanged_users
 
     def _create_simple_user_clusters(self, users, account_groups, account_policies):
         clusters = {"Admins": [], "ReadOnly": [], "Powerusers": {'Users': [], 'Policies': []}}
@@ -100,9 +100,11 @@ class UserOrganizer(BaseOrganizer):
                 actions_list.extend(UserOrganizer.convert_to_list(statement['Action']))
         return actions_list
 
-    def _separate_user_types(self, account_users, credential_report):
+    @staticmethod
+    def _separate_user_types(account_users, credential_report):
         human_users = []
         unused_users = []
+        unchanged_users = []
         for user in account_users:
             credentials = next(creds for creds in credential_report if creds['user'] == user['UserName'])
             last_used_in_days = min(
@@ -114,9 +116,12 @@ class UserOrganizer(BaseOrganizer):
                 user['LastUsed'] = last_used_in_days
                 unused_users.append(user)
             else:
-                human_users.append(user)
+                if len(user['AttachedManagedPolicies']) == 0 and len(user['GroupList']) == 0:
+                    unchanged_users.append(user)
+                else:
+                    human_users.append(user)
 
-        return unused_users, human_users
+        return unused_users, human_users, unchanged_users
 
     def _consolidate_user_clusters(self, simple_user_clusters):
         admin_cluster = simple_user_clusters.pop(ADMIN_POLICY_ARN)
