@@ -27,6 +27,7 @@ def run():
     parser.add_argument('-p', '--profile', help='The AWS profile to be used', type=str)
     parser.add_argument('-t', '--threshold', help='The unused threshold, in days', type=int, default=90)
 
+    Reporter.print_art()
     args = parser.parse_args()
     if args.version:
         logging.info('AirIAM v{}'.format(version))
@@ -38,9 +39,11 @@ def run():
         logger.error("Failed to collect runtime IAM data")
         exit(1)
 
+    Reporter.report_runtime(runtime_results)
+
     terraform_results = TerraformTransformer(logger, args.profile).transform(runtime_results)
     if not terraform_results.get('Success', False):
         logger.error("Failed to create the terraform module")
         exit(1)
 
-    Reporter().report_cli(runtime_results, terraform_results)
+    Reporter.report_terraform(terraform_results)

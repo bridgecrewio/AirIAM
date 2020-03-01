@@ -21,4 +21,4 @@ class TestUserOrganizer(unittest.TestCase):
         self.assertTrue('Powerusers' in simple_user_clusters.keys())
         self.assertEqual(len(simple_user_clusters.keys()), 3)
         self.assertEqual(len(simple_user_clusters['Admins']), 6)
-        self.assertEqual(len(entities_to_detach), 191)
+        self.assertEqual(len(entities_to_detach), 479)

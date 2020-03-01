@@ -3,13 +3,14 @@ from airiam.banner import banner
 from colorama import init
 from termcolor import colored
 
+SEPARATOR = '\n==================================================\n\n'
+
 init(autoreset=True)
 
 
 class Reporter:
     @staticmethod
-    def report_cli(runtime_results, terraforming_results):
-        print(colored(banner, 'yellow'))
+    def report_runtime(runtime_results):
         print('\nResults for Account {}:\n'.format(runtime_results['AccountId']))
         unused = runtime_results['Unused']
         unused_users = unused['UnusedUsers']
@@ -24,7 +25,7 @@ class Reporter:
             for role in unused_roles:
                 print(colored('Will be deleted: ', 'red', attrs=['bold']) + '{}: last used {} days ago'.format(role['RoleName'], role['LastUsed']))
 
-        print('\n==================================================\n\n')
+        print(SEPARATOR)
         print(colored('A terraform module was created with the following setup:', 'green'))
         user_org = runtime_results['Rightsizing']['UserOrganization']
         for admin in user_org['Admins']:
@@ -37,3 +38,13 @@ class Reporter:
         roles = runtime_results['Rightsizing']['RoleRightsizing']
         for role in roles:
             print('The role {} was copied as is to terraform'.format(role['Entity']['RoleName']))
+
+        print(SEPARATOR)
+
+    @staticmethod
+    def print_art():
+        print(colored(banner, 'yellow'))
+
+    @staticmethod
+    def report_terraform(terraform_results):
+        pass

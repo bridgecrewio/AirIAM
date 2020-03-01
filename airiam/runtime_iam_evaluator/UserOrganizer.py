@@ -183,7 +183,11 @@ class UserOrganizer(BaseOrganizer):
                 action_regex = action_name.replace('*', '.*')
                 action_objs = list(filter(lambda action_obj: re.match(action_regex, action_obj['name']), self.action_map[action_service]))
             else:
-                action_objs = [next(action_obj for action_obj in self.action_map[action_service] if action_obj['name'] == action_name)]
+                try:
+                    action_objs = [next(action_obj for action_obj in self.action_map[action_service] if action_obj['name'] == action_name)]
+                except StopIteration as e:
+                    self.logger.error('Did not find action {}:{}'.format(action_service, action_name))
+                    action_objs = []
 
             for action_obj in action_objs:
                 if action_obj['access_level'] in ['Write', 'Delete', 'Permissions management']:
