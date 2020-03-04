@@ -1,6 +1,7 @@
 import copy
 import json
 import os
+import time
 
 import boto3
 from botocore.exceptions import ClientError
@@ -150,9 +151,19 @@ class RuntimeIamEvaluator:
 
         for arn in results:
             job_id = results[arn]
-            results[arn] = RuntimeIamEvaluator.simplify_service_access_result(
-                iam.get_service_last_accessed_details(JobId=job_id)['ServicesLastAccessed']
-            )
+            try:
+                results[arn] = RuntimeIamEvaluator.simplify_service_access_result(
+                    iam.get_service_last_accessed_details(JobId=job_id)['ServicesLastAccessed']
+                )
+            except ClientError as error:
+                if error.response['Error']['Code'] == 'Throttling':
+                    print('Reached throttling, sleeping for 5 seconds')
+                    time.sleep(5)
+                    results[arn] = RuntimeIamEvaluator.simplify_service_access_result(
+                        iam.get_service_last_accessed_details(JobId=job_id)['ServicesLastAccessed']
+                    )
+                else:
+                    raise error
         self.logger.info(results)
         return results
 
