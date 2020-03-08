@@ -11,11 +11,7 @@ class TestTerraformTransformer(unittest.TestCase):
 
     def test_terraformer_works(self):
         self.setup()
-        report = RuntimeReport("012345678901", {'AccountGroups': [], 'AccountPolicies': [], 'AccountRoles': [], 'AccountUsers': []},
-                               self.unused_users, self.unused_roles, self.unattached_policies, self.redundant_group, self.user_clusters,
-                               self.roles_rightsizing)
-
-        self.terraform_transformer.transform(report)
+        self.terraform_transformer.transform(self.report)
         self.assertTrue(os.path.exists('terraform/main.tf'))
         self.assertTrue(os.path.exists('terraform/developers.tf'))
         self.assertTrue(os.path.exists('terraform/power_users.tf'))
@@ -24,8 +20,7 @@ class TestTerraformTransformer(unittest.TestCase):
 
     def test_unused_not_in_terraform_code(self):
         self.setup()
-        self.terraform_transformer.transform(RuntimeReport("012345678901", self.unused_users, self.unused_roles, self.unattached_policies,
-                                                           self.redundant_group, self.user_clusters, self.special_users, self.roles_rightsizing))
+        self.terraform_transformer.transform(self.report)
         with open('terraform/roles.tf') as roles_file:
             roles = roles_file.read()
 
@@ -33,8 +28,7 @@ class TestTerraformTransformer(unittest.TestCase):
 
     def test_used_in_terraform_code(self):
         self.setup()
-        self.terraform_transformer.transform(RuntimeReport("012345678901", self.unused_users, self.unused_roles, self.unattached_policies,
-                                                           self.redundant_group, self.user_clusters, self.special_users, self.roles_rightsizing))
+        self.terraform_transformer.transform(self.report)
         with open('terraform/roles.tf') as roles_file:
             roles = roles_file.read()
 
@@ -81,3 +75,6 @@ class TestTerraformTransformer(unittest.TestCase):
             }
         ]
         self.terraform_transformer = TerraformTransformer(configure_logger())
+        self.report = RuntimeReport("012345678901", {'AccountGroups': [], 'AccountPolicies': [], 'AccountRoles': [], 'AccountUsers': []},
+                                    self.unused_users, self.unused_roles, self.unattached_policies, self.redundant_group, self.user_clusters,
+                                    self.roles_rightsizing)
