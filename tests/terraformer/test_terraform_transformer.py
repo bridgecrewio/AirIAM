@@ -11,33 +11,10 @@ class TestTerraformTransformer(unittest.TestCase):
 
     def test_terraformer_works(self):
         self.setup()
-        self.terraform_transformer.transform(self.report)
-        self.assertTrue(os.path.exists('terraform/main.tf'))
-        self.assertTrue(os.path.exists('terraform/developers.tf'))
-        self.assertTrue(os.path.exists('terraform/power_users.tf'))
-        self.assertTrue(os.path.exists('terraform/admins.tf'))
-        self.assertTrue(os.path.exists('terraform/roles.tf'))
-
-    def test_unused_not_in_terraform_code(self):
-        self.setup()
-        self.terraform_transformer.transform(self.report)
-        with open('terraform/roles.tf') as roles_file:
-            roles = roles_file.read()
-
-        self.assertFalse(f"resource \"aws_iam_role\" \"{self.unused_roles[0]['RoleName']}\"" in roles)
-
-    def test_used_in_terraform_code(self):
-        self.setup()
-        self.terraform_transformer.transform(self.report)
-        with open('terraform/roles.tf') as roles_file:
-            roles = roles_file.read()
-
-        self.assertTrue(f"resource \"aws_iam_role\" \"{self.roles_rightsizing[0]['Entity']['RoleName']}\"" in roles)
-
-        with open('terraform/main.tf') as main_file:
-            main = main_file.read()
-        self.assertTrue(json.dumps(self.user_clusters['Admins']) in main)
-        self.assertTrue(json.dumps(self.user_clusters['Powerusers']['Policies']) in main)
+        self.terraform_transformer.transform(self.report, should_import=False)
+        self.assertTrue(os.path.exists('main.tf'), 'Did not create a main file')
+        self.assertTrue(os.path.exists('users.tf'), 'Did not create a users file')
+        self.assertTrue(os.path.exists('policies.tf'), 'Did not create a policies file')
 
     def setup(self):
         self.unused_users = [{"UserName": "Shati", "LastUsed": 198}]
