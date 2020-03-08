@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "3ce1fb1adee54c44bf04d871054556e5176f1959d501e10334bc6af790bcefc0"
+            "sha256": "9badf6d020430e0aadb3379fb1bfac0ca11873a8dbf43bd7e2df3e8340666576"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -99,6 +99,13 @@
             ],
             "version": "==2.8.1"
         },
+        "python-terraform": {
+            "hashes": [
+                "sha256:0f4d1648c4fec61d5aa53142558ba3761c8f9ee7acce57505a1245d4dd85f5cf"
+            ],
+            "index": "pypi",
+            "version": "==0.10.1"
+        },
         "pytz": {
             "hashes": [
                 "sha256:1c557d7d0e871de1f5ccd5833f60fb2550652da6be2693c1e02300743d21500d",
@@ -126,14 +133,6 @@
             ],
             "index": "pypi",
             "version": "==1.1.0"
-        },
-        "terrascript": {
-            "hashes": [
-                "sha256:144fbb57d517654f6badf9314e7696b695dd2628b37058df91c0f547f39a3cee",
-                "sha256:150c16347993a0408b283d0bc0db03773cf1cbc6ec7b4ee5a3be5c0f1a26c1fc"
-            ],
-            "index": "pypi",
-            "version": "==0.8.0"
         },
         "urllib3": {
             "hashes": [
