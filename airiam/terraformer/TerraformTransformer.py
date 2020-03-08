@@ -1,9 +1,12 @@
+import json
 import os
 import shutil
-import json
+
+import terrascript
+import terrascript.resource as resource
+import terrascript.data as data
 
 from airiam.models.RuntimeReport import RuntimeReport
-
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
 boilerplate_files = ["admins.tf", "developers.tf", "power_users.tf"]
@@ -23,8 +26,12 @@ class TerraformTransformer:
         """
         if not os.path.exists('terraform'):
             os.mkdir('terraform')
+        if not os.path.exists('terraform/backup'):
+            os.mkdir('terraform/backup')
+
+        self.create_backup_code(results.raw_results)
+
         with open('terraform/main.tf', 'w') as main_file:
-            profile_str = ""
             if self.profile:
                 profile_str = f"profile = \"{self.profile}\""
                 main_file.write(f"""provider "aws" {{
@@ -37,7 +44,8 @@ class TerraformTransformer:
   region = "us-east-1"
 }}
 """)
-            users_and_groups = results.user_clusters
+
+            users_and_groups = results.get_rightsizing()['Users']
             powerusers_users = users_and_groups['Powerusers']['Users']
             powerusers_policies = users_and_groups['Powerusers']['Policies']
             main_file.write(f"""
@@ -52,8 +60,8 @@ locals {{
             shutil.copyfile(current_dir + "/tf_modules/users/" + boilerplate_file, 'terraform/' + boilerplate_file)
 
         roles_str = ""
-        for role in results.role_rightsizing:
-            role_name_safe = ''.join(e for e in role['Entity']['RoleName'] if e.isalnum() or e == '_' or e == '-')
+        for role in results.get_rightsizing()['Roles']:
+            role_name_safe = TerraformTransformer.get_safe_entity_name(role['Entity']['RoleName'])
             assume_policy_data = self.transform_document_to_policy(role['Entity']['AssumeRolePolicyDocument'], f"assume_role_{role_name_safe}")
             role_obj = self.create_role_obj(role['Entity'], role_name_safe)
             policy_attachments = TerraformTransformer.create_role_policy_attachments(role['Entity'].get('AttachedManagedPolicies', []), role_name_safe)
@@ -149,3 +157,44 @@ resource "aws_iam_role_policy" "{role_name_safe}_{role_policy_name}" {{
 """
             policies += policy_str
         return policies
+
+    def create_backup_code(self, current_iam_entities):
+        terraform_code = terrascript.Terrascript()
+
+        for policy in current_iam_entities['AccountPolicies']:
+            policy_name = TerraformTransformer.get_safe_entity_name(policy['PolicyName'])
+            policy_document = data.aws_iam_policy_document(f"{policy_name}_document", statement={"effect": "Allow"})
+            terraform_code += policy_document
+            terraform_code += resource.aws_iam_policy(policy_name, name=policy['PolicyName'], policy=policy_document)
+
+            # print(policy)
+            # todo: create policies
+
+        # for role in current_iam_entities['AccountRoles']:
+            # print(role)
+            # todo: create roles and attach policies to them
+
+        # for group in current_iam_entities['AccountGroups']:
+            # print(group)
+            # todo: create groups
+
+        # for user in current_iam_entities['AccountUsers']:
+            # print(user)
+            # todo: attach policies to existing users
+
+        # print(current_iam_entities)
+
+    @staticmethod
+    def convert_policy_json_to_terraform(policy_json, policy_safe_name):
+        policy_document_json = next(x for x in policy_json['PolicyVersionList'] if x['IsDefaultVersion'])
+        policy = TerraformTransformer.transform_document_to_policy()
+        return f"""
+resource "aws_iam_policy" "{policy_safe_name}" {{
+  name = {policy_json['PolicyName']}
+  path = {policy_json['Path']}
+}}
+"""
+
+    @staticmethod
+    def get_safe_entity_name(entity_raw_name):
+        return ''.join(e for e in entity_raw_name if e.isalnum() or e == '_' or e == '-')

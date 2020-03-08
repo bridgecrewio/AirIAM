@@ -23,9 +23,10 @@ def run():
     logger = configure_logger()
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', '--version', help='Get AirIAM\'s version', action='store_true')
-    parser.add_argument('-r', '--refresh', help='Do not use local data, get fresh data from AWS API', action='store_true')
+    parser.add_argument('-r', '--rightsize', help='Rightsize IAM permissions according to Access Advisor usage data', action='store_true')
     parser.add_argument('-p', '--profile', help='The AWS profile to be used', type=str)
-    parser.add_argument('-t', '--threshold', help='The unused threshold, in days', type=int, default=90)
+    parser.add_argument('-u', '--unused', help='The unused threshold, in days', type=int, default=90)
+    parser.add_argument('-f', '--folder', help='The path where the output terraform code and state will be stored', type=str, default=None)
 
     Reporter.print_art()
     args = parser.parse_args()
@@ -33,9 +34,9 @@ def run():
         logging.info('AirIAM v{}'.format(version))
         return
 
-    runtime_results = RuntimeIamEvaluator(logger, args.profile).evaluate_runtime_iam(args.refresh, args.threshold)
+    runtime_results = RuntimeIamEvaluator(logger, args.profile).evaluate_runtime_iam(args.rightsize, args.unused)
 
-    Reporter.report_runtime(runtime_results)
+    Reporter.report_runtime(args.rightsize, runtime_results)
 
     terraform_results = TerraformTransformer(logger, args.profile).transform(runtime_results)
     if not terraform_results.get('Success', False):

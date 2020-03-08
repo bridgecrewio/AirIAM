@@ -13,6 +13,7 @@ pipenv-setup = "*"
 boto3 = "*"
 termcolor = "*"
 pandas = "*"
+terrascript = "*"
 
 [requires]
 python_version = "3.7"

@@ -23,7 +23,7 @@ class RuntimeIamEvaluator:
         self.logger = logger
         self.profile = profile
 
-    def evaluate_runtime_iam(self, should_refresh: bool, unused_threshold=90):
+    def evaluate_runtime_iam(self, rightsize: bool, unused_threshold=90) -> RuntimeReport:
         """
         This method encapsulates all Runtime IAM data capture & classification
         :param unused_threshold: The threshold, in days, for IAM entities to be considered unused. Default is 90
@@ -31,27 +31,29 @@ class RuntimeIamEvaluator:
                                 Calling the AWS APIs may take a few minutes
         :return: An instance of the report which describes which resources need to be reconfigured (and how),
                                 and which resources should be removed
-        :rtype: RuntimeReport
         """
-        iam_data = self._get_data_from_aws(should_refresh)
+        iam_data = self._get_data_from_aws()
 
         account_id = iam_data['AccountUsers'][0]['Arn'].split(":")[4]
-        self.logger.info("Analyzing data for account {}".format(account_id))
+        if rightsize:
+            self.logger.info("Analyzing data for account {}".format(account_id))
 
-        unused_users, human_users, simple_user_clusters, entities_to_detach, unchanged_users = \
-            UserOrganizer(self.logger, unused_threshold).get_user_clusters(iam_data)
-        unused_roles, role_rightsizing = RoleOrganizer(self.logger).rightsize_privileges(iam_data['AccountRoles'], iam_data['AccountPolicies'],
-                                                                                         iam_data['AccountGroups'])
+            unused_users, human_users, user_reorg, entities_to_detach = UserOrganizer(self.logger, unused_threshold).get_user_clusters(iam_data)
+            unused_roles, role_reorg = RoleOrganizer(self.logger).rightsize_privileges(iam_data['AccountRoles'], iam_data['AccountPolicies'],
+                                                                                             iam_data['AccountGroups'])
 
-        groups_with_no_active_members = self._find_groups_with_no_members(iam_data['AccountGroups'], human_users)
-        groups_with_no_privilege = list(filter(lambda g: len(g['AttachedManagedPolicies'] + g['GroupPolicyList']) == 0, iam_data['AccountGroups']))
-        redundant_groups = groups_with_no_active_members + groups_with_no_privilege
+            groups_with_no_active_members = self._find_groups_with_no_members(iam_data['AccountGroups'], human_users)
+            groups_with_no_privilege = list(filter(lambda g: len(g['AttachedManagedPolicies'] + g['GroupPolicyList']) == 0, iam_data['AccountGroups']))
+            redundant_groups = groups_with_no_active_members + groups_with_no_privilege
 
-        unattached_policies = list(filter(lambda policy: policy['AttachmentCount'] > 0, iam_data['AccountPolicies']))
-        return RuntimeReport(account_id, unused_users, unused_roles, unattached_policies,  redundant_groups, simple_user_clusters, unchanged_users,
-                             role_rightsizing)
+            unattached_policies = list(filter(lambda policy: policy['AttachmentCount'] > 0, iam_data['AccountPolicies']))
+            report = RuntimeReport(account_id, iam_data, unused_users, unused_roles, unattached_policies,  redundant_groups, user_reorg, role_reorg)
+        else:
+            report = RuntimeReport(account_id, iam_data, [], [], [], [], [], [])
 
-    def _get_data_from_aws(self, should_refresh: bool):
+        return report
+
+    def _get_data_from_aws(self) -> dict:
         """
         This method encapsulates all the API calls made to the AWS IAM service to gather data for later analysis
         :param should_refresh:  A boolean indicating whether to get data from AWS APIs or use local data (if exists).
@@ -60,7 +62,7 @@ class RuntimeIamEvaluator:
         """
         current_dir = os.path.abspath(os.path.dirname(__file__))
         iam_data_path = "{0}/{1}".format(current_dir, IAM_DATA_FILE_NAME)
-        if not should_refresh and os.path.exists(iam_data_path):
+        if os.path.exists(iam_data_path):
             self.logger.info("Reusing local data")
         else:
             iam = self._get_aws_iam_client()

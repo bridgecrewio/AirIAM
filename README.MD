@@ -5,6 +5,7 @@
 
 # AirIAM
 Automating, simplifying and least-privilege-ing complex existing AWS IAM resource mesh with terraform (IaC) 
+> :construction: **WORK IN PROGRESS** :construction:
 
 ![Airiam](https://www.syfy.com/sites/syfy/files/styles/2280x1280/public/2019/03/airiam_star_trek_disco1_header.jpg)
 > Airiam was a female cyberneticly enhanced Human serving as an officer in the Federation Starfleet in the 23rd century 
@@ -37,7 +38,7 @@ to the least-privilege principal.
 
 ## Description
 
-AirIAM scans existing IAM usage patterns and provides a simple method to migrate IAM configurations into a rightsized Terraform plan. It removes unused users and groups and replaces them with a Least Privileges model consisting of three groups: `admins`, `super-users`, `read-only` . 
+AirIAM scans existing IAM usage patterns and provides a simple method to migrate IAM configurations into a rightsized Terraform plan. It removes unused users and groups and replaces them with a Least Privileges model consisting of three groups: `admins`, `powerusers`, `read-only` . 
 
 By moving all configurations into Terraform code, users can start tracking, auditing and modifying IAM configurations as part of their standard infrastructure-as-code provisioning processes.
 
@@ -71,14 +72,16 @@ pip install airiam
 ### Configuration
 
 ```sh
-airiam -profile -unused -folder
+airiam -p <PROFILE> -u <NUM_OF_DAYS> -f <PATH_TO_DIR> -r
 ```
 
-`Profile` will use your custom profile and perform the initial checks over all regions when needed.
+`profile / p` will use your custom profile and perform the initial checks over all regions when needed.
 
-`Unused` will define how many days will be considered as a least-usage threshold. By default value is 90, meaning, that any resource that was not active in the last 90 will be identified as unused and removed from the Terraform plan.
+`unused / u` will define how many days will be considered as a least-usage threshold. By default value is 90, meaning, that any resource that was not active in the last 90 will be identified as unused and removed from the Terraform plan.
 
-`Folder` will define where the execution recovery plan and state files will be stored. By default, the files will be placed in the root folder.
+`folder / f` will define where the execution recovery plan and state files will be stored. By default, the files will be placed in the root folder.
+
+`rightsize / r` will define whether to rightsize the permissions automatically using usage data from AWS or not.
 
 ### Report
 

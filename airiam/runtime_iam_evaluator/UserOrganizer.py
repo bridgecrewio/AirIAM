@@ -29,8 +29,9 @@ class UserOrganizer(BaseOrganizer):
     def get_user_clusters(self, iam_data):
         unused_users, human_users, unchanged_users = self._separate_user_types(iam_data['AccountUsers'], iam_data['CredentialReport'])
         simple_user_clusters = self._create_simple_user_clusters(human_users, iam_data['AccountGroups'], iam_data['AccountPolicies'])
+        simple_user_clusters['UnchangedUsers'] = unchanged_users
         entities_to_detach = UserOrganizer.calculate_detachments(human_users)
-        return unused_users, human_users, simple_user_clusters, entities_to_detach, unchanged_users
+        return unused_users, human_users, simple_user_clusters, entities_to_detach
 
     def _create_simple_user_clusters(self, users, account_groups, account_policies):
         clusters = {"Admins": [], "ReadOnly": [], "Powerusers": {'Users': [], 'Policies': []}}
