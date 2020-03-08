@@ -1,6 +1,6 @@
+import json
 import os
 import unittest
-import json
 
 from airiam.main import configure_logger
 from airiam.models.RuntimeReport import RuntimeReport
@@ -11,8 +11,11 @@ class TestTerraformTransformer(unittest.TestCase):
 
     def test_terraformer_works(self):
         self.setup()
-        self.terraform_transformer.transform(RuntimeReport("012345678901", self.unused_users, self.unused_roles, self.unattached_policies,
-                                                           self.redundant_group, self.user_clusters, self.special_users, self.roles_rightsizing))
+        report = RuntimeReport("012345678901", {'AccountGroups': [], 'AccountPolicies': [], 'AccountRoles': [], 'AccountUsers': []},
+                               self.unused_users, self.unused_roles, self.unattached_policies, self.redundant_group, self.user_clusters,
+                               self.roles_rightsizing)
+
+        self.terraform_transformer.transform(report)
         self.assertTrue(os.path.exists('terraform/main.tf'))
         self.assertTrue(os.path.exists('terraform/developers.tf'))
         self.assertTrue(os.path.exists('terraform/power_users.tf'))
@@ -50,7 +53,7 @@ class TestTerraformTransformer(unittest.TestCase):
         self.user_clusters = {
             "Admins": ["wifi"],
             "Powerusers": {
-                "Users": "GanDalf",
+                "Users": ["GanDalf"],
                 "Policies": [
                     "arn:aws:iam::aws:policy/AmazonAthenaFullAccess",
                     "arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess",
