@@ -8,7 +8,7 @@ SORT_KEY_BY_ENTITY_TYPE = {
 
 class RuntimeReport:
     def __init__(self, account_id, raw_results, unused_users, unused_roles, unattached_policies, redundant_groups, user_reorg, role_reorg):
-        self._account_id = account_id
+        self.account_id = account_id
         self._raw_results = raw_results
         self._unused_users = unused_users
         self._unused_roles = unused_roles
