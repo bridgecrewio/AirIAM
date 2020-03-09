@@ -21,14 +21,16 @@ class RuntimeIamEvaluator:
 
     def __init__(self, logger, profile=None):
         self.logger = logger
-        self.profile = profile
+        if profile:
+            self._session = boto3.Session(profile_name=profile)
+        else:
+            self._session = boto3.Session()
 
     def evaluate_runtime_iam(self, rightsize: bool, unused_threshold=90) -> RuntimeReport:
         """
         This method encapsulates all Runtime IAM data capture & classification
+        :param rightsize:  A boolean indicating whether to rightsize the data or not.
         :param unused_threshold: The threshold, in days, for IAM entities to be considered unused. Default is 90
-        :param should_refresh:  A boolean indicating whether to get data from AWS APIs or use local data (if exists).
-                                Calling the AWS APIs may take a few minutes
         :return: An instance of the report which describes which resources need to be reconfigured (and how),
                                 and which resources should be removed
         """
@@ -40,7 +42,7 @@ class RuntimeIamEvaluator:
 
             unused_users, human_users, user_reorg, entities_to_detach = UserOrganizer(self.logger, unused_threshold).get_user_clusters(iam_data)
             unused_roles, role_reorg = RoleOrganizer(self.logger).rightsize_privileges(iam_data['AccountRoles'], iam_data['AccountPolicies'],
-                                                                                             iam_data['AccountGroups'])
+                                                                                       iam_data['AccountGroups'])
 
             groups_with_no_active_members = self._find_groups_with_no_members(iam_data['AccountGroups'], human_users)
             groups_with_no_privilege = list(filter(lambda g: len(g['AttachedManagedPolicies'] + g['GroupPolicyList']) == 0, iam_data['AccountGroups']))
@@ -56,18 +58,18 @@ class RuntimeIamEvaluator:
     def _get_data_from_aws(self) -> dict:
         """
         This method encapsulates all the API calls made to the AWS IAM service to gather data for later analysis
-        :param should_refresh:  A boolean indicating whether to get data from AWS APIs or use local data (if exists).
-                                Calling the AWS APIs may take a few minutes
         :return: The IAM data that was pulled from the account, as was also saved locally for quicker re-runs
         """
+        profile_account_id = self._get_account_id_from_profile()
         current_dir = os.path.abspath(os.path.dirname(__file__))
         iam_data_path = "{0}/{1}".format(current_dir, IAM_DATA_FILE_NAME)
-        if os.path.exists(iam_data_path):
-            self.logger.info("Reusing local data")
+        data_account_id = RuntimeIamEvaluator._get_account_id_from_existing_data(iam_data_path)
+        if data_account_id == profile_account_id:
+            print("Reusing local data")
         else:
+            print(f"Getting all IAM configurations for account {profile_account_id}")
             iam = self._get_aws_iam_client()
             iam.generate_credential_report()
-            self.logger.info("Getting all IAM configurations in the account")
             account_users, account_roles, account_groups, account_policies = RuntimeIamEvaluator.get_account_iam_configuration(iam)
             self.logger.info("Getting IAM credential report")
             csv_credential_report = iam.get_credential_report()['Content'].decode('utf-8')
@@ -112,14 +114,10 @@ class RuntimeIamEvaluator:
         Create an AWS IAM client with the profile that was supplies or default credentials if none was supplied
         :return: AWS IAM client
         """
-        if self.profile:
-            session = boto3.Session(profile_name=self.profile)
-        else:
-            session = boto3.Session()
-        caller_identity = session.client('sts').get_caller_identity()
+        caller_identity = self._session.client('sts').get_caller_identity()
         scanned_account = caller_identity['Account']
         self.logger.info("Scanning account {}".format(scanned_account))
-        return session.client('iam')
+        return self._session.client('iam')
 
     @staticmethod
     def get_account_iam_configuration(iam):
@@ -215,3 +213,17 @@ class RuntimeIamEvaluator:
                     self.logger.debug('Duplicate usage of group {}'.format(group))
 
         return empty_groups
+
+    def _get_account_id_from_profile(self):
+        sts = self._session.client('sts')
+        return sts.get_caller_identity()['Account']
+
+    @staticmethod
+    def _get_account_id_from_existing_data(path):
+        # noinspection PyBroadException
+        try:
+            with open(path) as iam_data_file:
+                iam_data = json.loads(json.load(iam_data_file))
+            return iam_data['AccountUsers'][0]['Arn'].split(":")[4]
+        except Exception:
+            return ""

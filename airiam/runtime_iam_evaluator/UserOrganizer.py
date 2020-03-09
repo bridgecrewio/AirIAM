@@ -78,7 +78,6 @@ class UserOrganizer(BaseOrganizer):
                         policies_in_use[pol] = 0
                     policies_in_use[pol] += 1
                     policy_obj = next(p for p in account_policies if p['Arn'] == pol)
-                    policy_document = next(version for version in policy_obj['PolicyVersionList'] if version['IsDefaultVersion'])['Document']
                     if self._policy_is_write_access(policy_obj):
                         user_needs_write_access = True
 

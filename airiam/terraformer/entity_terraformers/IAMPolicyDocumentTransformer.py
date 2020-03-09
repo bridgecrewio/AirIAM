@@ -5,19 +5,19 @@ from airiam.terraformer.entity_terraformers.BaseEntityTransformer import BaseEnt
 
 class IAMPolicyDocumentTransformer(BaseEntityTransformer):
     def __init__(self, entity_json: dict, policy_name):
-        super().__init__('data.aws_iam_policy_document', f"{policy_name}_document")
+        super().__init__('data.aws_iam_policy_document', f"{policy_name}_document", entity_json)
+
+    def _generate_hcl2_code(self, entity_json) -> str:
         statements = IAMPolicyDocumentTransformer.force_list(entity_json['Statement'])
         if 'Principal' in statements[0]:
             statements = self.transform_assume_policy_statements(statements)
         else:
             statements = self.transform_execution_policy(statements)
-        self.policy_data_obj = f"""data "aws_iam_policy_document" "{self.safe_name}" {{
+        code = f"""data "aws_iam_policy_document" "{self._safe_name}" {{
   version = "{entity_json.get('Version', '2012-10-17')}"
 {statements}
 }}"""
-
-    def code(self) -> str:
-        return self.policy_data_obj
+        return code
 
     @staticmethod
     def transform_execution_policy(statements):

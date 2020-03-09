@@ -16,7 +16,7 @@ class Reporter:
             print('No rightsizing selected, creating terraform code for IAM runtime as is')
             return
 
-        print('\nResults for Account {}:\n'.format(runtime_results.account_id))
+        print('\nResults for Account {}:\n'.format(runtime_results._account_id))
         unused = runtime_results.get_unused()
         unused_users = unused['Users']
         if len(unused_users) > 0:
