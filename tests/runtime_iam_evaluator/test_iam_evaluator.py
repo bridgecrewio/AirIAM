@@ -1,20 +1,10 @@
 import datetime
-import os
-import shutil
 import unittest
 
-from airiam.main import configure_logger
 from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
 
 
 class TestRuntimeIamEvaluator(unittest.TestCase):
-
-    def test_runtime_evaluator(self):
-        current_dir = os.path.abspath(os.path.dirname(__file__))
-        evaluator_dir = current_dir[:current_dir.index("tests")] + 'airiam/runtime_iam_evaluator'
-        shutil.copyfile(current_dir + "/../iam_data.json", evaluator_dir + "/iam_data.json")
-        logger = configure_logger()
-        RuntimeIamEvaluator(logger).evaluate_runtime_iam(False)
 
     def test_simplify_service_access_result(self):
         service_last_access = [
