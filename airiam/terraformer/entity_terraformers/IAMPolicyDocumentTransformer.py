@@ -15,8 +15,7 @@ class IAMPolicyDocumentTransformer(BaseEntityTransformer):
             statements = self.transform_execution_policy(statements)
         code = f"""data "aws_iam_policy_document" "{self._safe_name}" {{
   version = "{entity_json.get('Version', '2012-10-17')}"
-{statements}
-}}"""
+{statements}}}"""
         return code
 
     @staticmethod
@@ -26,9 +25,13 @@ class IAMPolicyDocumentTransformer(BaseEntityTransformer):
             sid_string = ""
             if statement.get('Sid', '') != '':
                 sid_string = f"sid    = \"{statement['Sid']}\"\n    "
+
+            actions = statement.get('Action', None)
+            if not actions:
+                actions = statement.get('NotAction')
             statement_block += f"""  statement {{
     {sid_string}effect = "{statement['Effect']}"
-    action = {json.dumps(statement['Action'])}
+    action = {json.dumps(actions)}
   }}
 """
 
@@ -39,14 +42,14 @@ class IAMPolicyDocumentTransformer(BaseEntityTransformer):
         statement_block = ""
         for statement in statements:
             statement_block += f"""  statement {{
-            effect = "{statement['Effect']}"
-            action = "{statement['Action']}"
-            principals {{
-              type        = "{list(statement['Principal'].keys())[0]}"
-              identifiers = {json.dumps(list(statement['Principal'].values()))}
-            }} 
-          }}
-        """
+    effect = "{statement['Effect']}"
+    action = "{statement['Action']}"
+    principals {{
+      type        = "{list(statement['Principal'].keys())[0]}"
+      identifiers = {json.dumps(list(statement['Principal'].values()))}
+    }} 
+  }}
+"""
 
         return statement_block
 
@@ -55,3 +58,6 @@ class IAMPolicyDocumentTransformer(BaseEntityTransformer):
         if isinstance(x, list):
             return x
         return [x]
+
+    def entities_to_import(self) -> list:
+        return []

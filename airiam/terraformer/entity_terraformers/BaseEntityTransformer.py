@@ -1,11 +1,24 @@
+from enum import Enum
+
+
+class Principal(Enum):
+    User = 'user'
+    Role = 'role'
+    Group = 'group'
+
+
 class BaseEntityTransformer:
-    def __init__(self, entity_type: str, safe_name: str, entity_json: dict):
+    def __init__(self, entity_type: str, entity_name: str, entity_json: dict):
         self._entity_type = entity_type
-        self._safe_name = safe_name
+        self._entity_name = entity_name
+        self._safe_name = BaseEntityTransformer.safe_name_converter(entity_name)
         self._code = self._generate_hcl2_code(entity_json)
 
     def _generate_hcl2_code(self, entity_json) -> str:
         raise NotImplementedError()
+
+    def entities_to_import(self) -> list:
+        return [{"identifier": self.identifier(), "entity": self._entity_name}]
 
     def code(self) -> str:
         return self._code

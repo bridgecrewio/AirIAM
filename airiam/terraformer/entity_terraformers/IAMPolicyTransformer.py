@@ -4,7 +4,8 @@ from airiam.terraformer.entity_terraformers.IAMPolicyDocumentTransformer import 
 
 class IAMPolicyTransformer(BaseEntityTransformer):
     def __init__(self, entity_json):
-        super().__init__('aws_iam_policy', BaseEntityTransformer.safe_name_converter(entity_json['PolicyName']), entity_json)
+        super().__init__('aws_iam_policy', entity_json['PolicyName'], entity_json)
+        self._policy_arn = entity_json['Arn']
 
     def _generate_hcl2_code(self, entity_json) -> str:
         document = next(version['Document'] for version in entity_json['PolicyVersionList'] if version['IsDefaultVersion'])
@@ -18,3 +19,6 @@ resource "aws_iam_policy" "{self._safe_name}" {{
 
 """
         return policy_code
+
+    def entities_to_import(self) -> list:
+        return [{"identifier": self.identifier(), "entity": self._policy_arn}]

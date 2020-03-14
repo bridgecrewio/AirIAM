@@ -20,3 +20,6 @@ class AWSProviderTransformer(BaseEntityTransformer):
 
 """
         return provider_code
+
+    def entities_to_import(self) -> list:
+        return []

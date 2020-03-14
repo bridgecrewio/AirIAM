@@ -1,11 +1,26 @@
-from airiam.terraformer.entity_terraformers.BaseEntityTransformer import BaseEntityTransformer
+from airiam.terraformer.entity_terraformers.BaseEntityTransformer import BaseEntityTransformer, Principal
+from airiam.terraformer.entity_terraformers.IAMInlinePolicyTransformer import IAMInlinePolicyTransformer
+from airiam.terraformer.entity_terraformers.IAMManagedPolicyAttachmentTransformer import IAMManagedPolicyAttachmentTransformer
 
 
 class IAMUserTransformer(BaseEntityTransformer):
     def __init__(self, entity_json):
-        super().__init__('aws_iam_user', BaseEntityTransformer.safe_name_converter(entity_json['UserName']), entity_json)
+        self.sub_entities_to_import = []
+        super().__init__('aws_iam_user', entity_json['UserName'], entity_json)
 
     def _generate_hcl2_code(self, entity_json) -> str:
+        user_policies_code = ""
+        managed_policies_code = ""
+
+        for inline_policy in entity_json.get('UserPolicyList', []):
+            inline_policy_obj = IAMInlinePolicyTransformer(inline_policy, self._safe_name, Principal.User)
+            user_policies_code += inline_policy_obj.code()
+
+        for managed_policy in entity_json.get('AttachedManagedPolicies', []):
+            managed_policy_obj = IAMManagedPolicyAttachmentTransformer(managed_policy, self._entity_name, Principal.User)
+            managed_policies_code += managed_policy_obj.code()
+            self.sub_entities_to_import += managed_policy_obj.entities_to_import()
+
         return f"""resource "aws_iam_user" "{self._safe_name}" {{
   name          = "{entity_json['UserName']}"
   path          = "{entity_json['Path']}"
@@ -16,4 +31,10 @@ class IAMUserTransformer(BaseEntityTransformer):
   }}  
 }}
 
+{user_policies_code}
+
+{managed_policies_code}
 """
+
+    def entities_to_import(self) -> list:
+        return super().entities_to_import() + self.sub_entities_to_import
