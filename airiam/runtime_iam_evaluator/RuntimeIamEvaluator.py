@@ -75,12 +75,13 @@ class RuntimeIamEvaluator:
             csv_credential_report = iam.get_credential_report()['Content'].decode('utf-8')
             credential_report = RuntimeIamEvaluator.convert_csv_to_json(csv_credential_report)
 
-            entity_arn_list = list(map(lambda e: e['Arn'], account_users + account_roles))
-            self.logger.info("Getting service last accessed report for every user & role in the account")
+            account_principals = account_users + account_roles
+            entity_arn_list = list(map(lambda e: e['Arn'], account_principals))
+            self.logger.info(f"Getting service last accessed report for every user & role in the account ({len(account_principals)} principals)")
             last_accessed_map = self._generate_last_access(iam, entity_arn_list)
 
             for arn, last_accessed_list in last_accessed_map.items():
-                entity = next(entity for entity in account_users + account_roles if entity['Arn'] == arn)
+                entity = next(entity for entity in account_principals if entity['Arn'] == arn)
                 entity['LastAccessed'] = last_accessed_list
 
             self.logger.info("Collecting password configurations for all IAM users in the account")
@@ -140,6 +141,9 @@ class RuntimeIamEvaluator:
             account_groups.extend(page['GroupDetailList'])
             account_policies.extend(page['Policies'])
 
+        for policy in account_policies:
+            policy['Description'] = iam.get_policy(PolicyArn=policy['Arn'])['Policy'].get('Description', '')
+
         marker = None
         list_roles_result = []
         paginator = iam.get_paginator('list_roles')
@@ -154,21 +158,6 @@ class RuntimeIamEvaluator:
 
         for role in account_roles:
             role['Description'] = next(role_obj.get('Description', '') for role_obj in list_roles_result if role_obj['RoleName'] == role['RoleName'])
-
-        marker = None
-        list_policies_result = []
-        paginator = iam.get_paginator('list_policies')
-        response_iterator = paginator.paginate(
-            PaginationConfig={
-                'PageSize': 100,
-                'StartingToken': marker
-            }
-        )
-        for page in response_iterator:
-            list_policies_result.extend(page['Policies'])
-
-        for policy in account_policies:
-            policy['Description'] = next(policy_obj.get('Description', '') for policy_obj in list_policies_result if policy_obj['Arn'] == policy['Arn'])
 
         account_policies = list(filter(lambda policy: policy['Arn'].split(':')[4] != '', account_policies))
         account_roles = list(filter(lambda role: role['Arn'].split('/')[1] != 'aws-service-role', account_roles))
@@ -203,7 +192,6 @@ class RuntimeIamEvaluator:
                     )
                 else:
                     raise error
-        self.logger.info(results)
         return results
 
     @staticmethod

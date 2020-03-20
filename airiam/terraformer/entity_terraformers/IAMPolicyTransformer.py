@@ -13,8 +13,9 @@ class IAMPolicyTransformer(BaseEntityTransformer):
         policy_code = f"""{policy.code()}
 
 resource "aws_iam_policy" "{self._safe_name}" {{
-  name   = "{entity_json['PolicyName']}"
-  policy = {policy.identifier()}.json
+  name        = "{entity_json['PolicyName']}"
+  policy      = {policy.identifier()}.json
+  description = \"{entity_json['Description']}\"
 }}
 
 """

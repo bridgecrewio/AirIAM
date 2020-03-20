@@ -11,7 +11,6 @@ class IAMRoleTransformer(BaseEntityTransformer):
         super().__init__('aws_iam_role', BaseEntityTransformer.safe_name_converter(entity_json['RoleName']), entity_json)
 
     def _generate_hcl2_code(self, entity_json) -> str:
-        description_field = f"  description = \"{entity_json['Description']}\"\n"
         assume_policy_document = IAMPolicyDocumentTransformer(entity_json['AssumeRolePolicyDocument'], f"{self._safe_name}_assume_role_policy")
         role_policies = ""
         for role_policy in entity_json['RolePolicyList']:
@@ -34,10 +33,12 @@ class IAMRoleTransformer(BaseEntityTransformer):
             tags = self.transform_tags(entity_json)
 
         return f"""resource "aws_iam_role" "{self._safe_name}" {{
-  name = "{entity_json['RoleName']}"
-  path = "{entity_json['Path']}"
+  name                    = "{entity_json['RoleName']}"
+  path                    = "{entity_json['Path']}"
+  description             = \"{entity_json['Description']}\"
   # force_detach_policies = true
-  {description_field}assume_role_policy = {assume_policy_document.identifier()}.json
+
+  assume_role_policy = {assume_policy_document.identifier()}.json
   {tags}
 }}
 
