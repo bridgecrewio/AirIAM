@@ -65,9 +65,9 @@ class RuntimeIamEvaluator:
         iam_data_path = "{0}/{1}".format(current_dir, IAM_DATA_FILE_NAME)
         data_account_id = RuntimeIamEvaluator._get_account_id_from_existing_data(iam_data_path)
         if data_account_id == profile_account_id:
-            print("Reusing local data")
+            self.logger.info("Reusing local data")
         else:
-            print(f"Getting all IAM configurations for account {profile_account_id}")
+            self.logger.info(f"Getting all IAM configurations for account {profile_account_id}")
             iam = self._get_aws_iam_client()
             iam.generate_credential_report()
             account_users, account_roles, account_groups, account_policies = RuntimeIamEvaluator.get_account_iam_configuration(iam)
@@ -83,7 +83,7 @@ class RuntimeIamEvaluator:
                 entity = next(entity for entity in account_users + account_roles if entity['Arn'] == arn)
                 entity['LastAccessed'] = last_accessed_list
 
-            self.logger.info("Collecting password configurations for all users in the account")
+            self.logger.info("Collecting password configurations for all IAM users in the account")
             for user in account_users:
                 try:
                     iam.get_login_profile(UserName=user['UserName'])
@@ -103,9 +103,9 @@ class RuntimeIamEvaluator:
                 'AccountPolicies': account_policies
             }
             with open(iam_data_path, "w") as iam_file:
-                json.dump(json.dumps(iam_data, indent=4, sort_keys=True, default=str), iam_file)
+                json.dump(iam_data, iam_file, indent=4, sort_keys=True, default=str)
         with open(iam_data_path) as iam_data_file:
-            iam_data = json.loads(json.load(iam_data_file))
+            iam_data = json.load(iam_data_file)
 
         return iam_data
 
@@ -121,6 +121,7 @@ class RuntimeIamEvaluator:
 
     @staticmethod
     def get_account_iam_configuration(iam):
+        marker = None
         paginator = iam.get_paginator('get_account_authorization_details')
         account_users = []
         account_roles = []
@@ -129,8 +130,8 @@ class RuntimeIamEvaluator:
         response_iterator = paginator.paginate(
             Filter=['User', 'Role', 'Group', 'LocalManagedPolicy', 'AWSManagedPolicy'],
             PaginationConfig={
-                'MaxItems': 100,
-                'StartingToken': None
+                'PageSize': 100,
+                'StartingToken': marker
             }
         )
         for page in response_iterator:
@@ -139,6 +140,36 @@ class RuntimeIamEvaluator:
             account_groups.extend(page['GroupDetailList'])
             account_policies.extend(page['Policies'])
 
+        marker = None
+        list_roles_result = []
+        paginator = iam.get_paginator('list_roles')
+        response_iterator = paginator.paginate(
+            PaginationConfig={
+                'PageSize': 100,
+                'StartingToken': marker
+            }
+        )
+        for page in response_iterator:
+            list_roles_result.extend(page['Roles'])
+
+        for role in account_roles:
+            role['Description'] = next(role_obj.get('Description', '') for role_obj in list_roles_result if role_obj['RoleName'] == role['RoleName'])
+
+        marker = None
+        list_policies_result = []
+        paginator = iam.get_paginator('list_policies')
+        response_iterator = paginator.paginate(
+            PaginationConfig={
+                'PageSize': 100,
+                'StartingToken': marker
+            }
+        )
+        for page in response_iterator:
+            list_policies_result.extend(page['Policies'])
+
+        for policy in account_policies:
+            policy['Description'] = next(policy_obj.get('Description', '') for policy_obj in list_policies_result if policy_obj['Arn'] == policy['Arn'])
+
         account_policies = list(filter(lambda policy: policy['Arn'].split(':')[4] != '', account_policies))
         account_roles = list(filter(lambda role: role['Arn'].split('/')[1] != 'aws-service-role', account_roles))
         return account_users, account_roles, account_groups, account_policies
@@ -146,7 +177,15 @@ class RuntimeIamEvaluator:
     def _generate_last_access(self, iam, arn_list: list):
         results = {}
         for arn in arn_list:
-            job_id = iam.generate_service_last_accessed_details(Arn=arn)['JobId']
+            try:
+                job_id = iam.generate_service_last_accessed_details(Arn=arn)['JobId']
+            except ClientError as error:
+                if error.response['Error']['Code'] == 'Throttling':
+                    print('Reached throttling, sleeping for 5 seconds')
+                    time.sleep(5)
+                    job_id = iam.generate_service_last_accessed_details(Arn=arn)['JobId']
+                else:
+                    raise error
             results[arn] = job_id
 
         for arn in results:
@@ -223,7 +262,7 @@ class RuntimeIamEvaluator:
         # noinspection PyBroadException
         try:
             with open(path) as iam_data_file:
-                iam_data = json.loads(json.load(iam_data_file))
+                iam_data = json.load(iam_data_file)
             return iam_data['AccountUsers'][0]['Arn'].split(":")[4]
         except Exception:
             return ""

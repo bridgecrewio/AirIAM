@@ -29,3 +29,12 @@ class BaseEntityTransformer:
     @staticmethod
     def safe_name_converter(name_str: str) -> str:
         return ''.join(e for e in name_str if e.isalnum() or e == '_' or e == '-')
+
+    @staticmethod
+    def transform_tags(entity_json: dict):
+        tag_str = "\n".join(map(lambda tag: f"    {tag['Key']} = \"{tag['Value']}\"", entity_json.get('Tags')))
+        return f"""
+  tags = {{
+{tag_str}
+  }}
+"""

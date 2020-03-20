@@ -15,6 +15,7 @@ class IAMUserTransformer(BaseEntityTransformer):
         for inline_policy in entity_json.get('UserPolicyList', []):
             inline_policy_obj = IAMInlinePolicyTransformer(inline_policy, self._safe_name, Principal.User)
             user_policies_code += inline_policy_obj.code()
+            self.sub_entities_to_import += inline_policy_obj.entities_to_import()
 
         for managed_policy in entity_json.get('AttachedManagedPolicies', []):
             managed_policy_obj = IAMManagedPolicyAttachmentTransformer(managed_policy, self._entity_name, Principal.User)
@@ -24,17 +25,13 @@ class IAMUserTransformer(BaseEntityTransformer):
         return f"""resource "aws_iam_user" "{self._safe_name}" {{
   name          = "{entity_json['UserName']}"
   path          = "{entity_json['Path']}"
-  force_destroy = true
-  tags          = {{
-    "Managed by" = "Bridgecrew's AirIAM"
-    "Managed through" = "Terraform"
-  }}  
+  # force_destroy = true
+  # tags          = {{
+  #   "Managed by" = "Bridgecrew's AirIAM"
+  #   "Managed through" = "Terraform"
+  # }}  
 }}
-
-{user_policies_code}
-
-{managed_policies_code}
-"""
+{user_policies_code}{managed_policies_code}"""
 
     def entities_to_import(self) -> list:
         return super().entities_to_import() + self.sub_entities_to_import

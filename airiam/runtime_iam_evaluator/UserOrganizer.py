@@ -1,6 +1,7 @@
 import os
 import ssl
 import re
+import copy
 
 import pandas as pd
 
@@ -38,7 +39,7 @@ class UserOrganizer(BaseOrganizer):
 
         policies_in_use = {}
         for user in users:
-            user_attached_managed_policies = user['AttachedManagedPolicies']
+            user_attached_managed_policies = copy.deepcopy(user['AttachedManagedPolicies'])
             for group_name in user['GroupList']:
                 group_managed_policies = next(g['AttachedManagedPolicies'] for g in account_groups if g['GroupName'] == group_name)
                 user_attached_managed_policies.extend(group_managed_policies)

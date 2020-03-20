@@ -32,11 +32,15 @@ class TerraformTransformer:
             if should_import:
                 tf = Terraform()
                 tf.init(backend=False)
+                num_of_entities_to_import = len(entities_to_import)
+                print(f"Importing {num_of_entities_to_import} entities")
+                i = 1
                 for entity_to_import in entities_to_import:
-                    print(f"Importing {entity_to_import['entity']} to {entity_to_import['identifier']}")
+                    print(f"#{i} of {num_of_entities_to_import}: Importing {entity_to_import['entity']} to {entity_to_import['identifier']}")
                     return_code, stdout, stderr = tf.import_cmd(entity_to_import['identifier'], entity_to_import['entity'])
-                    if return_code != 0:
+                    if return_code != 0 and 'Resource already managed by Terraform' not in stderr:
                         self.logger.error(f"Error: {stderr}")
+                    i += 1
                 return "Success"
         except Exception as e:
             self.logger.error(e)

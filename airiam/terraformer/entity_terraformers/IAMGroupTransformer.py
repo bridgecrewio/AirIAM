@@ -15,6 +15,7 @@ class IAMGroupTransformer(BaseEntityTransformer):
         for inline_policy in entity_json.get('UserPolicyList', []):
             transformer = IAMInlinePolicyTransformer(inline_policy, self._safe_name, Principal.Group)
             group_policies += transformer.code()
+            self._sub_entities_to_import += transformer.entities_to_import()
 
         for managed_policy in entity_json.get('AttachedManagedPolicies', []):
             transformer = IAMManagedPolicyAttachmentTransformer(managed_policy, self._safe_name, Principal.Group)
