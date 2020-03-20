@@ -14,6 +14,7 @@ class IAMPolicyTransformer(BaseEntityTransformer):
 
 resource "aws_iam_policy" "{self._safe_name}" {{
   name        = "{entity_json['PolicyName']}"
+  path        = "{entity_json['Path']}"
   policy      = {policy.identifier()}.json
   description = \"{entity_json['Description']}\"
 }}
