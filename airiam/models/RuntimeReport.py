@@ -1,6 +1,6 @@
 SORT_KEY_BY_ENTITY_TYPE = {
     'AccountGroups': 'GroupName',
-    'AccountPolicies': 'PolicyName',
+    'AccountPolicies': 'Arn',
     'AccountRoles': 'RoleName',
     'AccountUsers': 'UserName'
 }

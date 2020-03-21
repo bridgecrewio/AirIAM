@@ -17,8 +17,8 @@ class TestTerraformTransformer(unittest.TestCase):
         self.assertTrue(os.path.exists('policies.tf'), 'Did not create a policies file')
 
     def setup(self):
-        self.unused_users = [{"UserName": "Shati", "LastUsed": 198}]
-        self.unused_roles = [{"RoleName": "hatulik-rules", "LastUsed": 330}]
+        self.unused_users = []
+        self.unused_roles = []
         self.unattached_policies = []
         self.redundant_group = []
         self.user_clusters = {
@@ -35,23 +35,10 @@ class TestTerraformTransformer(unittest.TestCase):
             "ReadOnly": ["kangaroo", "talm"]
         }
         self.special_users = []
-        self.roles_rightsizing = [
-            {
-                "Entity": {
-                    "RoleName": "ses-smtp-role",
-                    "AssumeRolePolicyDocument": {
-                        "Statement": [{
-                            "Principal": {"Service": "lambda.amazonaws.com"},
-                            "Effect": "Allow",
-                            "Action": ["sts:AssumeRole"]
-                        }],
-                        "Version": "2012-02-17",
-                    },
-                    "Path": '/'
-                }
-            }
-        ]
+        self.roles_rightsizing = []
         self.terraform_transformer = TerraformTransformer(configure_logger())
-        self.report = RuntimeReport("012345678901", {'AccountGroups': [], 'AccountPolicies': [], 'AccountRoles': [], 'AccountUsers': []},
-                                    self.unused_users, self.unused_roles, self.unattached_policies, self.redundant_group, self.user_clusters,
-                                    self.roles_rightsizing)
+        current_dir = os.path.abspath(os.path.dirname(__file__))
+        with open("{}/{}".format(current_dir, "../iam_data.json")) as f:
+            iam_data = json.load(f)
+        self.report = RuntimeReport("012345678901", iam_data, self.unused_users, self.unused_roles, self.unattached_policies, self.redundant_group,
+                                    self.user_clusters, self.roles_rightsizing)

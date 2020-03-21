@@ -6,9 +6,9 @@ import time
 import boto3
 from botocore.exceptions import ClientError
 
+from airiam.models.RuntimeReport import RuntimeReport
 from airiam.runtime_iam_evaluator.RoleOrganizer import RoleOrganizer
 from airiam.runtime_iam_evaluator.UserOrganizer import UserOrganizer
-from airiam.models.RuntimeReport import RuntimeReport
 
 IAM_DATA_FILE_NAME = "iam_data.json"
 
@@ -34,7 +34,8 @@ class RuntimeIamEvaluator:
         :return: An instance of the report which describes which resources need to be reconfigured (and how),
                                 and which resources should be removed
         """
-        iam_data = self._get_data_from_aws()
+        account_id = self._get_account_id_from_profile()
+        iam_data = self._get_data_from_aws(account_id, rightsize)
 
         account_id = iam_data['AccountUsers'][0]['Arn'].split(":")[4]
         if rightsize:
@@ -49,40 +50,40 @@ class RuntimeIamEvaluator:
             redundant_groups = groups_with_no_active_members + groups_with_no_privilege
 
             unattached_policies = list(filter(lambda policy: policy['AttachmentCount'] > 0, iam_data['AccountPolicies']))
-            report = RuntimeReport(account_id, iam_data, unused_users, unused_roles, unattached_policies,  redundant_groups, user_reorg, role_reorg)
+            report = RuntimeReport(account_id, iam_data, unused_users, unused_roles, unattached_policies, redundant_groups, user_reorg, role_reorg)
         else:
             report = RuntimeReport(account_id, iam_data, [], [], [], [], {'Admins': [], 'Powerusers': {'Users': []}, 'ReadOnly': []}, [])
 
         return report
 
-    def _get_data_from_aws(self) -> dict:
+    def _get_data_from_aws(self, account_id: str, rightsize: bool) -> dict:
         """
         This method encapsulates all the API calls made to the AWS IAM service to gather data for later analysis
         :return: The IAM data that was pulled from the account, as was also saved locally for quicker re-runs
         """
-        profile_account_id = self._get_account_id_from_profile()
         current_dir = os.path.abspath(os.path.dirname(__file__))
         iam_data_path = "{0}/{1}".format(current_dir, IAM_DATA_FILE_NAME)
         data_account_id = RuntimeIamEvaluator._get_account_id_from_existing_data(iam_data_path)
-        if data_account_id == profile_account_id:
+        if data_account_id == account_id:
             self.logger.info("Reusing local data")
         else:
-            self.logger.info(f"Getting all IAM configurations for account {profile_account_id}")
-            iam = self._get_aws_iam_client()
+            self.logger.info(f"Getting all IAM configurations for account {account_id}")
+            iam = self._session.client('iam')
             iam.generate_credential_report()
             account_users, account_roles, account_groups, account_policies = RuntimeIamEvaluator.get_account_iam_configuration(iam)
             self.logger.info("Getting IAM credential report")
             csv_credential_report = iam.get_credential_report()['Content'].decode('utf-8')
             credential_report = RuntimeIamEvaluator.convert_csv_to_json(csv_credential_report)
 
-            account_principals = account_users + account_roles
-            entity_arn_list = list(map(lambda e: e['Arn'], account_principals))
-            self.logger.info(f"Getting service last accessed report for every user & role in the account ({len(account_principals)} principals)")
-            last_accessed_map = self._generate_last_access(iam, entity_arn_list)
+            if rightsize:
+                account_principals = account_users + account_roles
+                entity_arn_list = list(map(lambda e: e['Arn'], account_principals))
+                self.logger.info(f"Getting service last accessed report for every user & role in the account ({len(account_principals)} principals)")
+                last_accessed_map = self._generate_last_access(iam, entity_arn_list)
 
-            for arn, last_accessed_list in last_accessed_map.items():
-                entity = next(entity for entity in account_principals if entity['Arn'] == arn)
-                entity['LastAccessed'] = last_accessed_list
+                for arn, last_accessed_list in last_accessed_map.items():
+                    entity = next(entity for entity in account_principals if entity['Arn'] == arn)
+                    entity['LastAccessed'] = last_accessed_list
 
             self.logger.info("Collecting password configurations for all IAM users in the account")
             for user in account_users:
@@ -115,10 +116,6 @@ class RuntimeIamEvaluator:
         Create an AWS IAM client with the profile that was supplies or default credentials if none was supplied
         :return: AWS IAM client
         """
-        caller_identity = self._session.client('sts').get_caller_identity()
-        scanned_account = caller_identity['Account']
-        self.logger.info("Scanning account {}".format(scanned_account))
-        return self._session.client('iam')
 
     @staticmethod
     def get_account_iam_configuration(iam):
@@ -159,8 +156,8 @@ class RuntimeIamEvaluator:
         for role in account_roles:
             role['Description'] = next(role_obj.get('Description', '') for role_obj in list_roles_result if role_obj['RoleName'] == role['RoleName'])
 
-        account_policies = list(filter(lambda policy: policy['Arn'].split(':')[4] != '', account_policies))
-        account_roles = list(filter(lambda role: role['Arn'].split('/')[1] != 'aws-service-role', account_roles))
+        account_policies = list(filter(lambda p: p['Arn'].split(':')[4] != '', account_policies))
+        account_roles = list(filter(lambda r: r['Arn'].split('/')[1] != 'aws-service-role', account_roles))
         return account_users, account_roles, account_groups, account_policies
 
     def _generate_last_access(self, iam, arn_list: list):

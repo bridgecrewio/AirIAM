@@ -101,8 +101,7 @@ class UserOrganizer(BaseOrganizer):
                 actions_list.extend(UserOrganizer.convert_to_list(statement['Action']))
         return actions_list
 
-    @staticmethod
-    def _separate_user_types(account_users, credential_report):
+    def _separate_user_types(self, account_users, credential_report):
         human_users = []
         unused_users = []
         unchanged_users = []
@@ -113,7 +112,7 @@ class UserOrganizer(BaseOrganizer):
                 UserOrganizer.days_from_today(credentials.get('access_key_2_last_used_date', 'N/A')),
                 UserOrganizer.days_from_today(credentials.get('password_last_used', 'N/A')),
             )
-            if last_used_in_days >= 90:
+            if last_used_in_days >= self.unused_threshold:
                 user['LastUsed'] = last_used_in_days
                 unused_users.append(user)
             else:

@@ -1,6 +1,10 @@
 import datetime
 import unittest
+import boto3
+from moto import mock_iam
+from unittest.mock import patch
 
+from airiam.main import configure_logger
 from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
 
 
@@ -1026,6 +1030,24 @@ class TestRuntimeIamEvaluator(unittest.TestCase):
         self.assertEqual(len(json), 2)
         self.assertListEqual(['name', 'type', 'last_access'], list(json[0].keys()))
         self.assertListEqual(list(json[0].keys()), list(json[1].keys()))
+
+    @mock_iam
+    def test_iam_calls(self):
+        with patch.dict('os.environ', {"AWS_ACCESS_KEY_ID": "FAKE", "AWS_SECRET_ACCESS_KEY": "FAKE"}):
+            client = boto3.client('iam')
+            client.create_user(
+                Path='/',
+                UserName='Shati',
+                Tags=[
+                    {
+                        'Key': 'ManagedBy',
+                        'Value': 'Terraform'
+                    }
+                ]
+            )
+            logger = configure_logger()
+            iam_data = RuntimeIamEvaluator(logger)._get_data_from_aws("000000000000", False)
+        self.assertTrue(len(iam_data.keys()) == 5)
 
 
 if __name__ == '__main__':

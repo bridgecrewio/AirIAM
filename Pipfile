@@ -14,6 +14,7 @@ boto3 = "*"
 termcolor = "*"
 pandas = "*"
 python-terraform = "*"
+moto = "*"
 
 [requires]
 python_version = "3.7"
