@@ -1,15 +1,19 @@
 import datetime
+import json
 import unittest
+from unittest.mock import patch
+
 import boto3
 from moto import mock_iam
-from unittest.mock import patch
 
 from airiam.main import configure_logger
 from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
 
+ADMIN_POLICY_ARN = 'arn:aws:iam::aws:policy/AdministratorAccess'
+READ_ONLY_ARN = 'arn:aws:iam::aws:policy/ReadOnlyAccess'
+
 
 class TestRuntimeIamEvaluator(unittest.TestCase):
-
     def test_simplify_service_access_result(self):
         service_last_access = [
             {
@@ -1035,19 +1039,39 @@ class TestRuntimeIamEvaluator(unittest.TestCase):
     def test_iam_calls(self):
         with patch.dict('os.environ', {"AWS_ACCESS_KEY_ID": "FAKE", "AWS_SECRET_ACCESS_KEY": "FAKE"}):
             client = boto3.client('iam')
-            client.create_user(
-                Path='/',
-                UserName='Shati',
-                Tags=[
-                    {
-                        'Key': 'ManagedBy',
-                        'Value': 'Terraform'
-                    }
-                ]
-            )
+            self.create_user(client, 'test@bridgecrew.io')
+            self.create_role(client, 'bc-role', ADMIN_POLICY_ARN)
+            self.create_role(client, 'bc-role2', READ_ONLY_ARN)
+            client.create_group(GroupName='admins', Path='/')
+            client.attach_group_policy(GroupName='admins', PolicyArn=ADMIN_POLICY_ARN)
+            client.create_group(GroupName='read-only', Path='/')
+            client.attach_group_policy(GroupName='read-only', PolicyArn=READ_ONLY_ARN)
+            client.add_user_to_group(GroupName='admins', UserName='test@bridgecrew.io')
+            client.add_user_to_group(GroupName='read-only', UserName='test@bridgecrew.io')
             logger = configure_logger()
             iam_data = RuntimeIamEvaluator(logger)._get_data_from_aws("000000000000", False)
         self.assertTrue(len(iam_data.keys()) == 5)
+
+    def create_user(self, client, user_name):
+        client.create_user(Path='/', UserName=user_name)
+        client.create_login_profile(UserName=user_name, Password='TempPass123', PasswordResetRequired=True)
+        client.create_access_key(UserName=user_name)
+
+    def create_role(self, client, role_name, policy_arn_to_attach):
+        client.create_role(Path='/', RoleName=role_name, AssumeRolePolicyDocument=json.dumps({
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Allow",
+                    "Actions": ["sts:AssumeRole"],
+                    "Principal": {
+                        "Type": "Service",
+                        "Identifiers": ["ec2.amazonaws.com"]
+                    }
+                }
+            ]
+        }))
+        client.attach_role_policy(RoleName=role_name, PolicyArn=policy_arn_to_attach)
 
 
 if __name__ == '__main__':
