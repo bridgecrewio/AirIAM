@@ -11,7 +11,7 @@ def configure_logger():
     logging.basicConfig(level=logging.INFO)
     # define a Handler which writes INFO messages or higher to the sys.stderr
     console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
+    console.setLevel(logging.DEBUG)
     # set a format which is simpler for console use
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     # tell the handler to use this format
@@ -38,7 +38,7 @@ def run():
 
     Reporter.report_runtime(args.rightsize, runtime_results)
 
-    terraform_results = TerraformTransformer(logger, args.profile).transform(runtime_results)
+    terraform_results = TerraformTransformer(logger, args.profile).transform(args.rightsize, runtime_results)
     if terraform_results != 'Success':
         logger.error("Failed to create the terraform module")
         exit(1)

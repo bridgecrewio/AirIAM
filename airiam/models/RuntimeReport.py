@@ -31,9 +31,12 @@ class RuntimeReport:
         }
 
     def get_rightsizing(self) -> dict:
+        unused_policy_arns = list(map(lambda p: p['Arn'], self.get_unused()['Policies']))
+        in_use_policies = list(filter(lambda p: p['Arn'] not in unused_policy_arns, self.get_raw_data()['AccountPolicies']))
         return {
             "Users": self._user_reorg,
             "Roles": self._role_reorg,
+            "Policies": in_use_policies
         }
 
     def _sort_findings(self) -> None:

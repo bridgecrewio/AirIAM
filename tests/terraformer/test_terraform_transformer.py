@@ -11,7 +11,7 @@ class TestTerraformTransformer(unittest.TestCase):
 
     def test_terraformer_works(self):
         self.setup()
-        self.terraform_transformer.transform(self.report, should_import=False)
+        self.terraform_transformer.transform(rightsize=True, results=self.report, should_import=False)
         self.assertTrue(os.path.exists('main.tf'), 'Did not create a main file')
         self.assertTrue(os.path.exists('users.tf'), 'Did not create a users file')
         self.assertTrue(os.path.exists('policies.tf'), 'Did not create a policies file')

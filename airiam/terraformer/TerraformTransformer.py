@@ -2,11 +2,11 @@ from python_terraform import *
 
 from airiam.models.RuntimeReport import RuntimeReport
 from airiam.terraformer.entity_terraformers.AWSProviderTransformer import AWSProviderTransformer
-from airiam.terraformer.entity_terraformers.IAMPolicyTransformer import IAMPolicyTransformer
-from airiam.terraformer.entity_terraformers.IAMUserTransformer import IAMUserTransformer
 from airiam.terraformer.entity_terraformers.IAMGroupTransformer import IAMGroupTransformer
-from airiam.terraformer.entity_terraformers.IAMGroupMembershipsTransformer import IAMGroupMembershipsTransformer
+from airiam.terraformer.entity_terraformers.IAMPolicyTransformer import IAMPolicyTransformer
 from airiam.terraformer.entity_terraformers.IAMRoleTransformer import IAMRoleTransformer
+from airiam.terraformer.entity_terraformers.IAMUserGroupMembershipTransformer import IAMUserGroupMembershipTransformer
+from airiam.terraformer.entity_terraformers.IAMUserTransformer import IAMUserTransformer
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
 boilerplate_files = ["admins.tf", "developers.tf", "power_users.tf"]
@@ -18,14 +18,7 @@ class TerraformTransformer:
         self.profile = profile
         self._result_dir = result_dir
 
-    def transform(self, results, should_import=True) -> str:
-        """
-        Creates terraform files from the setup it receives
-        :param results: IAM scan results
-        :type results: RuntimeReport
-        :param should_import: For testing only
-        :return:
-        """
+    def transform(self, rightsize: bool, results: RuntimeReport, should_import=True) -> str:
         try:
             entities_to_import = self._create_current_state(results.get_raw_data())
 
@@ -41,7 +34,10 @@ class TerraformTransformer:
                     if return_code != 0 and 'Resource already managed by Terraform' not in stderr:
                         self.logger.error(f"Error: {stderr}")
                     i += 1
-                return "Success"
+
+            if rightsize:
+                self._create_rightsized_state(results.get_rightsizing())
+            return "Success"
         except Exception as e:
             self.logger.error(e)
             raise e
@@ -66,19 +62,6 @@ class TerraformTransformer:
                 entities_to_import += policy_transformer.entities_to_import()
             policies_file.write(policy_code)
 
-        user_group_memberships = {}
-        with open('users.tf', 'w') as users_file:
-            user_code = ""
-            for user in iam_raw_data['AccountUsers']:
-                transformer = IAMUserTransformer(user)
-                user_code += transformer.code()
-                entities_to_import += transformer.entities_to_import()
-                for group in user['GroupList']:
-                    if group not in user_group_memberships:
-                        user_group_memberships[group] = []
-                    user_group_memberships[group].append(user['UserName'])
-            users_file.write(user_code)
-
         with open('groups.tf', 'w') as groups_file:
             groups_code = ""
             groups_identifiers = {}
@@ -87,10 +70,23 @@ class TerraformTransformer:
                 groups_code += group_transformer.code()
                 groups_identifiers[group['GroupName']] = group_transformer.identifier()
                 entities_to_import += group_transformer.entities_to_import()
-
-            for group, users in user_group_memberships.items():
-                groups_code += IAMGroupMembershipsTransformer({"Users": users, "GroupName": group, "GroupHcl": groups_identifiers[group]}).code()
             groups_file.write(groups_code)
+
+        user_group_memberships = {}
+        with open('users.tf', 'w') as users_file:
+            user_code = ""
+            for user in iam_raw_data['AccountUsers']:
+                transformer = IAMUserTransformer(user)
+                user_code += transformer.code()
+                for group in user['GroupList']:
+                    if group not in user_group_memberships:
+                        user_group_memberships[group] = []
+                    user_group_memberships[group].append(user['UserName'])
+                membership_transformer = IAMUserGroupMembershipTransformer({"UserName": user['UserName'], "Groups": user['GroupList']},
+                                                                           transformer.identifier())
+                user_code += membership_transformer.code()
+                entities_to_import += transformer.entities_to_import() + membership_transformer.entities_to_import()
+            users_file.write(user_code)
 
         with open('roles.tf', 'w') as roles_file:
             roles_code = ""
@@ -101,3 +97,16 @@ class TerraformTransformer:
             roles_file.write(roles_code)
 
         return entities_to_import
+
+    def _create_rightsized_state(self, entities_to_write: dict):
+        # TODO: implement
+        # Create roles
+
+        # Create groups
+        # for group, users in user_group_memberships:
+        #     groups_code += IAMGroupMembershipsTransformer({"Users": users, "GroupName": group, "GroupHcl": groups_identifiers[group]}).code()
+
+        # Create users
+
+        # Create policies
+        pass

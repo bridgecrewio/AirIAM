@@ -48,7 +48,7 @@ class RuntimeIamEvaluator:
             groups_with_no_privilege = list(filter(lambda g: len(g['AttachedManagedPolicies'] + g['GroupPolicyList']) == 0, iam_data['AccountGroups']))
             redundant_groups = groups_with_no_active_members + groups_with_no_privilege
 
-            unattached_policies = list(filter(lambda policy: policy['AttachmentCount'] > 0, iam_data['AccountPolicies']))
+            unattached_policies = list(filter(lambda policy: policy['AttachmentCount'] == 0, iam_data['AccountPolicies']))
             report = RuntimeReport(account_id, iam_data, unused_users, unused_roles, unattached_policies, redundant_groups, user_reorg, role_reorg)
         else:
             report = RuntimeReport(account_id, iam_data, [], [], [], [], {'Admins': [], 'Powerusers': {'Users': []}, 'ReadOnly': []}, [])
