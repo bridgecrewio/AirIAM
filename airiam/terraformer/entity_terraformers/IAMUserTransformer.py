@@ -22,14 +22,13 @@ class IAMUserTransformer(BaseEntityTransformer):
             managed_policies_code += managed_policy_obj.code()
             self.sub_entities_to_import += managed_policy_obj.entities_to_import()
 
+        tags = BaseEntityTransformer.transform_tags(entity_json)
         return f"""resource "aws_iam_user" "{self._safe_name}" {{
   name          = "{entity_json['UserName']}"
   path          = "{entity_json['Path']}"
-  # force_destroy = true
-  # tags          = {{
-  #   "Managed by" = "Bridgecrew's AirIAM"
-  #   "Managed through" = "Terraform"
-  # }}  
+  force_destroy = true
+  
+  {tags}
 }}
 {user_policies_code}{managed_policies_code}"""
 

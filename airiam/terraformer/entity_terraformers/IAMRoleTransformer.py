@@ -27,18 +27,16 @@ class IAMRoleTransformer(BaseEntityTransformer):
             instance_profiles += transformer.code()
             self._sub_entities_to_import += transformer.entities_to_import()
 
-        # TODO: Add default tags to all entities
-        tags = ''
-        if len(entity_json.get('Tags', [])) > 0:
-            tags = self.transform_tags(entity_json)
+        tags = self.transform_tags(entity_json)
 
         return f"""resource "aws_iam_role" "{self._safe_name}" {{
   name                    = "{entity_json['RoleName']}"
   path                    = "{entity_json['Path']}"
   description             = \"{entity_json['Description']}\"
-  # force_detach_policies = true
+  force_detach_policies = true
 
   assume_role_policy = {assume_policy_document.identifier()}.json
+
   {tags}
 }}
 

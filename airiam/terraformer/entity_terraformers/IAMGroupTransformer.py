@@ -22,9 +22,12 @@ class IAMGroupTransformer(BaseEntityTransformer):
             managed_policies += transformer.code()
             self._sub_entities_to_import += transformer.entities_to_import()
 
+        tags = BaseEntityTransformer.transform_tags(entity_json)
         return f"""resource "aws_iam_group" "{self._safe_name}" {{
   name = "{entity_json['GroupName']}"
   path = "{entity_json['Path']}"
+
+  {tags}
 }}
 
 {group_policies}

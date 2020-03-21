@@ -42,8 +42,7 @@ class RuntimeIamEvaluator:
             self.logger.info("Analyzing data for account {}".format(account_id))
 
             unused_users, human_users, user_reorg, entities_to_detach = UserOrganizer(self.logger, unused_threshold).get_user_clusters(iam_data)
-            unused_roles, role_reorg = RoleOrganizer(self.logger).rightsize_privileges(iam_data['AccountRoles'], iam_data['AccountPolicies'],
-                                                                                       iam_data['AccountGroups'])
+            unused_roles, role_reorg = RoleOrganizer(self.logger, unused_threshold).rightsize_privileges(iam_data)
 
             groups_with_no_active_members = self._find_groups_with_no_members(iam_data['AccountGroups'], human_users)
             groups_with_no_privilege = list(filter(lambda g: len(g['AttachedManagedPolicies'] + g['GroupPolicyList']) == 0, iam_data['AccountGroups']))

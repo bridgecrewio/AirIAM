@@ -32,9 +32,12 @@ class BaseEntityTransformer:
 
     @staticmethod
     def transform_tags(entity_json: dict):
-        tag_str = "\n".join(map(lambda tag: f"    {tag['Key']} = \"{tag['Value']}\"", entity_json.get('Tags')))
-        return f"""
-  tags = {{
+        tags = entity_json.get('Tags', [])
+        tags.extend([
+            {"Key": "Managed by", "Value": "Bridgecrew's AirIAM"},
+            {"Key": "Managed through", "Value": "Terraform"}
+        ])
+        tag_str = "\n".join(map(lambda tag: f"    \"{tag['Key']}\" = \"{tag['Value']}\"", tags))
+        return f"""tags = {{
 {tag_str}
-  }}
-"""
+  }}"""

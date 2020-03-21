@@ -6,7 +6,10 @@ class RoleOrganizer(BaseOrganizer):
         self._unused_threshold = unused_threshold
         self.logger = logger
 
-    def rightsize_privileges(self, account_service_entities, account_policies, account_groups):
+    def rightsize_privileges(self, iam_data: dict):
+        account_service_entities = iam_data['AccountRoles']
+        account_policies = iam_data['AccountPolicies']
+        account_groups = iam_data['AccountGroups']
         unused_roles = []
         rightsized_roles = []
         for entity in account_service_entities:
