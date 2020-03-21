@@ -30,7 +30,6 @@ class TestOrganizers(unittest.TestCase):
             iam_data = json.load(f)
             unused_threshold = 90 + UserOrganizer.days_from_today('2020-03-21T11:41:00+00:00')
             logger = configure_logger()
-            unused_roles, rightsized = RoleOrganizer(logger, unused_threshold).rightsize_privileges(iam_data['AccountRoles'], iam_data['AccountPolicies'],
-                                                                                  iam_data['AccountGroups'])
+            unused_roles, rightsized = RoleOrganizer(logger, unused_threshold).rightsize_privileges(iam_data)
         self.assertTrue(len(rightsized) == 7)
         self.assertTrue(len(unused_roles) == 1)
