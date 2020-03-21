@@ -28,9 +28,9 @@ class TestOrganizers(unittest.TestCase):
         current_dir = os.path.abspath(os.path.dirname(__file__))
         with open("{}/{}".format(current_dir, "../iam_data.json")) as f:
             iam_data = json.load(f)
-            unused_threshold = 5 + UserOrganizer.days_from_today('2020-03-21T11:41:00+00:00')
+            unused_threshold = 90 + UserOrganizer.days_from_today('2020-03-21T11:41:00+00:00')
             logger = configure_logger()
-            unused_roles, rightsized = RoleOrganizer(logger).rightsize_privileges(iam_data['AccountRoles'], iam_data['AccountPolicies'],
+            unused_roles, rightsized = RoleOrganizer(logger, unused_threshold).rightsize_privileges(iam_data['AccountRoles'], iam_data['AccountPolicies'],
                                                                                   iam_data['AccountGroups'])
         self.assertTrue(len(rightsized) == 7)
         self.assertTrue(len(unused_roles) == 1)

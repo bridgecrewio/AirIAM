@@ -2,7 +2,8 @@ from .BaseOrganizer import BaseOrganizer
 
 
 class RoleOrganizer(BaseOrganizer):
-    def __init__(self, logger):
+    def __init__(self, logger, unused_threshold):
+        self._unused_threshold = unused_threshold
         self.logger = logger
 
     def rightsize_privileges(self, account_service_entities, account_policies, account_groups):
@@ -15,7 +16,7 @@ class RoleOrganizer(BaseOrganizer):
             else:
                 last_used = max(map(lambda last_access: last_access['LastAccessed'], entity.get('LastAccessed', [])))
                 entity['LastUsed'] = BaseOrganizer.days_from_today(last_used)
-                if entity['LastUsed'] <= 90:
+                if entity['LastUsed'] <= self._unused_threshold:
                     rightsized_roles.append({
                         "Entity": entity,
                         # TODO: rightsize the policies
