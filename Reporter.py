@@ -1,5 +1,5 @@
-from airiam.banner import banner
-from airiam.models.RuntimeReport import RuntimeReport
+from banner import banner
+from models.RuntimeReport import RuntimeReport
 
 from colorama import init
 from termcolor import colored

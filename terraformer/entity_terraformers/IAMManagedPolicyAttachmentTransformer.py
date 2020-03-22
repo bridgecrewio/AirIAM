@@ -1,4 +1,4 @@
-from airiam.terraformer.entity_terraformers.BaseEntityTransformer import BaseEntityTransformer, Principal
+from terraformer.entity_terraformers.BaseEntityTransformer import BaseEntityTransformer, Principal
 
 
 class IAMManagedPolicyAttachmentTransformer(BaseEntityTransformer):
