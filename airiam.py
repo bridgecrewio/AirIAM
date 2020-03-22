@@ -31,7 +31,7 @@ def run():
     Reporter.print_prelude()
     args = parser.parse_args()
     if args.version:
-        logging.info('AirIAM v{}'.format(version))
+        Reporter.print_version()
         exit(0)
 
     runtime_results = RuntimeIamEvaluator(logger, args.profile).evaluate_runtime_iam(args.rightsize, args.unused)

@@ -10,6 +10,7 @@ from terraformer.entity_terraformers.IAMUserTransformer import IAMUserTransforme
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
 boilerplate_files = ["admins.tf", "developers.tf", "power_users.tf"]
+ERASE_LINE = '\x1b[2K'
 
 
 class TerraformTransformer:
@@ -30,7 +31,7 @@ class TerraformTransformer:
                 i = 1
                 for entity_to_import in entities_to_import:
                     msg = f"#{i} of {num_of_entities_to_import}: Importing {entity_to_import['entity']} to {entity_to_import['identifier']}"
-                    print(f"\r{msg}", end="")
+                    print(ERASE_LINE + f"\r{msg}", end="")
                     return_code, stdout, stderr = tf.import_cmd(entity_to_import['identifier'], entity_to_import['entity'])
                     if return_code != 0 and 'Resource already managed by Terraform' not in stderr:
                         self.logger.error(f"Error: {stderr}")

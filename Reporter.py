@@ -1,8 +1,9 @@
-from banner import banner
-from models.RuntimeReport import RuntimeReport
-
 from colorama import init
 from termcolor import colored
+
+from banner import banner
+from models.RuntimeReport import RuntimeReport
+from version import version
 
 SEPARATOR = '\n==================================================\n\n'
 
@@ -64,3 +65,7 @@ https://www.bridgecrew.io
     @staticmethod
     def report_terraform(terraform_results):
         pass
+
+    @classmethod
+    def print_version(cls):
+        print(f"AirIAM version {version}")

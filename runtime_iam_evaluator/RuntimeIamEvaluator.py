@@ -11,6 +11,7 @@ from runtime_iam_evaluator.RoleOrganizer import RoleOrganizer
 from runtime_iam_evaluator.UserOrganizer import UserOrganizer
 
 IAM_DATA_FILE_NAME = "iam_data.json"
+ERASE_LINE = '\x1b[2K'
 
 
 class RuntimeIamEvaluator:
@@ -164,7 +165,7 @@ class RuntimeIamEvaluator:
         count = len(arn_list)
         for arn in arn_list:
             try:
-                print(f"\rGenerating report for {arn} ({i} of {count})", end="")
+                print(ERASE_LINE + f"\rGenerating report for {arn} ({i} of {count})", end="")
                 job_id = iam.generate_service_last_accessed_details(Arn=arn)['JobId']
                 i += 1
             except ClientError as error:
@@ -181,7 +182,7 @@ class RuntimeIamEvaluator:
         for arn in results:
             job_id = results[arn]
             try:
-                print(f"\rGetting report for {arn} ({i} of {count})", end="")
+                print(ERASE_LINE + f"\rGetting report for {arn} ({i} of {count})", end="")
                 results[arn] = RuntimeIamEvaluator.simplify_service_access_result(
                     iam.get_service_last_accessed_details(JobId=job_id)['ServicesLastAccessed']
                 )
