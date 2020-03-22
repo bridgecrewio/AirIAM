@@ -14,8 +14,6 @@ class InstanceProfileTransformer(BaseEntityTransformer):
   name = "{self.raw_name}"
   path = "{entity_json['Path']}"
   role = {self._role_identifier}.name
-
-  {tags}
 }}
 
 """

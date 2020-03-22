@@ -18,8 +18,6 @@ resource "aws_iam_policy" "{self._safe_name}" {{
   path        = "{entity_json['Path']}"
   policy      = {policy.identifier()}.json
   description = \"{entity_json['Description']}\"
-
-  {tags}
 }}
 
 """

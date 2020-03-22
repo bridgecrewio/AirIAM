@@ -26,8 +26,6 @@ class IAMGroupTransformer(BaseEntityTransformer):
         return f"""resource "aws_iam_group" "{self._safe_name}" {{
   name = "{entity_json['GroupName']}"
   path = "{entity_json['Path']}"
-
-  {tags}
 }}
 
 {group_policies}
