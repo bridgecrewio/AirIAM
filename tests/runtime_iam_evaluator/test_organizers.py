@@ -1,6 +1,7 @@
 import os
 import unittest
 import json
+import logging
 
 from airiam.main import configure_logger
 from airiam.runtime_iam_evaluator.UserOrganizer import UserOrganizer
@@ -29,7 +30,8 @@ class TestOrganizers(unittest.TestCase):
         with open("{}/{}".format(current_dir, "../iam_data.json")) as f:
             iam_data = json.load(f)
             unused_threshold = 90 + UserOrganizer.days_from_today('2020-03-21T11:41:00+00:00')
-            logger = configure_logger()
+            logger = configure_logger(logging.DEBUG)
             unused_roles, rightsized = RoleOrganizer(logger, unused_threshold).rightsize_privileges(iam_data)
         self.assertTrue(len(rightsized) == 7)
         self.assertTrue(len(unused_roles) == 1)
+        self.assertEqual(len(rightsized[2]['policies_to_detach']), 1, 'Should have marked one policy as unused')

@@ -3,11 +3,7 @@ import ssl
 import re
 import copy
 
-import pandas as pd
-
 from airiam.runtime_iam_evaluator.BaseOrganizer import BaseOrganizer
-
-action_table_url = 'https://raw.githubusercontent.com/salesforce/policy_sentry/master/policy_sentry/shared/data/action_table.csv'
 
 if not os.environ.get('PYTHONHTTPSVERIFY', '') and getattr(ssl, '_create_unverified_context', None):
     ssl._create_default_https_context = ssl._create_unverified_context
@@ -18,14 +14,9 @@ READ_ONLY_ARN = 'arn:aws:iam::aws:policy/ReadOnlyAccess'
 
 class UserOrganizer(BaseOrganizer):
     def __init__(self, logger, unused_threshold=90):
+        super().__init__()
         self.logger = logger
         self.unused_threshold = unused_threshold
-        action_table = pd.read_csv(action_table_url, delimiter=";").to_dict('records')
-        self.action_map = {}
-        for action_obj in action_table:
-            if action_obj['service'] not in self.action_map:
-                self.action_map[action_obj['service']] = []
-            self.action_map[action_obj['service']].append(action_obj)
 
     def get_user_clusters(self, iam_data):
         unused_users, human_users, unchanged_users = self._separate_user_types(iam_data['AccountUsers'], iam_data['CredentialReport'])
@@ -62,7 +53,8 @@ class UserOrganizer(BaseOrganizer):
                 for policy_arn in user_attached_managed_policies:
                     services_allowed = []
                     policy_obj = next(p for p in account_policies if policy_arn == p['Arn'])
-                    actions_list = self._get_policy_actions(policy_obj)
+                    policy_document = next(version for version in policy_obj['PolicyVersionList'] if version['IsDefaultVersion'])['Document']
+                    actions_list = self._get_policy_actions(policy_document)
                     for actions in actions_list:
                         services_allowed = list(set(services_allowed + list(map(lambda action: action.split(":")[0], actions))))
                     policy_in_use = False
@@ -79,8 +71,10 @@ class UserOrganizer(BaseOrganizer):
                         policies_in_use[pol] = 0
                     policies_in_use[pol] += 1
                     policy_obj = next(p for p in account_policies if p['Arn'] == pol)
-                    if self._policy_is_write_access(policy_obj):
+                    policy_document = next(version for version in policy_obj['PolicyVersionList'] if version['IsDefaultVersion'])['Document']
+                    if self._policy_is_write_access(policy_document):
                         user_needs_write_access = True
+                        break
 
                 if user_needs_write_access:
                     clusters['Powerusers']['Users'].append(user["UserName"])
@@ -90,16 +84,6 @@ class UserOrganizer(BaseOrganizer):
 
         clusters["Powerusers"]["Policies"] = policies_sorted
         return clusters
-
-    @staticmethod
-    def _get_policy_actions(policy_obj):
-        policy_document = next(version for version in policy_obj['PolicyVersionList'] if version['IsDefaultVersion'])['Document']
-        policy_statements = UserOrganizer.convert_to_list(policy_document['Statement'])
-        actions_list = []
-        for statement in policy_statements:
-            if statement['Effect'] == 'Allow':
-                actions_list.extend(UserOrganizer.convert_to_list(statement['Action']))
-        return actions_list
 
     def _separate_user_types(self, account_users, credential_report):
         human_users = []
@@ -122,36 +106,6 @@ class UserOrganizer(BaseOrganizer):
                     human_users.append(user)
 
         return unused_users, human_users, unchanged_users
-
-    def _consolidate_user_clusters(self, simple_user_clusters):
-        admin_cluster = simple_user_clusters.pop(ADMIN_POLICY_ARN)
-        start_number_of_clusters = 0
-        end_number_of_clusters = len(simple_user_clusters.keys())
-        final_clusters = None
-        while end_number_of_clusters != start_number_of_clusters:
-            clusters = {}
-            start_number_of_clusters = end_number_of_clusters
-            for policies, users in simple_user_clusters.items():
-                merged = False
-                cluster_policies = policies.split(", ")
-                for policies in clusters.keys():
-                    iterator_cluster_policies = policies.split(", ")
-                    merged_policies, num_of_changes = UserOrganizer.unify_lists(cluster_policies, iterator_cluster_policies)
-                    if num_of_changes == 1:
-                        self.logger.info("merge!")
-                        merged = True
-                if not merged:
-                    clusters[", ".join(cluster_policies)] = users
-            end_number_of_clusters = len(clusters.keys())
-            final_clusters = clusters
-        final_clusters[ADMIN_POLICY_ARN] = admin_cluster
-        return final_clusters
-
-    @staticmethod
-    def unify_lists(l1, l2):
-        merged = list(set(l1 + l2))
-        merged.sort()
-        return merged, max(len(merged) - len(l1), len(merged) - len(l2))
 
     @staticmethod
     def calculate_detachments(human_users):
@@ -178,8 +132,8 @@ class UserOrganizer(BaseOrganizer):
 
         return detachments
 
-    def _policy_is_write_access(self, pol):
-        actions = UserOrganizer._get_policy_actions(pol)
+    def _policy_is_write_access(self, policy_document):
+        actions = BaseOrganizer._get_policy_actions(policy_document)
         for action in actions:
             if action == '*' or '*' in action.split(':'):
                 return True

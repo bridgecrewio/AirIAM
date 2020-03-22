@@ -7,8 +7,8 @@ from airiam.version import version
 from airiam.Reporter import Reporter
 
 
-def configure_logger():
-    logging.basicConfig(level=logging.INFO)
+def configure_logger(logging_level=logging.INFO):
+    logging.basicConfig(level=logging_level)
     # define a Handler which writes INFO messages or higher to the sys.stderr
     console = logging.StreamHandler()
     console.setLevel(logging.DEBUG)
