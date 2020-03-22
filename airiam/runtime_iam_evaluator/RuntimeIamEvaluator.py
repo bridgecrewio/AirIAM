@@ -64,27 +64,26 @@ class RuntimeIamEvaluator:
         iam_data_path = "{0}/{1}".format(current_dir, IAM_DATA_FILE_NAME)
         data_account_id = RuntimeIamEvaluator._get_account_id_from_existing_data(iam_data_path)
         if data_account_id == account_id:
-            self.logger.info("Reusing local data")
+            print("Reusing local data")
         else:
-            self.logger.info(f"Getting all IAM configurations for account {account_id}")
+            print(f"Getting all IAM configurations for account {account_id}")
             iam = self._session.client('iam')
             iam.generate_credential_report()
             account_users, account_roles, account_groups, account_policies = RuntimeIamEvaluator.get_account_iam_configuration(iam)
-            self.logger.info("Getting IAM credential report")
+            print("Getting IAM credential report")
             csv_credential_report = iam.get_credential_report()['Content'].decode('utf-8')
             credential_report = RuntimeIamEvaluator.convert_csv_to_json(csv_credential_report)
 
             if rightsize:
                 account_principals = account_users + account_roles
                 entity_arn_list = list(map(lambda e: e['Arn'], account_principals))
-                self.logger.info(f"Getting service last accessed report for every user & role in the account ({len(account_principals)} principals)")
                 last_accessed_map = self._generate_last_access(iam, entity_arn_list)
 
                 for arn, last_accessed_list in last_accessed_map.items():
                     entity = next(entity for entity in account_principals if entity['Arn'] == arn)
                     entity['LastAccessed'] = last_accessed_list
 
-            self.logger.info("Collecting password configurations for all IAM users in the account")
+            print("Collecting password configurations for all IAM users in the account")
             for user in account_users:
                 try:
                     iam.get_login_profile(UserName=user['UserName'])
@@ -95,7 +94,7 @@ class RuntimeIamEvaluator:
                     else:
                         raise exception
 
-            self.logger.info("Completed data collection, writing to local file...")
+            print("Completed data collection, writing to local file...")
             iam_data = {
                 'CredentialReport': credential_report,
                 'AccountUsers': account_users,
@@ -161,9 +160,13 @@ class RuntimeIamEvaluator:
 
     def _generate_last_access(self, iam, arn_list: list):
         results = {}
+        i = 1
+        count = len(arn_list)
         for arn in arn_list:
             try:
+                print(f"\rGenerating report for {arn} ({i} of {count})", end="")
                 job_id = iam.generate_service_last_accessed_details(Arn=arn)['JobId']
+                i += 1
             except ClientError as error:
                 if error.response['Error']['Code'] == 'Throttling':
                     print('Reached throttling, sleeping for 5 seconds')
@@ -172,13 +175,17 @@ class RuntimeIamEvaluator:
                 else:
                     raise error
             results[arn] = job_id
+        print("Generated reports for all principals")
 
+        i = 1
         for arn in results:
             job_id = results[arn]
             try:
+                print(f"\rGetting report for {arn} ({i} of {count})", end="")
                 results[arn] = RuntimeIamEvaluator.simplify_service_access_result(
                     iam.get_service_last_accessed_details(JobId=job_id)['ServicesLastAccessed']
                 )
+                i += 1
             except ClientError as error:
                 if error.response['Error']['Code'] == 'Throttling':
                     print('Reached throttling, sleeping for 5 seconds')
@@ -188,6 +195,7 @@ class RuntimeIamEvaluator:
                     )
                 else:
                     raise error
+        print("Received usage results for all principals")
         return results
 
     @staticmethod

@@ -1,6 +1,8 @@
 import datetime as dt
-import pandas as pd
 import json
+import re
+
+import pandas as pd
 
 ACTION_TABLE_URL = 'https://raw.githubusercontent.com/salesforce/policy_sentry/master/policy_sentry/shared/data/action_table.csv'
 ACTIONS_NOT_COVERED_BY_ACCESS_ADVISOR = ['iam:PassRole']
@@ -48,8 +50,13 @@ class BaseOrganizer:
             return False
 
         policy_actions = BaseOrganizer._get_policy_actions(policy_document)
-        if len([action for action in policy_actions if action in ACTIONS_NOT_COVERED_BY_ACCESS_ADVISOR]) > 0:
+        if len([action for action in policy_actions if
+                len(list(filter(re.compile(action.replace('*', '.*')).match, ACTIONS_NOT_COVERED_BY_ACCESS_ADVISOR))) > 0
+                ]) > 0:
             return False
 
         services_accessed_through_policy = list(set(map(lambda action: action.split(':')[0], policy_actions)))
-        return len([service for service in services_accessed_through_policy if service in services_last_accessed]) == 0
+        return len(
+            [service for service in services_accessed_through_policy if
+             len(list(filter(re.compile(service.replace('*', '.*')).match, services_last_accessed))) > 0
+             ]) == 0

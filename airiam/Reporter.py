@@ -44,13 +44,22 @@ class Reporter:
 
         roles = runtime_results.get_rightsizing()['Roles']
         for role in roles:
-            print('The role {} was copied as is to terraform'.format(role['Entity']['RoleName']))
+            if len(role['policies_to_detach']) > 0:
+                print(colored('The role {} will have reduced permissions'.format(role['role']['RoleName']), 'yellow'))
+            else:
+                print('The role {} was copied as is to terraform'.format(role['role']['RoleName']))
 
         print(SEPARATOR)
 
     @staticmethod
-    def print_art():
+    def print_prelude():
         print(colored(banner, 'yellow'))
+        print(f"""
+For continuous scanning of your environment to detect drifts, connect to the {colored("FREE", 'green', attrs=['bold'])} {colored("Bridgecrew", 'magenta', attrs=['bold'])} platform
+Check us out!
+https://www.bridgecrew.cloud
+https://www.bridgecrew.io
+""")
 
     @staticmethod
     def report_terraform(terraform_results):

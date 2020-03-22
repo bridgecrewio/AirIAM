@@ -28,7 +28,7 @@ def run():
     parser.add_argument('-u', '--unused', help='The unused threshold, in days', type=int, default=90)
     parser.add_argument('-f', '--folder', help='The path where the output terraform code and state will be stored', type=str, default=None)
 
-    Reporter.print_art()
+    Reporter.print_prelude()
     args = parser.parse_args()
     if args.version:
         logging.info('AirIAM v{}'.format(version))
