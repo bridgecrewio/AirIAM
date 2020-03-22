@@ -1,12 +1,12 @@
 from python_terraform import *
 
-from airiam.models.RuntimeReport import RuntimeReport
-from airiam.terraformer.entity_terraformers.AWSProviderTransformer import AWSProviderTransformer
-from airiam.terraformer.entity_terraformers.IAMGroupTransformer import IAMGroupTransformer
-from airiam.terraformer.entity_terraformers.IAMPolicyTransformer import IAMPolicyTransformer
-from airiam.terraformer.entity_terraformers.IAMRoleTransformer import IAMRoleTransformer
-from airiam.terraformer.entity_terraformers.IAMUserGroupMembershipTransformer import IAMUserGroupMembershipTransformer
-from airiam.terraformer.entity_terraformers.IAMUserTransformer import IAMUserTransformer
+from models.RuntimeReport import RuntimeReport
+from terraformer.entity_terraformers.AWSProviderTransformer import AWSProviderTransformer
+from terraformer.entity_terraformers.IAMGroupTransformer import IAMGroupTransformer
+from terraformer.entity_terraformers.IAMPolicyTransformer import IAMPolicyTransformer
+from terraformer.entity_terraformers.IAMRoleTransformer import IAMRoleTransformer
+from terraformer.entity_terraformers.IAMUserGroupMembershipTransformer import IAMUserGroupMembershipTransformer
+from terraformer.entity_terraformers.IAMUserTransformer import IAMUserTransformer
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
 boilerplate_files = ["admins.tf", "developers.tf", "power_users.tf"]
@@ -29,11 +29,13 @@ class TerraformTransformer:
                 print(f"Importing {num_of_entities_to_import} entities")
                 i = 1
                 for entity_to_import in entities_to_import:
-                    print(f"#{i} of {num_of_entities_to_import}: Importing {entity_to_import['entity']} to {entity_to_import['identifier']}")
+                    msg = f"#{i} of {num_of_entities_to_import}: Importing {entity_to_import['entity']} to {entity_to_import['identifier']}"
+                    print(f"\r{msg}", end="")
                     return_code, stdout, stderr = tf.import_cmd(entity_to_import['identifier'], entity_to_import['entity'])
                     if return_code != 0 and 'Resource already managed by Terraform' not in stderr:
                         self.logger.error(f"Error: {stderr}")
                     i += 1
+                print("Imported all existing entities to state")
 
             if rightsize:
                 self._create_rightsized_state(results.get_rightsizing())

@@ -1,14 +1,14 @@
 import argparse
 import logging
 
-from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
-from airiam.terraformer.TerraformTransformer import TerraformTransformer
-from airiam.version import version
-from airiam.Reporter import Reporter
+from runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
+from terraformer.TerraformTransformer import TerraformTransformer
+from version import version
+from Reporter import Reporter
 
 
-def configure_logger():
-    logging.basicConfig(level=logging.INFO)
+def configure_logger(logging_level=logging.INFO):
+    logging.basicConfig(level=logging_level)
     # define a Handler which writes INFO messages or higher to the sys.stderr
     console = logging.StreamHandler()
     console.setLevel(logging.DEBUG)
@@ -28,11 +28,11 @@ def run():
     parser.add_argument('-u', '--unused', help='The unused threshold, in days', type=int, default=90)
     parser.add_argument('-f', '--folder', help='The path where the output terraform code and state will be stored', type=str, default=None)
 
-    Reporter.print_art()
+    Reporter.print_prelude()
     args = parser.parse_args()
     if args.version:
         logging.info('AirIAM v{}'.format(version))
-        return
+        exit(0)
 
     runtime_results = RuntimeIamEvaluator(logger, args.profile).evaluate_runtime_iam(args.rightsize, args.unused)
 
@@ -44,3 +44,7 @@ def run():
         exit(1)
 
     Reporter.report_terraform(terraform_results)
+
+
+if __name__ == '__main__':
+    run()

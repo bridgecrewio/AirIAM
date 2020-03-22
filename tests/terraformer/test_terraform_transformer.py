@@ -2,9 +2,9 @@ import json
 import os
 import unittest
 
-from airiam.main import configure_logger
-from airiam.models.RuntimeReport import RuntimeReport
-from airiam.terraformer.TerraformTransformer import TerraformTransformer
+from airiam import configure_logger
+from models.RuntimeReport import RuntimeReport
+from terraformer.TerraformTransformer import TerraformTransformer
 
 
 class TestTerraformTransformer(unittest.TestCase):

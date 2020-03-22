@@ -50,7 +50,7 @@ class RuntimeReport:
         self._redundant_groups.sort(key=lambda group: SORT_KEY_BY_ENTITY_TYPE['AccountGroups'])
         self._unattached_policies.sort(key=lambda policy: SORT_KEY_BY_ENTITY_TYPE['AccountPolicies'])
 
-        self._role_reorg.sort(key=lambda role: role['Entity'][SORT_KEY_BY_ENTITY_TYPE['AccountRoles']])
+        self._role_reorg.sort(key=lambda role: role['role'][SORT_KEY_BY_ENTITY_TYPE['AccountRoles']])
         self._user_reorg['Admins'].sort()
         self._user_reorg['ReadOnly'].sort()
         self._user_reorg['Powerusers']['Users'].sort()
