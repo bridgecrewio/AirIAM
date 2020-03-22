@@ -66,13 +66,16 @@ IAM migration plan
 ### Installation
 
 ```sh
-pip install airiam
+git clone https://github.com/bridgecrewio/AirIAM.git
+cd AirIAM/
+pipenv install --skip-lock
+pipenv shell
 ```
 
 ### Configuration
 
 ```sh
-airiam -p <PROFILE> -u <NUM_OF_DAYS> -f <PATH_TO_DIR> -r
+python airiam.py -p <PROFILE> -u <NUM_OF_DAYS> -f <PATH_TO_DIR> -r
 ```
 
 `profile / p` will use your custom profile and perform the initial checks over all regions when needed.
