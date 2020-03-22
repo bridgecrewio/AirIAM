@@ -3,9 +3,9 @@ import unittest
 import json
 import logging
 
-from airiam.main import configure_logger
-from airiam.runtime_iam_evaluator.UserOrganizer import UserOrganizer
-from airiam.runtime_iam_evaluator.RoleOrganizer import RoleOrganizer
+from airiam import configure_logger
+from runtime_iam_evaluator.UserOrganizer import UserOrganizer
+from runtime_iam_evaluator.RoleOrganizer import RoleOrganizer
 
 
 class TestOrganizers(unittest.TestCase):
