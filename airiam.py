@@ -1,10 +1,9 @@
 import argparse
 import logging
 
+from Reporter import Reporter
 from runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
 from terraformer.TerraformTransformer import TerraformTransformer
-from version import version
-from Reporter import Reporter
 
 
 def configure_logger(logging_level=logging.INFO):

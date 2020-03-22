@@ -165,7 +165,7 @@ class RuntimeIamEvaluator:
         count = len(arn_list)
         for arn in arn_list:
             try:
-                print(ERASE_LINE + f"\rGenerating report for {arn} ({i} of {count})", end="")
+                print(ERASE_LINE + f"\r{i} of {count}: Generating report for {arn}", end="")
                 job_id = iam.generate_service_last_accessed_details(Arn=arn)['JobId']
                 i += 1
             except ClientError as error:
@@ -176,13 +176,13 @@ class RuntimeIamEvaluator:
                 else:
                     raise error
             results[arn] = job_id
-        print("Generated reports for all principals")
+        print(ERASE_LINE + "\rGenerated reports for all principals")
 
         i = 1
         for arn in results:
             job_id = results[arn]
             try:
-                print(ERASE_LINE + f"\rGetting report for {arn} ({i} of {count})", end="")
+                print(ERASE_LINE + f"\r{i} of {count}: Getting report for {arn}", end="")
                 results[arn] = RuntimeIamEvaluator.simplify_service_access_result(
                     iam.get_service_last_accessed_details(JobId=job_id)['ServicesLastAccessed']
                 )
@@ -196,7 +196,7 @@ class RuntimeIamEvaluator:
                     )
                 else:
                     raise error
-        print("Received usage results for all principals")
+        print(ERASE_LINE + "\rReceived usage results for all principals")
         return results
 
     @staticmethod
