@@ -29,7 +29,7 @@ class TestAiriam(unittest.TestCase):
         self.assertEqual(args.directory, 'results')
         self.assertFalse(args.no_cache)
 
-    def test_arg_parser_terraform_default(self):
+    def test_arg_parser_terraform_custom(self):
         args = parse_args(['tf', '-p', 'dev', '--without-unused', '-l', '30', '--no-cache', '-d', 'tf_res'])
         self.assertEqual(args.command, 'tf')
         self.assertEqual(args.last_used_threshold, 30)
