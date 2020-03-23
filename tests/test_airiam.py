@@ -1,6 +1,7 @@
 import unittest
 
 from airiam.main import parse_args
+from airiam.Reporter import OutputFormat
 
 
 class TestAiriam(unittest.TestCase):
@@ -8,15 +9,14 @@ class TestAiriam(unittest.TestCase):
         args = parse_args(['find_unused'])
         self.assertEqual(args.command, 'find_unused')
         self.assertEqual(args.last_used_threshold, 90)
-        self.assertFalse(args.list_unused)
         self.assertIsNone(args.profile)
         self.assertFalse(args.no_cache)
+        self.assertEqual(args.output, OutputFormat.cli)
 
     def test_arg_parser_iam_custom(self):
-        args = parse_args(['find_unused', '-p', 'dev', '--list-unused', '-l', '30', '--no-cache'])
+        args = parse_args(['find_unused', '-p', 'dev', '-l', '30', '--no-cache'])
         self.assertEqual(args.command, 'find_unused')
         self.assertEqual(args.last_used_threshold, 30)
-        self.assertTrue(args.list_unused)
         self.assertEqual(args.profile, 'dev')
         self.assertTrue(args.no_cache)
 
