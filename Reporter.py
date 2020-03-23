@@ -56,10 +56,8 @@ class Reporter:
     def print_prelude():
         print(colored(banner, 'yellow'))
         print(f"""
-For continuous scanning of your environment to detect drifts, connect to the {colored("FREE", 'green', attrs=['bold'])} {colored("Bridgecrew", 'magenta', attrs=['bold'])} platform
-Check us out!
-https://www.bridgecrew.cloud
-https://www.bridgecrew.io
+For continuous scanning of your environment to detect drifts, connect to the {colored("Bridgecrew", 'magenta', attrs=['bold'])} platform
+Check us out - https://www.bridgecrew.cloud
 """)
 
     @staticmethod
