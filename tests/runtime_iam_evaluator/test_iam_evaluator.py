@@ -7,7 +7,7 @@ import boto3
 from moto import mock_iam
 
 from airiam import configure_logger
-from runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
+from airiam.runtime_iam_evaluator import RuntimeIamEvaluator
 
 ADMIN_POLICY_ARN = 'arn:aws:iam::aws:policy/AdministratorAccess'
 READ_ONLY_ARN = 'arn:aws:iam::aws:policy/ReadOnlyAccess'

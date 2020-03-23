@@ -6,9 +6,9 @@ import time
 import boto3
 from botocore.exceptions import ClientError
 
-from models.RuntimeReport import RuntimeReport
-from runtime_iam_evaluator.RoleOrganizer import RoleOrganizer
-from runtime_iam_evaluator.UserOrganizer import UserOrganizer
+from airiam.models.RuntimeReport import RuntimeReport
+from airiam.runtime_iam_evaluator.UserOrganizer import UserOrganizer
+from airiam.runtime_iam_evaluator.RoleOrganizer import RoleOrganizer
 
 IAM_DATA_FILE_NAME = "iam_data.json"
 ERASE_LINE = '\x1b[2K'

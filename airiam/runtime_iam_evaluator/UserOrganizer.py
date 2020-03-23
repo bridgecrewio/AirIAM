@@ -3,7 +3,7 @@ import ssl
 import re
 import copy
 
-from runtime_iam_evaluator.BaseOrganizer import BaseOrganizer
+from airiam.runtime_iam_evaluator.BaseOrganizer import BaseOrganizer
 
 if not os.environ.get('PYTHONHTTPSVERIFY', '') and getattr(ssl, '_create_unverified_context', None):
     ssl._create_default_https_context = ssl._create_unverified_context

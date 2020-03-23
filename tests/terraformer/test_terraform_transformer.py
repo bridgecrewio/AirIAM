@@ -3,8 +3,8 @@ import os
 import unittest
 
 from airiam import configure_logger
-from models.RuntimeReport import RuntimeReport
-from terraformer.TerraformTransformer import TerraformTransformer
+from airiam.models import RuntimeReport
+from airiam.terraformer.TerraformTransformer import TerraformTransformer
 
 
 class TestTerraformTransformer(unittest.TestCase):

@@ -1,12 +1,12 @@
 from python_terraform import *
 
-from models.RuntimeReport import RuntimeReport
-from terraformer.entity_terraformers.AWSProviderTransformer import AWSProviderTransformer
-from terraformer.entity_terraformers.IAMGroupTransformer import IAMGroupTransformer
-from terraformer.entity_terraformers.IAMPolicyTransformer import IAMPolicyTransformer
-from terraformer.entity_terraformers.IAMRoleTransformer import IAMRoleTransformer
-from terraformer.entity_terraformers.IAMUserGroupMembershipTransformer import IAMUserGroupMembershipTransformer
-from terraformer.entity_terraformers.IAMUserTransformer import IAMUserTransformer
+from airiam.models import RuntimeReport
+from airiam.terraformer.entity_terraformers.AWSProviderTransformer import AWSProviderTransformer
+from airiam.terraformer.entity_terraformers.IAMGroupTransformer import IAMGroupTransformer
+from airiam.terraformer.entity_terraformers.IAMPolicyTransformer import IAMPolicyTransformer
+from airiam.terraformer.entity_terraformers.IAMRoleTransformer import IAMRoleTransformer
+from airiam.terraformer.entity_terraformers.IAMUserGroupMembershipTransformer import IAMUserGroupMembershipTransformer
+from airiam.terraformer.entity_terraformers.IAMUserTransformer import IAMUserTransformer
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
 boilerplate_files = ["admins.tf", "developers.tf", "power_users.tf"]

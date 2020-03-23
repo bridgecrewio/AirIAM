@@ -3,8 +3,8 @@ import logging
 import sys
 
 from Reporter import Reporter
-from runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
-from terraformer.TerraformTransformer import TerraformTransformer
+from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
+from airiam.terraformer.TerraformTransformer import TerraformTransformer
 
 
 def configure_logger(logging_level=logging.INFO):
@@ -22,11 +22,8 @@ def configure_logger(logging_level=logging.INFO):
 def run():
     logger = configure_logger()
 
-    args = parse_args(sys.argv[1:])
     Reporter.print_prelude()
-    if args.version:
-        Reporter.print_version()
-        exit(0)
+    args = parse_args(sys.argv[1:])
 
     if args.command == 'iam':
         list_unused = args.list_unused
@@ -66,11 +63,10 @@ def parse_args(args):
                            default=90)
     tf_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
     result = parser.parse_args(args)
+    if result.version:
+        Reporter.print_version()
+        exit(0)
     if not result.command:
         parser.print_help(sys.stderr)
         sys.exit(1)
     return result
-
-
-if __name__ == '__main__':
-    run()

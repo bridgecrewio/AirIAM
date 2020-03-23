@@ -2,7 +2,7 @@ from colorama import init
 from termcolor import colored
 
 from banner import banner
-from models.RuntimeReport import RuntimeReport
+from airiam.models import RuntimeReport
 from version import version
 
 SEPARATOR = '\n==================================================\n\n'
