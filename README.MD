@@ -82,7 +82,7 @@ python airiam.py -p <PROFILE> -u <NUM_OF_DAYS> -f <PATH_TO_DIR> -r
 
 `unused / u` will define how many days will be considered as a least-usage threshold. By default value is 90, meaning, that any resource that was not active in the last 90 will be identified as unused and removed from the Terraform plan.
 
-`folder / f` will define where the execution recovery plan and state files will be stored. By default, the files will be placed in the root folder.
+`folder / f` will define where the execution recovery plan and state files will be stored. By default, the files will be placed in a `results` folder.
 
 `rightsize / r` will define whether to rightsize the permissions automatically using usage data from AWS or not.
 

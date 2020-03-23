@@ -14,7 +14,7 @@ ERASE_LINE = '\x1b[2K'
 
 
 class TerraformTransformer:
-    def __init__(self, logger, profile=None, result_dir='.'):
+    def __init__(self, logger, profile=None, result_dir='results'):
         self.logger = logger
         self.profile = profile
         self._result_dir = result_dir
