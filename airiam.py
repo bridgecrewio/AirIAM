@@ -1,5 +1,6 @@
 import argparse
 import logging
+import sys
 
 from Reporter import Reporter
 from runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
@@ -20,15 +21,9 @@ def configure_logger(logging_level=logging.INFO):
 
 def run():
     logger = configure_logger()
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--version', help='Get AirIAM\'s version', action='store_true')
-    parser.add_argument('-r', '--rightsize', help='Rightsize IAM permissions according to Access Advisor usage data', action='store_true')
-    parser.add_argument('-p', '--profile', help='The AWS profile to be used', type=str)
-    parser.add_argument('-u', '--unused', help='The unused threshold, in days', type=int, default=90)
-    parser.add_argument('-f', '--folder', help='The path where the output terraform code and state will be stored', type=str, default='results')
 
+    args = parse_args(sys.argv[1:])
     Reporter.print_prelude()
-    args = parser.parse_args()
     if args.version:
         Reporter.print_version()
         exit(0)
@@ -43,6 +38,31 @@ def run():
         exit(1)
 
     Reporter.report_terraform(terraform_results)
+
+
+def parse_args(args):
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-v', '--version', help='Get AirIAM\'s version', action='store_true')
+
+    sub_parsers = parser.add_subparsers(help='commands')
+    iam_parser = sub_parsers.add_parser('iam', help='iam help', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    iam_parser.add_argument('-p', '--profile', help='The AWS profile to be used', type=str, default=None)
+    iam_parser.add_argument('--list-unused', help='List the unused AWS IAM entities', action='store_true')
+    iam_parser.add_argument('-l', '--last-used-threshold', help='The "Last Used" threshold, in days, for an entity to be considered unused', type=int,
+                            default=90)
+    iam_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
+
+    tf_parser = sub_parsers.add_parser('tf', help='terraform help', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    tf_parser.add_argument('-p', '--profile', help='The AWS profile to be used', type=str)
+    tf_parser.add_argument('-d', '--directory', help='The path where the output terraform code and state will be stored', type=str, default='results')
+    tf_parser.add_argument('--without-unused', help='Create terraform code without unused entities', action='store_true')
+    tf_parser.add_argument('-l', '--last-used-threshold', help='The "Last Used" threshold, in days, for an entity to be considered unused', type=int,
+                           default=90)
+    tf_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
+    if len(args) == 0:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
+    return parser.parse_args(args)
 
 
 if __name__ == '__main__':
