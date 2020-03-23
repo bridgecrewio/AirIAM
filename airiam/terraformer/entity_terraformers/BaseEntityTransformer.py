@@ -28,7 +28,10 @@ class BaseEntityTransformer:
 
     @staticmethod
     def safe_name_converter(name_str: str) -> str:
-        return ''.join(e for e in name_str if e.isalnum() or e == '_' or e == '-')
+        without_special_characters = ''.join(e for e in name_str if e.isalnum() or e == '_' or e == '-')
+        if without_special_characters[0].isdigit():
+            return f"_{without_special_characters}"
+        return without_special_characters
 
     @staticmethod
     def transform_tags(entity_json: dict):

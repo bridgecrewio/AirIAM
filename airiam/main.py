@@ -25,10 +25,10 @@ def run():
     Reporter.print_prelude()
     args = parse_args(sys.argv[1:])
 
-    if args.command == 'iam':
-        list_unused = args.list_unused
-    else:
+    if args.command == 'tf':
         list_unused = args.without_unused
+    else:
+        list_unused = True
     runtime_results = RuntimeIamEvaluator(logger, args.profile, args.no_cache).evaluate_runtime_iam(list_unused, args.last_used_threshold)
 
     Reporter.report_runtime(list_unused, runtime_results)
@@ -46,10 +46,9 @@ def parse_args(args):
     parser.add_argument('-v', '--version', help='Get AirIAM\'s version', action='store_true')
 
     sub_parsers = parser.add_subparsers(title='commands', dest='command')
-    iam_parser = sub_parsers.add_parser('iam', help='Only scan your runtime IAM for unused entities',
+    iam_parser = sub_parsers.add_parser('find_unused', help='Only scan your runtime IAM for unused entities',
                                         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     iam_parser.add_argument('-p', '--profile', help='The AWS profile to be used', type=str, default=None)
-    iam_parser.add_argument('--list-unused', help='List the unused AWS IAM entities to the console', action='store_true')
     iam_parser.add_argument('-l', '--last-used-threshold', help='The "Last Used" threshold, in days, for an entity to be considered unused', type=int,
                             default=90)
     iam_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')

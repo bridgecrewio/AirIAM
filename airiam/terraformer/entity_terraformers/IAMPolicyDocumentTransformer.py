@@ -36,10 +36,11 @@ class IAMPolicyDocumentTransformer(BaseEntityTransformer):
             else:
                 action_str = f"actions = {json.dumps(actions)}"
             condition_block = IAMPolicyDocumentTransformer.transform_conditions(statement)
+            resources_list_str = json.dumps(IAMPolicyDocumentTransformer.force_list(statement.get('Resource'))).replace('${', '$\u0024{')
             statement_block += f"""  statement {{
     {sid_string}effect    = "{statement['Effect']}"
     {action_str}
-    resources = {json.dumps(IAMPolicyDocumentTransformer.force_list(statement.get('Resource')))}
+    resources = {resources_list_str}
     {condition_block}
   }}
 """
