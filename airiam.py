@@ -25,7 +25,7 @@ def run():
     parser.add_argument('-r', '--rightsize', help='Rightsize IAM permissions according to Access Advisor usage data', action='store_true')
     parser.add_argument('-p', '--profile', help='The AWS profile to be used', type=str)
     parser.add_argument('-u', '--unused', help='The unused threshold, in days', type=int, default=90)
-    parser.add_argument('-f', '--folder', help='The path where the output terraform code and state will be stored', type=str, default=None)
+    parser.add_argument('-f', '--folder', help='The path where the output terraform code and state will be stored', type=str, default='results')
 
     Reporter.print_prelude()
     args = parser.parse_args()
@@ -37,7 +37,7 @@ def run():
 
     Reporter.report_runtime(args.rightsize, runtime_results)
 
-    terraform_results = TerraformTransformer(logger, args.profile).transform(args.rightsize, runtime_results)
+    terraform_results = TerraformTransformer(logger, args.profile, args.folder).transform(args.rightsize, runtime_results)
     if terraform_results != 'Success':
         logger.error("Failed to create the terraform module")
         exit(1)
