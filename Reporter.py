@@ -2,7 +2,7 @@ from colorama import init
 from termcolor import colored
 
 from banner import banner
-from models.RuntimeReport import RuntimeReport
+from airiam.models import RuntimeReport
 from version import version
 
 SEPARATOR = '\n==================================================\n\n'
@@ -12,9 +12,8 @@ init(autoreset=True)
 
 class Reporter:
     @staticmethod
-    def report_runtime(rightsize: bool, runtime_results: RuntimeReport) -> None:
-        if not rightsize:
-            print('No rightsizing selected, creating terraform code for IAM runtime as is')
+    def report_runtime(list_unused: bool, runtime_results: RuntimeReport) -> None:
+        if not list_unused:
             return
 
         print('\nResults for Account {}:\n'.format(runtime_results.account_id))

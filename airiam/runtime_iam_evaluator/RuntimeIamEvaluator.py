@@ -6,9 +6,9 @@ import time
 import boto3
 from botocore.exceptions import ClientError
 
-from models.RuntimeReport import RuntimeReport
-from runtime_iam_evaluator.RoleOrganizer import RoleOrganizer
-from runtime_iam_evaluator.UserOrganizer import UserOrganizer
+from airiam.models.RuntimeReport import RuntimeReport
+from airiam.runtime_iam_evaluator.UserOrganizer import UserOrganizer
+from airiam.runtime_iam_evaluator.RoleOrganizer import RoleOrganizer
 
 IAM_DATA_FILE_NAME = "iam_data.json"
 ERASE_LINE = '\x1b[2K'
@@ -20,26 +20,27 @@ class RuntimeIamEvaluator:
     It's entry point is the method `evaluate_runtime_iam`
     """
 
-    def __init__(self, logger, profile=None):
+    def __init__(self, logger, profile=None, refresh_cache=False):
         self.logger = logger
+        self.refresh_cache = refresh_cache
         if profile:
             self._session = boto3.Session(profile_name=profile)
         else:
             self._session = boto3.Session()
 
-    def evaluate_runtime_iam(self, rightsize: bool, unused_threshold=90) -> RuntimeReport:
+    def evaluate_runtime_iam(self, list_unused: bool, unused_threshold=90) -> RuntimeReport:
         """
         This method encapsulates all Runtime IAM data capture & classification
-        :param rightsize:  A boolean indicating whether to rightsize the data or not.
+        :param list_unused:  A boolean indicating whether to list the unused AWS entities or not.
         :param unused_threshold: The threshold, in days, for IAM entities to be considered unused. Default is 90
         :return: An instance of the report which describes which resources need to be reconfigured (and how),
                                 and which resources should be removed
         """
         account_id = self._get_account_id_from_profile()
-        iam_data = self._get_data_from_aws(account_id, rightsize)
+        iam_data = self._get_data_from_aws(account_id, list_unused)
 
         account_id = iam_data['AccountUsers'][0]['Arn'].split(":")[4]
-        if rightsize:
+        if list_unused:
             self.logger.info("Analyzing data for account {}".format(account_id))
 
             unused_users, human_users, user_reorg, entities_to_detach = UserOrganizer(self.logger, unused_threshold).get_user_clusters(iam_data)
@@ -56,7 +57,7 @@ class RuntimeIamEvaluator:
 
         return report
 
-    def _get_data_from_aws(self, account_id: str, rightsize: bool) -> dict:
+    def _get_data_from_aws(self, account_id: str, list_unused: bool) -> dict:
         """
         This method encapsulates all the API calls made to the AWS IAM service to gather data for later analysis
         :return: The IAM data that was pulled from the account, as was also saved locally for quicker re-runs
@@ -64,7 +65,7 @@ class RuntimeIamEvaluator:
         current_dir = os.path.abspath(os.path.dirname(__file__))
         iam_data_path = "{0}/{1}".format(current_dir, IAM_DATA_FILE_NAME)
         data_account_id = RuntimeIamEvaluator._get_account_id_from_existing_data(iam_data_path)
-        if data_account_id == account_id:
+        if not self.refresh_cache and data_account_id == account_id:
             print("Reusing local data")
         else:
             print(f"Getting all IAM configurations for account {account_id}")
@@ -75,7 +76,7 @@ class RuntimeIamEvaluator:
             csv_credential_report = iam.get_credential_report()['Content'].decode('utf-8')
             credential_report = RuntimeIamEvaluator.convert_csv_to_json(csv_credential_report)
 
-            if rightsize:
+            if list_unused:
                 account_principals = account_users + account_roles
                 entity_arn_list = list(map(lambda e: e['Arn'], account_principals))
                 last_accessed_map = self._generate_last_access(iam, entity_arn_list)

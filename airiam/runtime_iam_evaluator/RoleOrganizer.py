@@ -1,4 +1,4 @@
-from .BaseOrganizer import BaseOrganizer
+from airiam.runtime_iam_evaluator.BaseOrganizer import BaseOrganizer
 
 
 class RoleOrganizer(BaseOrganizer):

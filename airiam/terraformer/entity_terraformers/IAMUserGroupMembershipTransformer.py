@@ -1,6 +1,6 @@
 import json
 
-from terraformer.entity_terraformers.BaseEntityTransformer import BaseEntityTransformer
+from airiam.terraformer.entity_terraformers.BaseEntityTransformer import BaseEntityTransformer
 
 
 class IAMUserGroupMembershipTransformer(BaseEntityTransformer):
