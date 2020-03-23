@@ -12,9 +12,8 @@ init(autoreset=True)
 
 class Reporter:
     @staticmethod
-    def report_runtime(rightsize: bool, runtime_results: RuntimeReport) -> None:
-        if not rightsize:
-            print('No rightsizing selected, creating terraform code for IAM runtime as is')
+    def report_runtime(list_unused: bool, runtime_results: RuntimeReport) -> None:
+        if not list_unused:
             return
 
         print('\nResults for Account {}:\n'.format(runtime_results.account_id))

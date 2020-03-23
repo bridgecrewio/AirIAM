@@ -21,7 +21,7 @@ class TerraformTransformer:
         if not os.path.exists(self._result_dir):
             os.mkdir(self._result_dir)
 
-    def transform(self, rightsize: bool, results: RuntimeReport, should_import=True) -> str:
+    def transform(self, without_unused: bool, results: RuntimeReport, should_import=True) -> str:
         try:
             entities_to_import = self._create_current_state(results.get_raw_data())
 
@@ -40,7 +40,7 @@ class TerraformTransformer:
                     i += 1
                 print("Imported all existing entities to state")
 
-            if rightsize:
+            if without_unused:
                 self._create_rightsized_state(results.get_rightsizing())
             tf.fmt()
             return "Success"
