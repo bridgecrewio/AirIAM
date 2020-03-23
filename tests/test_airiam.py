@@ -1,6 +1,6 @@
 import unittest
 
-from airiam import parse_args
+from airiam.main import parse_args
 
 
 class TestAiriam(unittest.TestCase):
