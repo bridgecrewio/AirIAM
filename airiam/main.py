@@ -2,7 +2,7 @@ import argparse
 import logging
 import sys
 
-from Reporter import Reporter
+from airiam.Reporter import Reporter, OutputFormat
 from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
 from airiam.terraformer.TerraformTransformer import TerraformTransformer
 
@@ -25,14 +25,14 @@ def run():
     Reporter.print_prelude()
     args = parse_args(sys.argv[1:])
 
-    if args.command == 'tf':
+    if args.command == 'terraform':
         list_unused = args.without_unused
     else:
         list_unused = True
     runtime_results = RuntimeIamEvaluator(logger, args.profile, args.no_cache).evaluate_runtime_iam(list_unused, args.last_used_threshold)
 
     Reporter.report_runtime(list_unused, runtime_results)
-    if args.command == 'tf':
+    if args.command == 'terraform':
         terraform_results = TerraformTransformer(logger, args.profile, args.directory).transform(args.without_unused, runtime_results)
         if terraform_results != 'Success':
             logger.error("Failed to create the terraform module")
@@ -52,8 +52,10 @@ def parse_args(args):
     iam_parser.add_argument('-l', '--last-used-threshold', help='The "Last Used" threshold, in days, for an entity to be considered unused', type=int,
                             default=90)
     iam_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
+    iam_parser.add_argument('-o', '--output', help='The output format for the unused entities', type=OutputFormat,
+                            choices=[output.name for output in OutputFormat], default=OutputFormat.cli)
 
-    tf_parser = sub_parsers.add_parser('tf', help='Terraformize your runtime AWS IAM configurations',
+    tf_parser = sub_parsers.add_parser('terraform', help='Terraformize your runtime AWS IAM configurations',
                                        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     tf_parser.add_argument('-p', '--profile', help='The AWS profile to be used', type=str)
     tf_parser.add_argument('-d', '--directory', help='The path where the output terraform code and state will be stored', type=str, default='results')

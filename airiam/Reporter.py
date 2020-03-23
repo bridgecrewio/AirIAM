@@ -1,13 +1,18 @@
 from colorama import init
+from enum import Enum
 from termcolor import colored
 
 from airiam.models import RuntimeReport
-from banner import banner
-from version import version
+from airiam.banner import banner
+from airiam.version import version
 
 SEPARATOR = '\n==================================================\n\n'
 
 init(autoreset=True)
+
+
+class OutputFormat(Enum):
+    cli = 'CLI'
 
 
 class Reporter:

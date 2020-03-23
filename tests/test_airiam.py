@@ -21,8 +21,8 @@ class TestAiriam(unittest.TestCase):
         self.assertTrue(args.no_cache)
 
     def test_arg_parser_terraform_default(self):
-        args = parse_args(['tf'])
-        self.assertEqual(args.command, 'tf')
+        args = parse_args(['terraform'])
+        self.assertEqual(args.command, 'terraform')
         self.assertEqual(args.last_used_threshold, 90)
         self.assertFalse(args.without_unused)
         self.assertIsNone(args.profile)
@@ -30,8 +30,8 @@ class TestAiriam(unittest.TestCase):
         self.assertFalse(args.no_cache)
 
     def test_arg_parser_terraform_custom(self):
-        args = parse_args(['tf', '-p', 'dev', '--without-unused', '-l', '30', '--no-cache', '-d', 'tf_res'])
-        self.assertEqual(args.command, 'tf')
+        args = parse_args(['terraform', '-p', 'dev', '--without-unused', '-l', '30', '--no-cache', '-d', 'tf_res'])
+        self.assertEqual(args.command, 'terraform')
         self.assertEqual(args.last_used_threshold, 30)
         self.assertTrue(args.without_unused)
         self.assertEqual(args.profile, 'dev')
