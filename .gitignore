@@ -9,6 +9,7 @@
 *.terraform*
 *.tfvars
 *.tfbackend
+results/
 
 # Unit tests + coverage reports
 htmlcov/

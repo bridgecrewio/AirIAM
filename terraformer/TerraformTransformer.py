@@ -18,14 +18,16 @@ class TerraformTransformer:
         self.logger = logger
         self.profile = profile
         self._result_dir = result_dir
+        if not os.path.exists(self._result_dir):
+            os.mkdir(self._result_dir)
 
     def transform(self, rightsize: bool, results: RuntimeReport, should_import=True) -> str:
         try:
             entities_to_import = self._create_current_state(results.get_raw_data())
 
+            tf = Terraform(working_dir=self._result_dir)
+            tf.init(backend=False)
             if should_import:
-                tf = Terraform()
-                tf.init(backend=False)
                 num_of_entities_to_import = len(entities_to_import)
                 print(f"Importing {num_of_entities_to_import} entities")
                 i = 1
@@ -40,6 +42,7 @@ class TerraformTransformer:
 
             if rightsize:
                 self._create_rightsized_state(results.get_rightsizing())
+            tf.fmt()
             return "Success"
         except Exception as e:
             self.logger.error(e)
@@ -47,13 +50,13 @@ class TerraformTransformer:
 
     def _create_current_state(self, iam_raw_data: dict) -> list:
         entities_to_import = []
-        with open('main.tf', 'w') as main_file:
+        with open(f"{self._result_dir}/main.tf", 'w') as main_file:
             main_code = AWSProviderTransformer({'region': 'us-east-1', 'profile': self.profile}).code()
             main_file.write(main_code)
 
         policies_identifiers = {}
 
-        with open('policies.tf', 'w') as policies_file:
+        with open(f"{self._result_dir}/policies.tf", 'w') as policies_file:
             policy_code = ""
             for policy in iam_raw_data['AccountPolicies']:
                 if 'iam::aws:' in policy['Arn']:
@@ -65,7 +68,7 @@ class TerraformTransformer:
                 entities_to_import += policy_transformer.entities_to_import()
             policies_file.write(policy_code)
 
-        with open('groups.tf', 'w') as groups_file:
+        with open(f"{self._result_dir}/groups.tf", 'w') as groups_file:
             groups_code = ""
             groups_identifiers = {}
             for group in iam_raw_data['AccountGroups']:
@@ -76,7 +79,7 @@ class TerraformTransformer:
             groups_file.write(groups_code)
 
         user_group_memberships = {}
-        with open('users.tf', 'w') as users_file:
+        with open(f"{self._result_dir}/users.tf", 'w') as users_file:
             user_code = ""
             for user in iam_raw_data['AccountUsers']:
                 transformer = IAMUserTransformer(user)
@@ -91,7 +94,7 @@ class TerraformTransformer:
                 entities_to_import += transformer.entities_to_import() + membership_transformer.entities_to_import()
             users_file.write(user_code)
 
-        with open('roles.tf', 'w') as roles_file:
+        with open(f"{self._result_dir}/roles.tf", 'w') as roles_file:
             roles_code = ""
             for role in iam_raw_data['AccountRoles']:
                 transformer = IAMRoleTransformer(role)

@@ -37,7 +37,7 @@ def run():
 
     Reporter.report_runtime(args.rightsize, runtime_results)
 
-    terraform_results = TerraformTransformer(logger, args.profile).transform(args.rightsize, runtime_results)
+    terraform_results = TerraformTransformer(logger, args.profile, args.folder).transform(args.rightsize, runtime_results)
     if terraform_results != 'Success':
         logger.error("Failed to create the terraform module")
         exit(1)
