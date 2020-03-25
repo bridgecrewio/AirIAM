@@ -1,4 +1,4 @@
-from version import version
+from airiam.version import version
 
 banner = f"""
      ____      __           _____      ____     __        __

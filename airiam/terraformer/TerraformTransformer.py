@@ -43,7 +43,7 @@ class TerraformTransformer:
             if without_unused:
                 self._create_rightsized_state(results.get_rightsizing())
             tf.fmt()
-            return "Success"
+            return results
         except Exception as e:
             self.logger.error(e)
             raise e
