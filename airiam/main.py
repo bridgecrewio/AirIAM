@@ -31,7 +31,9 @@ def run():
         list_unused = True
     runtime_results = RuntimeIamEvaluator(logger, args.profile, args.no_cache).evaluate_runtime_iam(list_unused, args.last_used_threshold)
 
-    Reporter.report_runtime(list_unused, runtime_results)
+    if list_unused:
+        Reporter.report_unused(runtime_results)
+
     if args.command == 'terraform':
         terraform_results = TerraformTransformer(logger, args.profile, args.directory).transform(args.without_unused, runtime_results)
         if terraform_results != 'Success':

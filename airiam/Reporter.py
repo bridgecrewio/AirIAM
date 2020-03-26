@@ -1,6 +1,7 @@
 from colorama import init
 from enum import Enum
 from termcolor import colored
+import time
 
 from airiam.models import RuntimeReport
 from airiam.banner import banner
@@ -17,29 +18,43 @@ class OutputFormat(Enum):
 
 class Reporter:
     @staticmethod
-    def report_runtime(list_unused: bool, runtime_results: RuntimeReport) -> None:
-        if not list_unused:
-            return
-
+    def report_unused(runtime_results: RuntimeReport) -> None:
+        print(f'Identifying unused {colored("users", color="yellow", attrs=["bold"])}, {colored("roles", color="green", attrs=["bold"])} and '
+              f'{colored("unused police attachments", color="grey", attrs=["bold"])}')
+        time.sleep(2)
         unused = runtime_results.get_unused()
         unused_users = unused['Users']
         if len(unused_users) > 0:
-            print(colored('\nThe following {} users are unused:'.format(len(unused_users)), 'yellow', attrs=['bold']))
+            print(colored(f'\nThe following {len(unused_users)} users were found to be unused:', 'yellow', attrs=['bold']))
             for user in unused_users:
                 print(colored('Unused: ', 'red', attrs=['bold']) + '{}: last used {} days ago'.format(user['UserName'], user['LastUsed']))
-
+            print(f'\nTo delete these {len(unused_users)} users easily, utilize our scripts! A script which deletes a list of users:')
+            print('https://www.bridgecrew.cloud/incidents/BC_AWS_IAM_35/remediation/DeleteUser')
+            time.sleep(5)
+        else:
+            print(colored('No unused users found in the account! Hurray!', color='green'))
         unused_roles = unused['Roles']
         if len(unused_roles) > 0:
             print(colored('\nThe following {} roles are unused:'.format(len(unused_roles)), 'yellow', attrs=['bold']))
             for role in unused_roles:
                 print(colored('Unused: ', 'red', attrs=['bold']) + f"{role['RoleName']}: last used {role['LastUsed']} days ago")
+            print(f'\nTo delete these {len(unused_roles)} roles easily, utilize our scripts! A script which deletes a list of roles:')
+            print('https://www.bridgecrew.cloud/incidents/BC_AWS_IAM_34/remediation/DeleteRole')
+            time.sleep(5)
 
+        print()
         roles = runtime_results.get_rightsizing()['Roles']
+        print_playbook = False
         for role in roles:
             if len(role['policies_to_detach']) > 0:
+                print_playbook = True
                 for policy in role['policies_to_detach']:
                     print(colored('Policy attached but not used: ', 'yellow', attrs=['bold']) +
                           f"Policy {policy['Policy']} attached to {role['role']['RoleName']}")
+        if print_playbook:
+            print(f'\nTo detach these policy attachments easily, utilize our scripts! A script which detaches policies from roles:')
+            print('https://www.bridgecrew.cloud/incidents/BC_AWS_IAM_41/remediation/DetachPolicyFromRole')
+            time.sleep(5)
 
         print(SEPARATOR)
 
