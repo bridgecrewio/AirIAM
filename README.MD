@@ -18,7 +18,6 @@ Automating, simplifying and least-privilege-ing complex existing AWS IAM resourc
 #### AirIAM is a tool that helps manage AWS IAM and migrate it to IaC.
 
 <img src="https://www.syfy.com/sites/syfy/files/styles/2280x1280/public/2019/03/airiam_star_trek_disco1_header.jpg" width="400" />
-<br/>
 
 > Airiam was a female cyberneticly enhanced Human serving as an officer in the Federation Starfleet in the 23rd century 
 > until her death in 2257.
