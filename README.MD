@@ -7,49 +7,55 @@
 Automating, simplifying and least-privilege-ing complex existing AWS IAM resource mesh with terraform (IaC) 
 > :construction: **WORK IN PROGRESS** :construction:
 
-![Airiam](https://www.syfy.com/sites/syfy/files/styles/2280x1280/public/2019/03/airiam_star_trek_disco1_header.jpg)
-> Airiam was a female cyberneticly enhanced Human serving as an officer in the Federation Starfleet in the 23rd century 
-> until her death in 2257.
-
-AirIAM migrates an existing account's AWS IAM configurations into terraform, allowing easier access 
-management, enabling review process and rolling back bad configurations easily.
-While at it, AirIAM also reduces unused permissions to make sure the environment is adherent
-to the least-privilege principal.
-
- 
- # Step 1 - Organizing employee's IAM users
- AirIAM identifies human users as users which used the console login. This means these IAM users both have a console 
- login profile **and** they used it to login to the console.
- It creates 3 different groups for these users:
- 1. Admin group - for admin users.
- 2. Powerusers group - users which are constantly accessing a closed set of write permissions.
- 3. ReadOnly group - everyone else.
- 
- In the output the powerusers group is empty, and users which are not admins will need to be manually elevated
- to the powerusers group.
- 
- ## **Table of contents**
-
-- [Description](#description)
-- [Features](#features)
+## **Table of contents**
+- [Introduction](#introduction)
+- [Commands](#commands)
 - [Screenshots](#screenshots)
 - [Getting Started](#getting-started)
 - [Support](#support)
 
-## Description
 
-AirIAM scans existing IAM usage patterns and provides a simple method to migrate IAM configurations into a rightsized Terraform plan. It removes unused users and groups and replaces them with a Least Privileges model consisting of three groups: `admins`, `powerusers`, `read-only` . 
+AirIAM is a tool that helps manage AWS IAM privileges and migrate them to IaC.
+![Airiam](https://www.syfy.com/sites/syfy/files/styles/2280x1280/public/2019/03/airiam_star_trek_disco1_header.jpg =40x40)
+> Airiam was a female cyberneticly enhanced Human serving as an officer in the Federation Starfleet in the 23rd century 
+> until her death in 2257.
 
-By moving all configurations into Terraform code, users can start tracking, auditing and modifying IAM configurations as part of their standard infrastructure-as-code provisioning processes.
+## Introduction
+AirIAM scans existing IAM usage patterns and provides a simple method to migrate IAM configurations into a rightsized 
+Terraform plan. It identifies unused users, roles, groups, policies and policy attachments and replaces them with a 
+Least Privileges terraform code modeled accordingly.
 
-AirIAM is battle-tested and is recommended for use in Dev, QA and test environments that have been previously managed by humans. It is design to result in minimal affect on existing workloads. If you are interested in migrating a Prod account, contact us at info@bridgecrew.io or [open a ticket](https://bridgecrew.zendesk.com/hc/en-us/requests/new).
+By moving all configurations into Terraform code, users can start tracking, auditing and modifying IAM configurations 
+as part of their standard infrastructure-as-code provisioning processes.
 
- ## Features
+AirIAM is battle-tested and is recommended for use in Dev, QA and test environments that have been previously managed 
+by humans. It is design to result in minimal affect on existing workloads. If you are interested in migrating a Prod 
+account, contact us at info@bridgecrew.io or [open a ticket](https://bridgecrew.zendesk.com/hc/en-us/requests/new).
 
- * Effortless migration of existing IAM configurations into a simple Least Privileges model. 
- * Generates a Terraform plan for migration AND rollback.
- * Detects unused IAM resources using native [Amazon Access Advisor](https://aws.amazon.com/blogs/security/identify-unused-iam-roles-remove-confidently-last-used-timestamp/) APIs.
- * Integrates with [Checkov](https://checkov.io) to track unwanted configuration changes and configuration drift.
+## Features
+
+- Detects unused IAM resources using native AWS and [Amazon Access Advisor](https://aws.amazon.com/blogs/security/identify-unused-iam-roles-remove-confidently-last-used-timestamp/) APIs.
+- Provide scripts to remove unused entities en-masse
+- Effortless migration of existing IAM configurations into a simple Least Privileges IaC model. 
+- Integrates with [Checkov](https://checkov.io) to track unwanted configuration changes and configuration drift.
+
+
+## Commands
+- `find_unused` - Uses AWS IAM APIs to detect unused users, roles, groups, policies and policy attachments.
+- `remove_unused` - Uses the previous command, `find_unused`, to identify unused entities in the account
+and adds links to scripts and automation which will help remove these entities in a quick and easy way. [Learn more 
+about these scripts and automation](RecommendedAutomations.md).
+- `recommend_groups` - Uses AWS IAM APIs to identify the different level of usages and create groups according to these
+levels. Currently supported groups:
+    - Admins - users which have the AdministratorAccess policy attached, will be added to the admins group which will 
+    have the policy `arn:aws:iam::aws:policy/AdministratorAccess` attached
+    - PowerUsers - users which have write access to **any** of the services they use will be added to the powerusers 
+    group(s). In case of more than 10 policies being attached to that group, a number of groups will be created for 
+    powerusers, and the relevant users will be members of all of them.
+    - ReadOnly - users which only have read access to the account. Will be members of the readonly group which will have 
+    the policy `arn:aws:iam::aws:policy/ReadOnlyAccess` attached 
+- `terraform` - Creates Terraform files based on the configurations and the transformations applied by the optional
+arguments supplied
 
 ## Screenshots
 
@@ -66,16 +72,13 @@ IAM migration plan
 ### Installation
 
 ```sh
-git clone https://github.com/bridgecrewio/AirIAM.git
-cd AirIAM/
-pipenv install --skip-lock
-pipenv shell
+pip install airiam 
 ```
 
 ### Configuration
 
 ```sh
-python airiam.py -p <PROFILE> -u <NUM_OF_DAYS> -f <PATH_TO_DIR> -r
+airiam -p <PROFILE> -u <NUM_OF_DAYS> -f <PATH_TO_DIR> -r
 ```
 
 `profile / p` will use your custom profile and perform the initial checks over all regions when needed.
