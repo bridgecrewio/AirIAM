@@ -45,7 +45,7 @@ account, contact us at info@bridgecrew.io or [open a ticket](https://bridgecrew.
 ## Commands
 - `find_unused` - Uses AWS IAM APIs to detect unused users, roles, groups, policies and policy attachments. Also,
 it adds links to scripts and automation which will help remove these entities in a quick and easy way. [Learn more 
-about these scripts and automation](RecommendedAutomations.md).
+about these scripts and automation](RecommendedIntegrations.md).
 - `recommend_groups` - Uses AWS IAM APIs to identify the different level of usages and create groups according to these
 levels. Currently supported groups:
     - Admins - users which have the AdministratorAccess policy attached, will be added to the admins group which will 
