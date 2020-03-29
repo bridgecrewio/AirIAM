@@ -90,11 +90,11 @@ generator.
 ### Running the commands
 
 ```sh
-airiam find_unused -p dev -l 30 --no-cache
+airiam find_unused --profile dev --last-used-threshold 30 --no-cache
 
-airiam recommend_groups -p dev -l 90 --no-cache -o json
+airiam recommend_groups --profile dev --last-used-threshold 90 --no-cache -o json
 
-airiam terraform -p dev -l 90 --no-cache -d tf/iam -i ignore.txt --without-unused
+airiam terraform --profile dev --last-used-threshold 90 --no-cache --directory tf/iam -i ignore.txt --without-unused
 ```
 
 ## Alternatives

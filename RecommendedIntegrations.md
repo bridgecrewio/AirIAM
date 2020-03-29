@@ -1,4 +1,9 @@
-# Recommended Automations
+# Recommended Integrations
+Recommended integrations with AirIAM:
+1. [Bridgecrew Cloud](#integration-with-bridgecrew-cloudhttpswwwbridgecrewcloud)
+2. [Checkov](#integration-with-checkov)
+
+## Integration with [Bridgecrew cloud](https://www.bridgecrew.cloud)
 To remove entities en-masse in a simple-to-use, time-efficient manner, we recommend utilizing the free community version
 of `Bridgecrew`'s platform, [Bridgecrew Cloud](https://www.bridgecrew.cloud).
 
@@ -43,3 +48,6 @@ airiam remove_unused [-p PROFILE] [-l LAST_SEEN_THRESHOLD]
 The expected output will be the unused entities, together with links to `Bridgecrew`s playbooks. Clicking these links
 will redirect you to your [Bridgecrew Cloud](https://www.bridgecrew.cloud) account, where you can see the remediation 
 script, download and use it.
+
+## Integration with Checkov
+[Checkov](https://www.checkov.io) allows static analysis of terraform code (as well as cloudformation)
