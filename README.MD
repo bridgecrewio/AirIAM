@@ -10,7 +10,7 @@ Automating, simplifying and least-privilege-ing complex existing AWS IAM resourc
 ## **Table of contents**
 - [Introduction](#introduction)
 - [Commands](#commands)
-- [Screenshots](#screenshots)
+- [Run Configurations](#run-configurations)
 - [Getting Started](#getting-started)
 - [Support](#support)
 
@@ -43,9 +43,8 @@ account, contact us at info@bridgecrew.io or [open a ticket](https://bridgecrew.
 
 
 ## Commands
-- `find_unused` - Uses AWS IAM APIs to detect unused users, roles, groups, policies and policy attachments.
-- `remove_unused` - Uses the previous command, `find_unused`, to identify unused entities in the account
-and adds links to scripts and automation which will help remove these entities in a quick and easy way. [Learn more 
+- `find_unused` - Uses AWS IAM APIs to detect unused users, roles, groups, policies and policy attachments. Also,
+it adds links to scripts and automation which will help remove these entities in a quick and easy way. [Learn more 
 about these scripts and automation](RecommendedAutomations.md).
 - `recommend_groups` - Uses AWS IAM APIs to identify the different level of usages and create groups according to these
 levels. Currently supported groups:
@@ -59,16 +58,6 @@ levels. Currently supported groups:
 - `terraform` - Creates Terraform files based on the configurations and the transformations applied by the optional
 arguments supplied
 
-## Screenshots
-
-Report in CLI
-
-***todo***
-
-IAM migration plan
-
-***todo***
-
 ## Getting started
 
 ### Installation
@@ -77,41 +66,59 @@ IAM migration plan
 pip install airiam 
 ```
 
-### Configuration
+### Run Configurations
+
+#### General configurations for all commands
+- `profile / p` defines which profile to use for AWS access. If none specified, the AWS credentials will be taken from 
+the default places (environment variables, default profile etc.)
+- `last-unused-threshold / l` defines the threshold, in days, for entities to be marked as unused. Default value is 90
+- `no-cache` defines whether to reuse local data or re-scan. If this is the first time or the account was changed from
+the last run, cache invalidation will occur anyway.
+
+#### `find_unused`
+- `output / o` defines the output format of the command. Default value is CLI.
+
+#### `recommend_groups`
+- `output / o` defines the output format of the command. Default value is CLI.
+
+#### `terraform`
+- `directory / d` defines the output directory for the terraform code. Default value is `results/`
+- `ignore / i` defines a path to a text file listing regexp of entities which will be ignored by the terraform code 
+generator. 
+- `--without-unused` defines unused should not be moved to terraform.
+
+### Running the commands
 
 ```sh
-airiam -p <PROFILE> -u <NUM_OF_DAYS> -f <PATH_TO_DIR> -r
+airiam find_unused -p dev -l 30 --no-cache
+
+airiam recommend_groups -p dev -l 90 --no-cache -o json
+
+airiam terraform -p dev -l 90 --no-cache -d tf/iam -i ignore.txt --without-unused
 ```
 
-`profile / p` will use your custom profile and perform the initial checks over all regions when needed.
+## Alternatives
 
-`unused / u` will define how many days will be considered as a least-usage threshold. By default value is 90, meaning, that any resource that was not active in the last 90 will be identified as unused and removed from the Terraform plan.
+### Other AWS IAM Cleanup Tools 
+For AWS IAM usage scanners check out [CloudTracker](https://github.com/duo-labs/cloudtracker), 
+[Trailscraper](https://github.com/flosell/trailscraper/), 
+[Aadvark](https://github.com/Netflix-Skunkworks/aardvark) & [Repokid](https://github.com/Netflix/repokid).
+The main difference between these tools and AirIAM is that these tools identify unused permissions but do not help
+in AWS IAM management and provide mediocre visibility. AirIAM also moves the problem into static terraform code, which
+allows an entire set of code analysis tools to manage and identify deviations and changes.
 
-`folder / f` will define where the execution recovery plan and state files will be stored. By default, the files will be placed in a `results` folder.
+### Other AWS IAM Policy MaC (management-as-code) Tools
+For static IAM policy linting, check out [Parliament](https://github.com/duo-labs/parliament).
+Parliament is actually integrated into AirIAM, and is run on the policies it gets from your AWS account. 
 
-`rightsize / r` will define whether to rightsize the permissions automatically using usage data from AWS or not.
+For automatically creating IAM policies and managing them as code, check out  [aws-iam-generator](https://github.com/awslabs/aws-iam-generator),
+[PolicySentry](https://github.com/salesforce/policy_sentry).
+These tools help create better policies, but do not help with existing AWS IAM setup.
 
-### Report
-
-```sh
-***todo***
-```
-
-The execution report is a JSON file containing the following data models used to build the Terraform execution files.
-
-1. Raw data: all AWS API data collected to perform the analysis. 
-2. Unused data: users, groups, roles and permissions and their last-seen parameters.
-3. Rightsized result: active user and groups mapped into a simplified governance model (admins, super-users, read-only)
-
-### Implementation
-
-***todo***
-
-## Alternatives ***todo***
-
-For IAM rightsizing scanners check out [CloudTracker](https://github.com/duo-labs/cloudtracker), [Trailscraper](https://github.com/flosell/trailscraper/) [Aadvark](https://github.com/Netflix-Skunkworks/aardvark) and [Parliament](https://github.com/duo-labs/parliament).
-
-For IAM Terraform migration projects check out [aws-iam-generator](https://github.com/awslabs/aws-iam-generator),[tf-parliament](https://github.com/rdkls/tf-parliament). 
+### Other Migration of AWS to terraform Tools
+For other tools that help migrate existing AWS IAM setup to terraform, check out 
+[terracognita](https://github.com/cycloidio/terracognita/) and [terraforming](https://github.com/dtan4/terraforming).
+AirIAM is the only tool which supports migrating all relevant IAM entities to terraform v0.12.
 
 ## Contributing
 
