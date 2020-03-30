@@ -60,7 +60,8 @@ arguments supplied
 
 ### Flow
 The three commands above are run after the other, in sync, as can be seen in the diagram below.
-First AirIAM and scans the AWS account with the specified profile. 
+
+When executed, AirIAM starts by scanning the AWS account using the specified profile. 
 If `find_unused` was the command specified, the results are outputted and the execution completes.
 If `recommend_groups` was the command specified, after the stage of group recommendation the results are outputted and 
 the execution completes.
