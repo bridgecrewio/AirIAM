@@ -58,6 +58,17 @@ levels. Currently supported groups:
 - `terraform` - Creates Terraform files based on the configurations and the transformations applied by the optional
 arguments supplied
 
+### Flow
+The three commands above are run after the other, in sync, as can be seen in the diagram below.
+First AirIAM and scans the AWS account with the specified profile. 
+If `find_unused` was the command specified, the results are outputted and the execution completes.
+If `recommend_groups` was the command specified, after the stage of group recommendation the results are outputted and 
+the execution completes.
+Otherwise, the `terraform` command has been specified - and so it takes the results and creates the relevant
+terraform code and state file to manage the IAM from there.
+
+![Workflow](AirIAM%20Flow.svg)
+
 ## Getting started
 
 ### Installation
