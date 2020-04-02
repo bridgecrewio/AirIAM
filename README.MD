@@ -29,6 +29,8 @@ AirIAM is battle-tested and is recommended for use in Dev, QA and test environme
 
 If you are interested in migrating a Prod account, contact us at info@bridgecrew.io for some helpful tips.
 
+![flow](images/SimpleFlow.png)
+
 ## Features
 
 - Detects unused IAM resources using native AWS and [Amazon Access Advisor](https://aws.amazon.com/blogs/security/identify-unused-iam-roles-remove-confidently-last-used-timestamp/) APIs.
@@ -56,7 +58,7 @@ If `find_unused` is specified, the results are printed and the execution complet
 If `recommend_groups` is specified, after the stage of group recommendation the results are printed and the execution completes.
 If the `terraform` command is specified it takes all the results and creates the Terraform code and state file required to replace the existing IAM configuration.
 
-![Workflow](AirIAM%20Flow.svg)
+![Workflow](images/AirIAM%20Flow.svg)
 
 ## Getting Started
 
