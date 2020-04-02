@@ -29,7 +29,7 @@ AirIAM is battle-tested and is recommended for use in Dev, QA and test environme
 
 If you are interested in migrating a Prod account, contact us at info@bridgecrew.io for some helpful tips.
 
-![flow](images/SimpleFlow.png)
+![flow](images/ComponentDiagram.png)
 
 ## Features
 
@@ -49,7 +49,7 @@ If you are interested in migrating a Prod account, contact us at info@bridgecrew
     - ReadOnly - Users who only have read access to the account. Will be members of the readonly group which will have the managed policy `arn:aws:iam::aws:policy/ReadOnlyAccess` attached.
 - `terraform` - Creates Terraform files based on the outputs and the transformations applied by the optional arguments supplied.
 
-### Usage Flow
+### Usage
 
 The three commands above run sequentially, and in-sync, as seen in the diagram below.
 
@@ -58,7 +58,8 @@ If `find_unused` is specified, the results are printed and the execution complet
 If `recommend_groups` is specified, after the stage of group recommendation the results are printed and the execution completes.
 If the `terraform` command is specified it takes all the results and creates the Terraform code and state file required to replace the existing IAM configuration.
 
-![Workflow](images/AirIAM%20Flow.svg)
+### Data Flow
+![Data Flow](images/DataFlow.svg)
 
 ## Getting Started
 
