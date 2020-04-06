@@ -154,8 +154,7 @@ def find_unused_policy_attachments(users: list, roles: dict, account_policies: l
                 if not policy_in_use:
                     potential_unused_group_policy_attachments.append({**policy_attachment_obj, 'id': attachment_id})
                 else:
-                    used_group_policy_attachments.append(
-                        {**policy_attachment_obj, 'id': attachment_id})
+                    used_group_policy_attachments.append({**policy_attachment_obj, 'id': attachment_id})
             elif not policy_in_use:
                 unused_policy_attachments.append({**policy_attachment_obj, 'User': user['UserName']})
     used_group_policy_attachments = {v['id']: v for v in used_group_policy_attachments}
