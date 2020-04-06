@@ -3,7 +3,7 @@ import logging
 import sys
 
 from airiam.Reporter import Reporter, OutputFormat
-from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
+from airiam.find_unused.find_unused import find_unused
 from airiam.terraformer.TerraformTransformer import TerraformTransformer
 
 
@@ -25,14 +25,12 @@ def run():
     Reporter.print_prelude()
     args = parse_args(sys.argv[1:])
 
-    if args.command == 'terraform':
-        list_unused = args.without_unused
-    else:
-        list_unused = True
-    runtime_results = RuntimeIamEvaluator(logger, args.profile, args.no_cache).evaluate_runtime_iam(list_unused, args.last_used_threshold)
+    runtime_results = find_unused(logger, args.profile, args.no_cache, args.last_used_threshold)
 
-    if list_unused:
+    if args.command == 'find_unused':
         Reporter.report_unused(runtime_results)
+
+
 
     if args.command == 'terraform':
         terraform_results = TerraformTransformer(logger, args.profile, args.directory).transform(args.without_unused, runtime_results)
@@ -56,6 +54,7 @@ def parse_args(args):
     iam_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
     iam_parser.add_argument('-o', '--output', help='The output format for the unused entities', type=OutputFormat,
                             choices=[output.name for output in OutputFormat], default=OutputFormat.cli)
+    iam_parser.add_argument('-i', '--ignore', help='A file for regex patterns to ignore', type=str, default=None)
 
     tf_parser = sub_parsers.add_parser('terraform', help='Terraformize your runtime AWS IAM configurations',
                                        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -65,6 +64,7 @@ def parse_args(args):
     tf_parser.add_argument('-l', '--last-used-threshold', help='The "Last Used" threshold, in days, for an entity to be considered unused', type=int,
                            default=90)
     tf_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
+    tf_parser.add_argument('-i', '--ignore', help='A file for regex patterns to ignore', type=str, default=None)
     result = parser.parse_args(args)
     if result.version:
         Reporter.print_version()

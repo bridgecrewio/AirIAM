@@ -7,14 +7,12 @@ import boto3
 from botocore.exceptions import ClientError
 
 from airiam.models.RuntimeReport import RuntimeReport
-from airiam.runtime_iam_evaluator.UserOrganizer import UserOrganizer
-from airiam.runtime_iam_evaluator.RoleOrganizer import RoleOrganizer
 
 IAM_DATA_FILE_NAME = "iam_data.json"
 ERASE_LINE = '\x1b[2K'
 
 
-class RuntimeIamEvaluator:
+class RuntimeIamScanner:
     """
     This class encapsulates all Runtime IAM data capture & classification
     It's entry point is the method `evaluate_runtime_iam`
@@ -28,34 +26,17 @@ class RuntimeIamEvaluator:
         else:
             self._session = boto3.Session()
 
-    def evaluate_runtime_iam(self, list_unused: bool, unused_threshold=90) -> RuntimeReport:
+    def evaluate_runtime_iam(self, list_unused: bool) -> RuntimeReport:
         """
         This method encapsulates all Runtime IAM data capture & classification
         :param list_unused:  A boolean indicating whether to list the unused AWS entities or not.
-        :param unused_threshold: The threshold, in days, for IAM entities to be considered unused. Default is 90
         :return: An instance of the report which describes which resources need to be reconfigured (and how),
                                 and which resources should be removed
         """
         account_id = self._get_account_id_from_profile()
         iam_data = self._get_data_from_aws(account_id, list_unused)
 
-        account_id = iam_data['AccountUsers'][0]['Arn'].split(":")[4]
-        if list_unused:
-            self.logger.info("Analyzing data for account {}".format(account_id))
-
-            unused_users, human_users, user_reorg, entities_to_detach = UserOrganizer(self.logger, unused_threshold).get_user_clusters(iam_data)
-            unused_roles, role_reorg = RoleOrganizer(self.logger, unused_threshold).rightsize_privileges(iam_data)
-
-            groups_with_no_active_members = self._find_groups_with_no_members(iam_data['AccountGroups'], human_users)
-            groups_with_no_privilege = list(filter(lambda g: len(g['AttachedManagedPolicies'] + g['GroupPolicyList']) == 0, iam_data['AccountGroups']))
-            redundant_groups = groups_with_no_active_members + groups_with_no_privilege
-
-            unattached_policies = list(filter(lambda policy: policy['AttachmentCount'] == 0, iam_data['AccountPolicies']))
-            report = RuntimeReport(account_id, iam_data, unused_users, unused_roles, unattached_policies, redundant_groups, user_reorg, role_reorg)
-        else:
-            report = RuntimeReport(account_id, iam_data, [], [], [], [], {'Admins': [], 'Powerusers': {'Users': []}, 'ReadOnly': []}, [])
-
-        return report
+        return RuntimeReport(account_id, iam_data)
 
     def _get_data_from_aws(self, account_id: str, list_unused: bool) -> dict:
         """
@@ -64,17 +45,17 @@ class RuntimeIamEvaluator:
         """
         current_dir = os.path.abspath(os.path.dirname(__file__))
         iam_data_path = "{0}/{1}".format(current_dir, IAM_DATA_FILE_NAME)
-        data_account_id = RuntimeIamEvaluator._get_account_id_from_existing_data(iam_data_path)
+        data_account_id = RuntimeIamScanner._get_account_id_from_existing_data(iam_data_path)
         if not self.refresh_cache and data_account_id == account_id:
             print("Reusing local data")
         else:
             print(f"Getting all IAM configurations for account {account_id}")
             iam = self._session.client('iam')
             iam.generate_credential_report()
-            account_users, account_roles, account_groups, account_policies = RuntimeIamEvaluator.get_account_iam_configuration(iam)
+            account_users, account_roles, account_groups, account_policies = RuntimeIamScanner.get_account_iam_configuration(iam)
             print("Getting IAM credential report")
             csv_credential_report = iam.get_credential_report()['Content'].decode('utf-8')
-            credential_report = RuntimeIamEvaluator.convert_csv_to_json(csv_credential_report)
+            credential_report = RuntimeIamScanner.convert_csv_to_json(csv_credential_report)
 
             if list_unused:
                 account_principals = account_users + account_roles
@@ -184,7 +165,7 @@ class RuntimeIamEvaluator:
             job_id = results[arn]
             try:
                 print(ERASE_LINE + f"\r{i} of {count}: Getting report for {arn}", end="")
-                results[arn] = RuntimeIamEvaluator.simplify_service_access_result(
+                results[arn] = RuntimeIamScanner.simplify_service_access_result(
                     iam.get_service_last_accessed_details(JobId=job_id)['ServicesLastAccessed']
                 )
                 i += 1
@@ -192,7 +173,7 @@ class RuntimeIamEvaluator:
                 if error.response['Error']['Code'] == 'Throttling':
                     print('Reached throttling, sleeping for 5 seconds')
                     time.sleep(5)
-                    results[arn] = RuntimeIamEvaluator.simplify_service_access_result(
+                    results[arn] = RuntimeIamScanner.simplify_service_access_result(
                         iam.get_service_last_accessed_details(JobId=job_id)['ServicesLastAccessed']
                     )
                 else:
@@ -228,24 +209,6 @@ class RuntimeIamEvaluator:
         """
         return list(map(lambda last_access: {"ServiceNamespace": last_access["ServiceNamespace"], "LastAccessed": last_access["LastAuthenticated"]},
                         filter(lambda last_access: last_access['TotalAuthenticatedEntities'] > 0, service_access_list)))
-
-    def _find_groups_with_no_members(self, group_list: list, user_list: list):
-        """
-        Identify groups with no members by going through the
-        :param group_list: List of the groups in the account
-        :param user_list:  List of the active IAM users in the account
-        :return: List of groups which have no active IAM users as members
-        """
-        empty_groups = copy.deepcopy(group_list)
-        for user in user_list:
-            for group in user['GroupList']:
-                try:
-                    group_obj = next(g for g in empty_groups if g['GroupName'] == group)
-                    empty_groups.remove(group_obj)
-                except StopIteration:
-                    self.logger.debug('Duplicate usage of group {}'.format(group))
-
-        return empty_groups
 
     def _get_account_id_from_profile(self):
         sts = self._session.client('sts')

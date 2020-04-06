@@ -43,14 +43,12 @@ class Reporter:
             time.sleep(5)
 
         print()
-        roles = runtime_results.get_rightsizing()['Roles']
-        print_playbook = False
-        for role in roles:
-            if len(role['policies_to_detach']) > 0:
-                print_playbook = True
-                for policy in role['policies_to_detach']:
-                    print(colored('Policy attached but not used: ', 'yellow', attrs=['bold']) +
-                          f"Policy {policy['Policy']} attached to {role['role']['RoleName']}")
+        unused_policy_attachments = unused['PolicyAttachments']
+        print_playbook = len(unused_policy_attachments) > 0
+        for policy_attachment in unused_policy_attachments:
+            principal = policy_attachment.get('Role') or policy_attachment.get('User') or policy_attachment.get('Group')
+            print(colored('Policy attached but not used: ', 'yellow', attrs=['bold']) + colored(principal, 'grey', attrs=['bold']) +
+                  f' is not using the privileges given by {colored(policy_attachment["PolicyArn"], "red", attrs=["bold"])}')
         if print_playbook:
             print(f'\nTo detach these policy attachments easily, utilize our scripts! A script which detaches policies from roles:')
             print('https://www.bridgecrew.cloud/incidents/BC_AWS_IAM_41/remediation/DetachPolicyFromRole')
