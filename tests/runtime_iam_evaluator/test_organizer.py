@@ -7,7 +7,7 @@ import pytest
 from airiam.find_unused.find_unused import *
 from airiam.main import configure_logger
 from airiam.models.RuntimeReport import RuntimeReport
-from airiam.recommend_groups.UserOrganizer import UserOrganizer
+from airiam.recommend_groups.recommend_groups import UserOrganizer
 
 
 class TestOrganizers(unittest.TestCase):
