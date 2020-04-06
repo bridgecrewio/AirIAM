@@ -32,13 +32,7 @@ class RuntimeReport:
         }
 
     def get_rightsizing(self) -> dict:
-        unused_policy_arns = list(map(lambda p: p['Arn'], self.get_unused()['Policies']))
-        in_use_policies = list(filter(lambda p: p['Arn'] not in unused_policy_arns, self.get_raw_data()['AccountPolicies']))
-        return {
-            "Users": self._user_group_recommendation,
-            "Roles": self._role_reorg,
-            "Policies": in_use_policies
-        }
+        return self._user_group_recommendation
 
     def set_unused(self, unused_users, unused_roles, unused_active_access_keys, unused_console_login_profiles, unattached_policies, redundant_groups,
                    unused_policy_attachments):
