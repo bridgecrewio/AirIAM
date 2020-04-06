@@ -17,8 +17,7 @@ class RuntimeReport:
         self._unused_active_access_keys = None
         self._unused_console_login_profiles = None
         self._unused_policy_attachments = None
-        self._user_reorg = None
-        self._role_reorg = None
+        self._user_group_recommendation = None
 
     def get_raw_data(self) -> dict:
         return self._raw_results
@@ -36,7 +35,7 @@ class RuntimeReport:
         unused_policy_arns = list(map(lambda p: p['Arn'], self.get_unused()['Policies']))
         in_use_policies = list(filter(lambda p: p['Arn'] not in unused_policy_arns, self.get_raw_data()['AccountPolicies']))
         return {
-            "Users": self._user_reorg,
+            "Users": self._user_group_recommendation,
             "Roles": self._role_reorg,
             "Policies": in_use_policies
         }
@@ -54,3 +53,6 @@ class RuntimeReport:
     @staticmethod
     def policy_attachment_sorter(policy_attachment):
         return policy_attachment.get('Role') or policy_attachment.get('User') or policy_attachment.get('Group')
+
+    def set_reorg(self, user_group_recommendation):
+        self._user_group_recommendation = user_group_recommendation

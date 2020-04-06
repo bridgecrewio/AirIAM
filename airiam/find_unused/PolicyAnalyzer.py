@@ -52,7 +52,7 @@ class PolicyAnalyzer:
              ]) == 0
 
     @staticmethod
-    def _policy_is_write_access(self, policy_document):
+    def policy_is_write_access(policy_document):
         actions = PolicyAnalyzer._get_policy_actions(policy_document)
         for action in actions:
             if action == '*' or '*' in action.split(':'):

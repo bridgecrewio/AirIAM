@@ -5,7 +5,7 @@ from airiam.find_unused.PolicyAnalyzer import PolicyAnalyzer
 from airiam.find_unused.RuntimeIamScanner import RuntimeIamScanner
 
 
-def _filter_attachments_of_unused_entities(unused_policy_attachments, unused_users, unused_roles, redundant_groups) -> list:
+def filter_attachments_of_unused_entities(unused_policy_attachments, unused_users, unused_roles, redundant_groups) -> list:
     unused_role_names = list(map(lambda role_obj: role_obj['RoleName'], unused_roles))
     unused_user_names = list(map(lambda user_obj: user_obj['UserName'], unused_users))
     redundant_group_names = list(map(lambda group_obj: group_obj['GroupName'], redundant_groups))
@@ -39,7 +39,7 @@ def find_unused(logger, profile, refresh_cache, unused_threshold):
     unused_roles, used_roles = find_unused_roles(account_roles, unused_threshold)
     unused_policy_attachments = find_unused_policy_attachments(account_users, account_roles, account_policies, account_groups, unused_threshold)
 
-    unused_policy_attachments = _filter_attachments_of_unused_entities(unused_policy_attachments, unused_users, unused_roles, redundant_groups)
+    unused_policy_attachments = filter_attachments_of_unused_entities(unused_policy_attachments, unused_users, unused_roles, redundant_groups)
 
     iam_report.set_unused(unused_users, unused_roles, unused_active_access_keys, unused_console_login_profiles, unattached_policies,
                           redundant_groups, unused_policy_attachments)
