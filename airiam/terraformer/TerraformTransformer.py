@@ -41,7 +41,7 @@ class TerraformTransformer:
                 print("Imported all existing entities to state")
 
             if without_unused:
-                self._create_rightsized_state(results.get_rightsizing())
+                self._create_rightsized_state(results.get_user_groups())
             tf.fmt()
             return results
         except Exception as e:

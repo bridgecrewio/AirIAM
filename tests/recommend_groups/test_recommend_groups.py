@@ -6,6 +6,7 @@ from airiam.find_unused.find_unused import *
 from airiam.main import configure_logger
 from airiam.models.RuntimeReport import RuntimeReport
 from airiam.recommend_groups.recommend_groups import UserOrganizer
+from airiam.Reporter import Reporter
 
 
 class TestOrganizers(unittest.TestCase):
@@ -32,7 +33,7 @@ class TestOrganizers(unittest.TestCase):
                                redundant_groups, unused_policy_attachments)
 
         self.user_organizer = UserOrganizer(configure_logger(), unused_threshold)
-        unused_users, human_users, simple_user_clusters, entities_to_detach = self.user_organizer.get_user_clusters(self.report)
+        simple_user_clusters = self.user_organizer.get_user_clusters(self.report)
         self.assertEqual(len(simple_user_clusters), 4)
         self.assertEqual(len(unused_users), 1)
         self.assertTrue('Admins' in simple_user_clusters.keys())
@@ -40,7 +41,8 @@ class TestOrganizers(unittest.TestCase):
         self.assertTrue('Powerusers' in simple_user_clusters.keys())
         self.assertEqual(len(simple_user_clusters['UnchangedUsers']), 0, 'Expected to have 0 unchanged users')
         self.assertEqual(len(simple_user_clusters['Admins']), 2, 'Expected to have 2 admins')
-        self.assertEqual(len(entities_to_detach), 5)
+        self.report.set_reorg(simple_user_clusters)
+        Reporter.report_groupings(self.report)
 
 
 if __name__ == '__main__':
