@@ -34,13 +34,12 @@ class TestOrganizers(unittest.TestCase):
 
         self.user_organizer = UserOrganizer(configure_logger(), unused_threshold)
         simple_user_clusters = self.user_organizer.get_user_clusters(self.report)
-        self.assertEqual(len(simple_user_clusters), 4)
+        self.assertEqual(len(simple_user_clusters), 3)
         self.assertEqual(len(unused_users), 1)
         self.assertTrue('Admins' in simple_user_clusters.keys())
         self.assertTrue('ReadOnly' in simple_user_clusters.keys())
         self.assertTrue('Powerusers' in simple_user_clusters.keys())
-        self.assertEqual(len(simple_user_clusters['UnchangedUsers']), 0, 'Expected to have 0 unchanged users')
-        self.assertEqual(len(simple_user_clusters['Admins']), 2, 'Expected to have 2 admins')
+        self.assertEqual(len(simple_user_clusters['Admins']['Users']), 2, 'Expected to have 2 admins')
         self.report.set_reorg(simple_user_clusters)
         Reporter.report_groupings(self.report)
 

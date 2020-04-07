@@ -92,17 +92,6 @@ Check us out - https://www.bridgecrew.cloud
     def report_terraform(terraform_results):
         print(SEPARATOR)
 
-        print(colored('A terraform module was created with the following setup:', 'green'))
-        user_org = terraform_results.get_user_groups()['Users']
-        for admin in user_org['Admins']:
-            print(colored('ADMIN: ', 'red', attrs=['bold']) + admin)
-        for power_user in user_org['Powerusers']['Users']:
-            print(colored('Power user: ', 'yellow', attrs=['bold']) + power_user)
-        for user in user_org['ReadOnly']:
-            print('Read Only: {}'.format(user))
-        for user in user_org['UnchangedUsers']:
-            print(colored('Won\'t be changed: ', 'grey') + user['UserName'])
-
     @classmethod
     def print_version(cls):
         print(f"AirIAM version {version}")
