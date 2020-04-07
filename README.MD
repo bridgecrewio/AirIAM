@@ -15,6 +15,8 @@ AirIAM was created to promote immutable and version-controlled IAM management to
 - [Commands](#commands)
 - [Run Configurations](#run-configurations)
 - [Getting Started](#getting-started)
+- [Alternatives](#alternatives)
+- [Contributing](#contributing)
 - [Support](#support)
 
 ## Introduction
@@ -139,4 +141,4 @@ We would love to hear about other IAM governance models for additional use cases
 
 Start with our [Documentation](https://bridgecrewio.github.io/airiam/) for quick tutorials and examples.
 
-If you need direct support you can contact us at info@bridgecrew.io or [open a ticket](https://bridgecrew.zendesk.com/hc/en-us/requests/new).
+If you need direct support you can contact us at info@bridgecrew.io.
