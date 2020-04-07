@@ -14,11 +14,15 @@ ADMIN_POLICY_ARN = 'arn:aws:iam::aws:policy/AdministratorAccess'
 READ_ONLY_ARN = 'arn:aws:iam::aws:policy/ReadOnlyAccess'
 
 
-def recommend_groups(logger, runtime_iam_report: RuntimeReport, unused_threshold=90):
+def recommend_groups(logger, runtime_iam_report: RuntimeReport, last_used_threshold=90, organizer=None):
     account_id = runtime_iam_report.get_raw_data()['AccountRoles'][0]['Arn'].split(":")[4]
     logger.info("Analyzing data for account {}".format(account_id))
 
-    runtime_iam_report.set_reorg(UserOrganizer(logger, unused_threshold).get_user_clusters(runtime_iam_report))
+    if not organizer:
+        logger.info('Using the default UserOrganizer')
+        organizer = UserOrganizer(logger, last_used_threshold)
+
+    runtime_iam_report.set_reorg(organizer.get_user_clusters(runtime_iam_report))
 
     return runtime_iam_report
 
@@ -29,16 +33,23 @@ class UserOrganizer:
         self.logger = logger
         self.unused_threshold = unused_threshold
 
-    def get_user_clusters(self, runtime_report: RuntimeReport):
+    def get_user_clusters(self, runtime_report: RuntimeReport) -> dict:
+        """
+        Returns the user clusters based on the raw data in the runtime report
+        :param runtime_report: an instance of RuntimeReport which has the raw_iam_data already set
+        :return: {'Admins': {'Users': [], 'Policies': []}, 'Powerusers': {'Users': [], 'Policies': []}, 'ReadOnly': {'Users': [], 'Policies': []}}
+        """
         iam_data = runtime_report.get_raw_data()
-        unused_users, human_users, unchanged_users = self._separate_user_types(iam_data['AccountUsers'])
+        human_users, service_users = self._separate_user_types(iam_data['AccountUsers'])
         simple_user_clusters = self._create_simple_user_clusters(human_users, iam_data['AccountGroups'], iam_data['AccountPolicies'])
-        simple_user_clusters['UnchangedUsers'] = unchanged_users
-        entities_to_detach = UserOrganizer.calculate_detachments(human_users)
-        return unused_users, human_users, simple_user_clusters, entities_to_detach
+        return simple_user_clusters
 
     def _create_simple_user_clusters(self, users, account_groups, account_policies):
-        clusters = {"Admins": [], "ReadOnly": [], "Powerusers": {'Users': [], 'Policies': []}}
+        clusters = {
+            'Admins': {'Policies': [ADMIN_POLICY_ARN], 'Users': []},
+            'ReadOnly': {'Users': [], 'Policies': [READ_ONLY_ARN]},
+            'Powerusers': {'Users': [], 'Policies': []}
+        }
 
         policies_in_use = {}
         for user in users:
@@ -49,7 +60,7 @@ class UserOrganizer:
             user_attached_managed_policies = list(set(map(lambda p: p['PolicyArn'], user_attached_managed_policies)))
             user_attached_managed_policies.sort()
             if ADMIN_POLICY_ARN in user_attached_managed_policies:
-                clusters["Admins"].append(user['UserName'])
+                clusters['Admins']['Users'].append(user['UserName'])
             else:
                 services_in_use = list(
                     map(
@@ -76,55 +87,27 @@ class UserOrganizer:
                     policies_in_use[pol] += 1
                     policy_obj = next(p for p in account_policies if p['Arn'] == pol)
                     policy_document = next(version for version in policy_obj['PolicyVersionList'] if version['IsDefaultVersion'])['Document']
-                    if PolicyAnalyzer.policy_is_write_access(policy_document):
+                    if PolicyAnalyzer().policy_is_write_access(policy_document):
                         user_needs_write_access = True
                         break
 
                 if user_needs_write_access:
-                    clusters['Powerusers']['Users'].append(user["UserName"])
+                    clusters['Powerusers']['Users'].append(user['UserName'])
                 else:
-                    clusters['ReadOnly'].append(user["UserName"])
+                    clusters['ReadOnly']['Users'].append(user['UserName'])
         policies_sorted = list({k: v for k, v in sorted(policies_in_use.items(), key=lambda item: -item[1])}.keys())
 
-        clusters["Powerusers"]["Policies"] = policies_sorted
+        clusters['Powerusers']['Policies'] = policies_sorted
         return clusters
 
-    def _separate_user_types(self, account_users):
+    def _separate_user_types(self, account_users) -> (list, list):
         human_users = []
-        unused_users = []
-        unchanged_users = []
+        service_users = []
         for user in account_users:
-            if user['LastUsed'] >= self.unused_threshold:
-                unused_users.append(user)
-            else:
+            if user['LastUsed'] < self.unused_threshold:
                 if len(user['AttachedManagedPolicies']) == 0 and len(user['GroupList']) == 0:
-                    unchanged_users.append(user)
+                    service_users.append(user)
                 else:
                     human_users.append(user)
 
-        return unused_users, human_users, unchanged_users
-
-    @staticmethod
-    def calculate_detachments(human_users):
-        detachments = []
-        for user in human_users:
-            for entity in user.get('GroupList', []):
-                detachments.append({
-                    'UserName': user['UserName'],
-                    'EntityType': 'Group',
-                    'EntityId': entity
-                })
-            for entity in list(map(lambda u: u['PolicyName'], user.get('UserPolicyList', []))):
-                detachments.append({
-                    'UserName': user['UserName'],
-                    'EntityType': 'UserPolicy',
-                    'EntityId': entity
-                })
-            for entity in user.get('AttachedManagedPolicies', []):
-                detachments.append({
-                    'UserName': user['UserName'],
-                    'EntityType': 'AttachedManagedPolicy',
-                    'EntityId': entity
-                })
-
-        return detachments
+        return human_users, service_users

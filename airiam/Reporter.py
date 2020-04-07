@@ -65,21 +65,32 @@ Check us out - https://www.bridgecrew.cloud
 """)
 
     @staticmethod
-    def report_terraform(terraform_results):
+    def report_groupings(report_with_recommendations: RuntimeReport):
+        simple_user_clusters = report_with_recommendations.get_user_groups()
+        admins = simple_user_clusters['Admins']
+        read_only = simple_user_clusters['ReadOnly']
+        powerusers = simple_user_clusters['Powerusers']
+        print(colored(f'\nThe following {len(admins["Users"])} users require admin access to the account:', 'yellow', attrs=['bold']))
+        for user in admins['Users']:
+            print(colored('Admin: ', 'red', attrs=['bold']) + user)
+        print()
+        if len(powerusers['Users']) > 0:
+            print(f'The following {len(powerusers["Users"])} users require ' +
+                  colored('partial write', 'yellow', attrs=['bold']) +
+                  ' access to the account:')
+            for user in powerusers['Users']:
+                print(colored('Poweruser: ', 'yellow', attrs=['bold']) + user)
+        print()
+        if len(read_only['Users']) > 0:
+            print(colored(f'The following {len(read_only["Users"])} users require ReadOnly access to the account:', 'grey', attrs=['bold']))
+            for user in read_only['Users']:
+                print(colored('ReadOnly: ', 'green') + user)
+
         print(SEPARATOR)
 
-        print(colored('A terraform module was created with the following setup:', 'green'))
-        user_org = terraform_results.get_rightsizing()['Users']
-        for admin in user_org['Admins']:
-            print(colored('ADMIN: ', 'red', attrs=['bold']) + admin)
-        for power_user in user_org['Powerusers']['Users']:
-            print(colored('Power user: ', 'yellow', attrs=['bold']) + power_user)
-        for user in user_org['ReadOnly']:
-            print('Read Only: {}'.format(user))
-        for user in user_org['UnchangedUsers']:
-            print(colored('Won\'t be changed: ', 'grey') + user['UserName'])
-
-    print(SEPARATOR)
+    @staticmethod
+    def report_terraform(terraform_results):
+        print(SEPARATOR)
 
     @classmethod
     def print_version(cls):

@@ -31,7 +31,7 @@ class RuntimeReport:
             "PolicyAttachments": self._unused_policy_attachments
         }
 
-    def get_rightsizing(self) -> dict:
+    def get_user_groups(self) -> dict:
         return self._user_group_recommendation
 
     def set_unused(self, unused_users, unused_roles, unused_active_access_keys, unused_console_login_profiles, unattached_policies, redundant_groups,
