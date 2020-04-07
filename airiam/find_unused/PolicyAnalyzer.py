@@ -51,8 +51,7 @@ class PolicyAnalyzer:
              len(list(filter(re.compile(service.replace('*', '.*')).match, services_last_accessed))) > 0
              ]) == 0
 
-    @staticmethod
-    def policy_is_write_access(policy_document):
+    def policy_is_write_access(self, policy_document):
         actions = PolicyAnalyzer._get_policy_actions(policy_document)
         for action in actions:
             if action == '*' or '*' in action.split(':'):
