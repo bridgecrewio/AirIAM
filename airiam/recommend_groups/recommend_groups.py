@@ -14,11 +14,15 @@ ADMIN_POLICY_ARN = 'arn:aws:iam::aws:policy/AdministratorAccess'
 READ_ONLY_ARN = 'arn:aws:iam::aws:policy/ReadOnlyAccess'
 
 
-def recommend_groups(logger, runtime_iam_report: RuntimeReport, last_used_threshold=90):
+def recommend_groups(logger, runtime_iam_report: RuntimeReport, last_used_threshold=90, organizer=None):
     account_id = runtime_iam_report.get_raw_data()['AccountRoles'][0]['Arn'].split(":")[4]
     logger.info("Analyzing data for account {}".format(account_id))
 
-    runtime_iam_report.set_reorg(UserOrganizer(logger, last_used_threshold).get_user_clusters(runtime_iam_report))
+    if not organizer:
+        logger.info('Using the default UserOrganizer')
+        organizer = UserOrganizer(logger, last_used_threshold)
+
+    runtime_iam_report.set_reorg(organizer.get_user_clusters(runtime_iam_report))
 
     return runtime_iam_report
 
@@ -29,11 +33,15 @@ class UserOrganizer:
         self.logger = logger
         self.unused_threshold = unused_threshold
 
-    def get_user_clusters(self, runtime_report: RuntimeReport):
+    def get_user_clusters(self, runtime_report: RuntimeReport) -> dict:
+        """
+        Returns the user clusters based on the raw data in the runtime report
+        :param runtime_report: an instance of RuntimeReport which has the raw_iam_data already set
+        :return: {'Admins': {'Users': [], 'Policies': []}, 'Powerusers': {'Users': [], 'Policies': []}, 'ReadOnly': {'Users': [], 'Policies': []}}
+        """
         iam_data = runtime_report.get_raw_data()
-        human_users, unchanged_users = self._separate_user_types(iam_data['AccountUsers'])
+        human_users, service_users = self._separate_user_types(iam_data['AccountUsers'])
         simple_user_clusters = self._create_simple_user_clusters(human_users, iam_data['AccountGroups'], iam_data['AccountPolicies'])
-        simple_user_clusters['UnchangedUsers'] = unchanged_users
         return simple_user_clusters
 
     def _create_simple_user_clusters(self, users, account_groups, account_policies):
@@ -94,12 +102,12 @@ class UserOrganizer:
 
     def _separate_user_types(self, account_users) -> (list, list):
         human_users = []
-        unchanged_users = []
+        service_users = []
         for user in account_users:
             if user['LastUsed'] < self.unused_threshold:
                 if len(user['AttachedManagedPolicies']) == 0 and len(user['GroupList']) == 0:
-                    unchanged_users.append(user)
+                    service_users.append(user)
                 else:
                     human_users.append(user)
 
-        return human_users, unchanged_users
+        return human_users, service_users
