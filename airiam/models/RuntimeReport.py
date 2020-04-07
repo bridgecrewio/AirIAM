@@ -7,17 +7,17 @@ SORT_KEY_BY_ENTITY_TYPE = {
 
 
 class RuntimeReport:
-    def __init__(self, account_id, raw_results, unused_users, unused_roles, unattached_policies, redundant_groups, user_reorg, role_reorg):
+    def __init__(self, account_id, raw_results):
         self.account_id = account_id
         self._raw_results = raw_results
-        self._unused_users = unused_users
-        self._unused_roles = unused_roles
-        self._unattached_policies = unattached_policies
-        self._redundant_groups = redundant_groups
-        self._user_reorg = user_reorg
-        self._role_reorg = role_reorg
-
-        self._sort_findings()
+        self._unused_users = None
+        self._unused_roles = None
+        self._unattached_policies = None
+        self._redundant_groups = None
+        self._unused_active_access_keys = None
+        self._unused_console_login_profiles = None
+        self._unused_policy_attachments = None
+        self._user_group_recommendation = None
 
     def get_raw_data(self) -> dict:
         return self._raw_results
@@ -27,30 +27,26 @@ class RuntimeReport:
             "Users": self._unused_users,
             "Roles": self._unused_roles,
             "Policies": self._unattached_policies,
-            "Groups": self._redundant_groups
+            "Groups": self._redundant_groups,
+            "PolicyAttachments": self._unused_policy_attachments
         }
 
     def get_rightsizing(self) -> dict:
-        unused_policy_arns = list(map(lambda p: p['Arn'], self.get_unused()['Policies']))
-        in_use_policies = list(filter(lambda p: p['Arn'] not in unused_policy_arns, self.get_raw_data()['AccountPolicies']))
-        return {
-            "Users": self._user_reorg,
-            "Roles": self._role_reorg,
-            "Policies": in_use_policies
-        }
+        return self._user_group_recommendation
 
-    def _sort_findings(self) -> None:
-        for entity_type, lst in self._raw_results.items():
-            if entity_type == 'CredentialReport':
-                continue
-            lst.sort(key=lambda e: SORT_KEY_BY_ENTITY_TYPE[entity_type])
+    def set_unused(self, unused_users, unused_roles, unused_active_access_keys, unused_console_login_profiles, unattached_policies, redundant_groups,
+                   unused_policy_attachments):
+        self._unused_users = sorted(unused_users, key=lambda user: SORT_KEY_BY_ENTITY_TYPE['AccountUsers'])
+        self._unused_roles = sorted(unused_roles, key=lambda role: SORT_KEY_BY_ENTITY_TYPE['AccountRoles'])
+        self._unused_active_access_keys = sorted(unused_active_access_keys, key=lambda access_key: access_key['User'])
+        self._unused_console_login_profiles = sorted(unused_console_login_profiles, key=lambda access_key: access_key['User'])
+        self._unattached_policies = sorted(unattached_policies, key=lambda policy: SORT_KEY_BY_ENTITY_TYPE['AccountPolicies'])
+        self._redundant_groups = sorted(redundant_groups, key=lambda group: SORT_KEY_BY_ENTITY_TYPE['AccountGroups'])
+        self._unused_policy_attachments = sorted(unused_policy_attachments, key=RuntimeReport.policy_attachment_sorter)
 
-        self._unused_users.sort(key=lambda user: SORT_KEY_BY_ENTITY_TYPE['AccountUsers'])
-        self._unused_roles.sort(key=lambda role: SORT_KEY_BY_ENTITY_TYPE['AccountRoles'])
-        self._redundant_groups.sort(key=lambda group: SORT_KEY_BY_ENTITY_TYPE['AccountGroups'])
-        self._unattached_policies.sort(key=lambda policy: SORT_KEY_BY_ENTITY_TYPE['AccountPolicies'])
+    @staticmethod
+    def policy_attachment_sorter(policy_attachment):
+        return policy_attachment.get('Role') or policy_attachment.get('User') or policy_attachment.get('Group')
 
-        self._role_reorg.sort(key=lambda role: role['role'][SORT_KEY_BY_ENTITY_TYPE['AccountRoles']])
-        self._user_reorg['Admins'].sort()
-        self._user_reorg['ReadOnly'].sort()
-        self._user_reorg['Powerusers']['Users'].sort()
+    def set_reorg(self, user_group_recommendation):
+        self._user_group_recommendation = user_group_recommendation

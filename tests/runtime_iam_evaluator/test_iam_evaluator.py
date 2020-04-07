@@ -7,7 +7,7 @@ import boto3
 from moto import mock_iam
 
 from airiam.main import configure_logger
-from airiam.runtime_iam_evaluator.RuntimeIamEvaluator import RuntimeIamEvaluator
+from airiam.find_unused.RuntimeIamScanner import RuntimeIamScanner
 
 ADMIN_POLICY_ARN = 'arn:aws:iam::aws:policy/AdministratorAccess'
 READ_ONLY_ARN = 'arn:aws:iam::aws:policy/ReadOnlyAccess'
@@ -1023,17 +1023,17 @@ class TestRuntimeIamEvaluator(unittest.TestCase):
                 "TotalAuthenticatedEntities": 0
             }
         ]
-        simplified = RuntimeIamEvaluator.simplify_service_access_result(service_last_access)
+        simplified = RuntimeIamScanner.simplify_service_access_result(service_last_access)
         self.assertEqual(len(simplified), 3)
         for last_access in simplified:
             self.assertIsInstance(datetime.datetime.fromisoformat(last_access['LastAccessed']), datetime.date)
 
     def test_convert_csv_to_json(self):
         csv_str = 'name,type,last_access\nhatulik,role,2019-08-05T08:56:00+00:00\nshati,user,2020-02-05T10:56:00+00:00'
-        json = RuntimeIamEvaluator.convert_csv_to_json(csv_str)
-        self.assertEqual(len(json), 2)
-        self.assertListEqual(['name', 'type', 'last_access'], list(json[0].keys()))
-        self.assertListEqual(list(json[0].keys()), list(json[1].keys()))
+        json_csv = RuntimeIamScanner.convert_csv_to_json(csv_str)
+        self.assertEqual(len(json_csv), 2)
+        self.assertListEqual(['name', 'type', 'last_access'], list(json_csv[0].keys()))
+        self.assertListEqual(list(json_csv[0].keys()), list(json_csv[1].keys()))
 
     @mock_iam
     def test_iam_calls(self):
@@ -1049,15 +1049,17 @@ class TestRuntimeIamEvaluator(unittest.TestCase):
             client.add_user_to_group(GroupName='admins', UserName='test@bridgecrew.io')
             client.add_user_to_group(GroupName='read-only', UserName='test@bridgecrew.io')
             logger = configure_logger()
-            iam_data = RuntimeIamEvaluator(logger)._get_data_from_aws("000000000000", False)
+            iam_data = RuntimeIamScanner(logger)._get_data_from_aws("000000000000", False)
         self.assertTrue(len(iam_data.keys()) == 5)
 
-    def create_user(self, client, user_name):
+    @staticmethod
+    def create_user(client, user_name):
         client.create_user(Path='/', UserName=user_name)
         client.create_login_profile(UserName=user_name, Password='TempPass123', PasswordResetRequired=True)
         client.create_access_key(UserName=user_name)
 
-    def create_role(self, client, role_name, policy_arn_to_attach):
+    @staticmethod
+    def create_role(client, role_name, policy_arn_to_attach):
         client.create_role(Path='/', RoleName=role_name, AssumeRolePolicyDocument=json.dumps({
             "Version": "2012-10-17",
             "Statement": [
