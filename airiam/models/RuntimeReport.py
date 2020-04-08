@@ -24,11 +24,13 @@ class RuntimeReport:
 
     def get_unused(self) -> dict:
         return {
-            "Users": self._unused_users,
-            "Roles": self._unused_roles,
-            "Policies": self._unattached_policies,
-            "Groups": self._redundant_groups,
-            "PolicyAttachments": self._unused_policy_attachments
+            'Users': self._unused_users,
+            'UnusedActiveAccessKeys': self._unused_active_access_keys,
+            'UnusedConsoleLoginProfiles': self._unused_console_login_profiles,
+            'Roles': self._unused_roles,
+            'Policies': self._unattached_policies,
+            'Groups': self._redundant_groups,
+            'PolicyAttachments': self._unused_policy_attachments
         }
 
     def get_user_groups(self) -> dict:
