@@ -32,18 +32,15 @@ def run():
         Reporter.report_unused(runtime_results)
         exit()
 
-    report_with_recommendations = recommend_groups(logger, runtime_results, args.last_used_threshold)
-    if args.command == 'recommend_groups':
-        Reporter.report_groupings(report_with_recommendations)
-        exit()
+    if args.command == 'recommend_groups' or args.command == 'terraform' and not args.without_groups:
+        report_with_recommendations = recommend_groups(logger, runtime_results, args.last_used_threshold)
+        if args.command == 'recommend_groups':
+            Reporter.report_groupings(report_with_recommendations)
+            exit()
 
     if args.command == 'terraform':
         terraform_results = TerraformTransformer(logger, args.profile, args.directory)\
             .transform(runtime_results, args.without_unused, args.without_groups, args.import_to_terraform)
-        if terraform_results != 'Success':
-            logger.error("Failed to create the terraform module")
-            exit(1)
-
         Reporter.report_terraform(terraform_results)
 
 

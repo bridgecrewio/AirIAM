@@ -143,24 +143,24 @@ def find_unused_policy_attachments(users: list, roles: dict, account_policies: l
         user_attached_managed_policies = copy.deepcopy(user['AttachedManagedPolicies'])
         for group_name in user['GroupList']:
             group_managed_policies = next(g['AttachedManagedPolicies'] for g in account_groups if g['GroupName'] == group_name)
-            user_attached_managed_policies.extend(list(map(lambda group_policy: {**group_policy, 'GroupName': group_name}, group_managed_policies)))
+            user_attached_managed_policies.extend(list(map(lambda group_policy: {**group_policy, 'Group': group_name}, group_managed_policies)))
 
         for policy_attachment_obj in user_attached_managed_policies:
             policy_obj = next(p for p in account_policies if policy_attachment_obj['PolicyArn'] == p['Arn'])
             policy_document = next(version for version in policy_obj['PolicyVersionList'] if version['IsDefaultVersion'])['Document']
-            policy_in_use = PolicyAnalyzer.is_policy_unused(policy_document, services_in_use)
-            if policy_attachment_obj.get('GroupName'):
-                attachment_id = f'{policy_attachment_obj["PolicyName"]}/{policy_attachment_obj["GroupName"]}'
-                if not policy_in_use:
+            policy_is_unused = PolicyAnalyzer.is_policy_unused(policy_document, services_in_use)
+            if policy_attachment_obj.get('Group'):
+                attachment_id = f'{policy_attachment_obj["PolicyName"]}/{policy_attachment_obj["Group"]}'
+                if policy_is_unused:
                     potential_unused_group_policy_attachments.append({**policy_attachment_obj, 'id': attachment_id})
                 else:
                     used_group_policy_attachments.append({**policy_attachment_obj, 'id': attachment_id})
-            elif not policy_in_use:
+            elif policy_is_unused:
                 unused_policy_attachments.append({**policy_attachment_obj, 'User': user['UserName']})
     used_group_policy_attachments = {v['id']: v for v in used_group_policy_attachments}
 
     for policy_attachment_obj in potential_unused_group_policy_attachments:
-        attachment_id = f'{policy_attachment_obj["PolicyName"]}/{policy_attachment_obj["GroupName"]}'
+        attachment_id = f'{policy_attachment_obj["PolicyName"]}/{policy_attachment_obj["Group"]}'
         if attachment_id not in used_group_policy_attachments:
             unused_policy_attachments.append(policy_attachment_obj)
             used_group_policy_attachments[attachment_id] = "Already added to 'unused_group_policy_attachments'"
