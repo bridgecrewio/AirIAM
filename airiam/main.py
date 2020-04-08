@@ -5,7 +5,7 @@ import sys
 from airiam.Reporter import Reporter, OutputFormat
 from airiam.find_unused.find_unused import find_unused
 from airiam.recommend_groups.recommend_groups import recommend_groups
-from airiam.terraformer.TerraformTransformer import TerraformTransformer
+from airiam.terraform.TerraformTransformer import TerraformTransformer
 
 
 def configure_logger(logging_level=logging.INFO):
@@ -32,17 +32,15 @@ def run():
         Reporter.report_unused(runtime_results)
         exit()
 
-    report_with_recommendations = recommend_groups(logger, runtime_results, args.last_used_threshold)
-    if args.command == 'recommend_groups':
-        Reporter.report_groupings(report_with_recommendations)
-        exit()
+    if args.command == 'recommend_groups' or args.command == 'terraform' and not args.without_groups:
+        report_with_recommendations = recommend_groups(logger, runtime_results, args.last_used_threshold)
+        if args.command == 'recommend_groups':
+            Reporter.report_groupings(report_with_recommendations)
+            exit()
 
     if args.command == 'terraform':
-        terraform_results = TerraformTransformer(logger, args.profile, args.directory).transform(args.without_unused, runtime_results)
-        if terraform_results != 'Success':
-            logger.error("Failed to create the terraform module")
-            exit(1)
-
+        terraform_results = TerraformTransformer(logger, args.profile, args.directory)\
+            .transform(runtime_results, args.without_unused, args.without_groups, args.import_to_terraform)
         Reporter.report_terraform(terraform_results)
 
 
@@ -76,10 +74,12 @@ def parse_args(args):
     tf_parser.add_argument('-p', '--profile', help='The AWS profile to be used', type=str)
     tf_parser.add_argument('-d', '--directory', help='The path where the output terraform code and state will be stored', type=str, default='results')
     tf_parser.add_argument('--without-unused', help='Create terraform code without unused entities', action='store_true')
+    tf_parser.add_argument('--without-groups', help='Create terraform code without recommendation for user groups', action='store_true')
     tf_parser.add_argument('-l', '--last-used-threshold', help='The "Last Used" threshold, in days, for an entity to be considered unused', type=int,
                            default=90)
     tf_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
     tf_parser.add_argument('-i', '--ignore', help='A file for regex patterns to ignore', type=str, default=None)
+    tf_parser.add_argument('--import-to-terraform', help='Import the resulting terraform to a state file', action='store_true')
     result = parser.parse_args(args)
     if result.version:
         Reporter.print_version()

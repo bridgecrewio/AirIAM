@@ -4,7 +4,7 @@ import re
 import pandas as pd
 
 ACTION_TABLE_URL = 'https://raw.githubusercontent.com/salesforce/policy_sentry/master/policy_sentry/shared/data/action_table.csv'
-ACTIONS_NOT_COVERED_BY_ACCESS_ADVISOR = ['iam:PassRole']
+ACTIONS_NOT_COVERED_BY_ACCESS_ADVISOR = ['iam:PassRole', 's3:GetObject', 's3:PutObject']
 
 
 class PolicyAnalyzer:
@@ -41,9 +41,8 @@ class PolicyAnalyzer:
 
         policy_actions = PolicyAnalyzer._get_policy_actions(policy_document)
         if len([action for action in policy_actions if
-                len(list(filter(re.compile(action.replace('*', '.*')).match, ACTIONS_NOT_COVERED_BY_ACCESS_ADVISOR))) > 0
-                ]) > 0:
-            return True
+                len(list(filter(re.compile(action.replace('*', '.*')).match, ACTIONS_NOT_COVERED_BY_ACCESS_ADVISOR))) > 0]) > 0:
+            return False
 
         services_accessed_through_policy = list(set(map(lambda action: action.split(':')[0], policy_actions)))
         return len(

@@ -1,5 +1,5 @@
-from airiam.terraformer.entity_terraformers.BaseEntityTransformer import BaseEntityTransformer, Principal
-from airiam.terraformer.entity_terraformers.IAMPolicyDocumentTransformer import IAMPolicyDocumentTransformer
+from airiam.terraform.entity_terraformers.BaseEntityTransformer import BaseEntityTransformer, Principal
+from airiam.terraform.entity_terraformers.IAMPolicyDocumentTransformer import IAMPolicyDocumentTransformer
 
 
 class IAMInlinePolicyTransformer(BaseEntityTransformer):
