@@ -39,7 +39,7 @@ def run():
 
     if args.command == 'terraform':
         terraform_results = TerraformTransformer(logger, args.profile, args.directory)\
-            .transform(runtime_results, args.without_unused, args.without_groups)
+            .transform(runtime_results, args.without_unused, args.without_groups, args.import_to_terraform)
         if terraform_results != 'Success':
             logger.error("Failed to create the terraform module")
             exit(1)
@@ -82,6 +82,7 @@ def parse_args(args):
                            default=90)
     tf_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
     tf_parser.add_argument('-i', '--ignore', help='A file for regex patterns to ignore', type=str, default=None)
+    tf_parser.add_argument('--import-to-terraform', help='Import the resulting terraform to a state file', action='store_true')
     result = parser.parse_args(args)
     if result.version:
         Reporter.print_version()
