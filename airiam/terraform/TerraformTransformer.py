@@ -1,12 +1,12 @@
 from python_terraform import *
 
 from airiam.models import RuntimeReport
-from airiam.terraformer.entity_terraformers.AWSProviderTransformer import AWSProviderTransformer
-from airiam.terraformer.entity_terraformers.IAMGroupTransformer import IAMGroupTransformer
-from airiam.terraformer.entity_terraformers.IAMPolicyTransformer import IAMPolicyTransformer
-from airiam.terraformer.entity_terraformers.IAMRoleTransformer import IAMRoleTransformer
-from airiam.terraformer.entity_terraformers.IAMUserGroupMembershipTransformer import IAMUserGroupMembershipTransformer
-from airiam.terraformer.entity_terraformers.IAMUserTransformer import IAMUserTransformer
+from airiam.terraform.entity_terraformers.AWSProviderTransformer import AWSProviderTransformer
+from airiam.terraform.entity_terraformers.IAMGroupTransformer import IAMGroupTransformer
+from airiam.terraform.entity_terraformers.IAMPolicyTransformer import IAMPolicyTransformer
+from airiam.terraform.entity_terraformers.IAMRoleTransformer import IAMRoleTransformer
+from airiam.terraform.entity_terraformers.IAMUserGroupMembershipTransformer import IAMUserGroupMembershipTransformer
+from airiam.terraform.entity_terraformers.IAMUserTransformer import IAMUserTransformer
 
 current_dir = os.path.abspath(os.path.dirname(__file__))
 boilerplate_files = ["admins.tf", "developers.tf", "power_users.tf"]
@@ -21,7 +21,7 @@ class TerraformTransformer:
         if not os.path.exists(self._result_dir):
             os.mkdir(self._result_dir)
 
-    def transform(self, without_unused: bool, results: RuntimeReport, should_import=True) -> str:
+    def transform(self, results: RuntimeReport, without_unused: bool, without_groups: bool, should_import=True) -> str:
         try:
             entities_to_import = self._create_current_state(results.get_raw_data())
 
