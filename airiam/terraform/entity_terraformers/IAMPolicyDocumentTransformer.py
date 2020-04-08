@@ -74,11 +74,12 @@ class IAMPolicyDocumentTransformer(BaseEntityTransformer):
         if 'Condition' in statement:
             for test, items in statement['Condition'].items():
                 for variable, values in items.items():
+                    values_str = json.dumps(IAMPolicyDocumentTransformer.force_list(values)).replace('${', '$\\u0024{')
                     condition_block += f"""
     condition {{
       test     = "{test}"
       variable = "{variable}"
-      values   = {json.dumps(IAMPolicyDocumentTransformer.force_list(values))}
+      values   = {values_str}
     }}
   """
         return condition_block
