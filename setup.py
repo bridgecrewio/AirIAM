@@ -86,6 +86,7 @@ setup(
         "pyrsistent==0.15.7",
         "python-dateutil==2.8.1",
         "python-jose==3.1.0",
+        "python-terraform==0.10.1",
         "pytz==2019.3",
         "PyYAML==5.3.1",
         "requests==2.23.0",
