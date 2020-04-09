@@ -12,6 +12,7 @@ pipenv-setup = "*"
 [packages]
 boto3 = "*"
 termcolor = "*"
+pandas = "*"
 moto = "*"
 colorama="*"
 
