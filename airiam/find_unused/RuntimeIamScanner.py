@@ -43,9 +43,7 @@ class RuntimeIamScanner:
         This method encapsulates all the API calls made to the AWS IAM service to gather data for later analysis
         :return: The IAM data that was pulled from the account, as was also saved locally for quicker re-runs
         """
-        current_dir = os.path.abspath(os.path.dirname(__file__))
-        iam_data_path = "{0}/{1}".format(current_dir, IAM_DATA_FILE_NAME)
-        data_account_id = RuntimeIamScanner._get_account_id_from_existing_data(iam_data_path)
+        data_account_id = RuntimeIamScanner._get_account_id_from_existing_data()
         if not self.refresh_cache and data_account_id == account_id:
             print("Reusing local data")
         else:
@@ -85,9 +83,9 @@ class RuntimeIamScanner:
                 'AccountGroups': account_groups,
                 'AccountPolicies': account_policies
             }
-            with open(iam_data_path, "w") as iam_file:
+            with open(IAM_DATA_FILE_NAME, "w") as iam_file:
                 json.dump(iam_data, iam_file, indent=4, sort_keys=True, default=str)
-        with open(iam_data_path) as iam_data_file:
+        with open(IAM_DATA_FILE_NAME) as iam_data_file:
             iam_data = json.load(iam_data_file)
 
         return iam_data
@@ -215,10 +213,10 @@ class RuntimeIamScanner:
         return sts.get_caller_identity()['Account']
 
     @staticmethod
-    def _get_account_id_from_existing_data(path):
+    def _get_account_id_from_existing_data():
         # noinspection PyBroadException
         try:
-            with open(path) as iam_data_file:
+            with open(IAM_DATA_FILE_NAME) as iam_data_file:
                 iam_data = json.load(iam_data_file)
             return iam_data['AccountUsers'][0]['Arn'].split(":")[4]
         except Exception:
