@@ -24,6 +24,20 @@ def filter_attachments_of_unused_entities(unused_policy_attachments, unused_user
     return unused_policy_attachments_of_in_use_principals
 
 
+def filter_credentials_of_unused_users(unused_active_access_keys, unused_console_login_profiles, unused_users) -> (list, list):
+    result_access_keys = []
+    result_console_logins = []
+    for access_key in unused_active_access_keys:
+        is_belong_to_unused_user = len(list(filter(lambda user: user['UserName'] == access_key['User'], unused_users))) > 0
+        if not is_belong_to_unused_user:
+            result_access_keys.append(access_key)
+    for console_login in unused_console_login_profiles:
+        is_belong_to_unused_user = len(list(filter(lambda user: user['UserName'] == console_login['User'], unused_users))) > 0
+        if not is_belong_to_unused_user:
+            result_console_logins.append(console_login)
+    return result_access_keys, result_console_logins
+
+
 def find_unused(logger, profile, refresh_cache, unused_threshold):
     iam_report = RuntimeIamScanner(logger, profile, refresh_cache).evaluate_runtime_iam(True)
     raw_iam_data = iam_report.get_raw_data()
@@ -39,9 +53,11 @@ def find_unused(logger, profile, refresh_cache, unused_threshold):
     unused_roles, used_roles = find_unused_roles(account_roles, unused_threshold)
     unused_policy_attachments = find_unused_policy_attachments(account_users, account_roles, account_policies, account_groups, unused_threshold)
 
+    unused_access_keys, unused_console_access = filter_credentials_of_unused_users(unused_active_access_keys, unused_console_login_profiles,
+                                                                                   unused_users)
     unused_policy_attachments = filter_attachments_of_unused_entities(unused_policy_attachments, unused_users, unused_roles, redundant_groups)
 
-    iam_report.set_unused(unused_users, unused_roles, unused_active_access_keys, unused_console_login_profiles, unattached_policies,
+    iam_report.set_unused(unused_users, unused_roles, unused_access_keys, unused_console_access, unattached_policies,
                           redundant_groups, unused_policy_attachments)
     return iam_report
 
@@ -108,7 +124,7 @@ def find_unattached_policies(policies) -> list:
 def find_redundant_groups(groups, users) -> list:
     groups_with_no_active_members = _find_groups_with_no_members(groups, users)
     groups_with_no_privilege = list(filter(lambda g: len(g['AttachedManagedPolicies'] + g['GroupPolicyList']) == 0, groups))
-    return list(set(groups_with_no_active_members + groups_with_no_privilege))
+    return list({v['GroupName']: v for v in groups_with_no_active_members + groups_with_no_privilege}.values())
 
 
 def _find_groups_with_no_members(group_list: list, user_list: list):
