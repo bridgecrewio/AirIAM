@@ -25,14 +25,14 @@ class TerraformTransformer:
     def transform(self, results: RuntimeReport, without_unused: bool, without_groups: bool, should_import: bool) -> str:
         try:
             entities_to_transform = self._list_entities_to_transform(results, without_unused, without_groups)
-            self.write_terraform_code(entities_to_transform)
+            entities_to_import = self.write_terraform_code(entities_to_transform)
             tf = Terraform(working_dir=self._result_dir)
             tf.init(backend=False)
             if should_import:
-                num_of_entities_to_import = len(entities_to_transform)
+                num_of_entities_to_import = len(entities_to_import)
                 print(f"Importing {num_of_entities_to_import} entities")
                 i = 1
-                for entity_to_import in entities_to_transform:
+                for entity_to_import in entities_to_import:
                     msg = f"#{i} of {num_of_entities_to_import}: Importing {entity_to_import['entity']} to {entity_to_import['identifier']}"
                     print(ERASE_LINE + f"\r{msg}", end="")
                     return_code, stdout, stderr = tf.import_cmd(entity_to_import['identifier'], entity_to_import['entity'])

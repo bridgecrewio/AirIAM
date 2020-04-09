@@ -29,12 +29,12 @@ class IAMPolicyDocumentTransformer(BaseEntityTransformer):
             if statement.get('Sid', '') != '':
                 sid_string = f"sid    = \"{statement['Sid']}\"\n    "
 
-            actions = IAMPolicyDocumentTransformer.force_list(statement.get('Action', None))
-            if not actions:
-                actions = statement.get('NotAction')
-                action_str = f"not_actions = {json.dumps(actions)}"
-            else:
+            actions = IAMPolicyDocumentTransformer.force_list(statement.get('Action'))
+            if 'Action' in statement:
                 action_str = f"actions = {json.dumps(actions)}"
+            else:
+                actions = IAMPolicyDocumentTransformer.force_list(statement.get('NotAction'))
+                action_str = f"not_actions = {json.dumps(actions)}"
             condition_block = IAMPolicyDocumentTransformer.transform_conditions(statement)
             resources_list_str = json.dumps(IAMPolicyDocumentTransformer.force_list(statement.get('Resource'))).replace('${', '$\\u0024{')
             statement_block += f"""  statement {{
