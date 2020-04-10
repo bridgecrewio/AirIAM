@@ -127,9 +127,9 @@ class Reporter:
     @staticmethod
     def print_prelude():
         print(colored(banner, 'yellow'))
-        print(f"""
-For continuous scanning of your environment to detect drifts, connect to the {colored("Bridgecrew", 'magenta', attrs=['bold'])} platform
-Check us out - https://www.bridgecrew.cloud
+        print(f"""AirIAM - Least privilege AWS IAM Terraformer
+To continuously scan configurations, try the {colored("Bridgecrew", 'magenta', attrs=['bold'])} free community plan.
+https://www.bridgecrew.io
 """)
 
     @staticmethod
