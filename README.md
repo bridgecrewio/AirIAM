@@ -125,6 +125,7 @@ If the `terraform` command is specified it takes all the results and creates the
 ![Data Flow](images/DataFlow.svg)
 
 ## Examples
+![Example Movie](images/demo.gif)
 
 ## Getting Started
 
