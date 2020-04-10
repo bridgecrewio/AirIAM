@@ -108,9 +108,14 @@ If you are interested in migrating a Prod account, contact us at info@bridgecrew
                             file. Note - this might take a long time (default:
                             False)
   ```
-    Please note - by default, AirIAM will import the currently existing IAM entities and their relationships, which might take a while depending on the number of configurations. 
-    Since it replaces all hardcoded values with the matching terraform references, it will replace all group memberships and policy attachments.
-    AirIAM also tags all the resources it touched so it will be easy to identify the entities which are not managed through AirIAM. This results in terraform modifying the relevant entities by adding these tags.
+    Important notes for `terraform` command:
+
+    a. AirIAM replaces all hardcoded values with the matching terraform references, which results in replacements of all group memberships and policy attachments.
+    If this is run using a user, please make sure the user has the relevant privileges directly attached. A matching warning will be displayed if relevant.
+    
+    c. AirIAM tags all the resources it touched so it will be easy to identify the entities which are not managed through AirIAM. This results in terraform modifying the relevant entities by adding these tags.
+    
+    d. By default, AirIAM will import the currently existing IAM entities and their relationships, which might take a while depending on the number of configurations.
 
 ### Usage
 
@@ -132,7 +137,7 @@ If the `terraform` command is specified it takes all the results and creates the
 ### Installation
 
 ```sh
-pip install airiam 
+pip3 install airiam --user 
 ```
 
 ## Alternatives

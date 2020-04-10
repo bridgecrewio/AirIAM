@@ -31,10 +31,20 @@ class RuntimeIamScanner:
         :return: An instance of the report which describes which resources need to be reconfigured (and how),
                                 and which resources should be removed
         """
-        account_id = self._get_account_id_from_profile()
+        account_id, identity_arn = self._get_identity_details()
         iam_data = self._get_data_from_aws(account_id, list_unused)
 
-        return RuntimeReport(account_id, iam_data)
+        if 'user' in identity_arn:
+            user = next(obj for obj in iam_data['AccountUsers'] if obj['Arn'] == identity_arn)
+            if all(map(lambda policy_attachment: policy_attachment['PolicyName'] != 'AdministratorAccess', user['AttachedManagedPolicies'])):
+                self.logger.error(f'Calling user, {identity_arn.split("/").pop()}, '
+                                  'must have the admin policy DIRECTLY attached to avoid failures in data migration')
+                exit(1)
+        else:
+            iam_data['AccountRoles'] = list(filter(lambda r: r['RoleName'] != identity_arn.split('/').pop(1), iam_data['AccountRoles']))
+        print(f'Filtered {identity_arn} from the analysis')
+
+        return RuntimeReport(account_id, identity_arn, iam_data)
 
     def _get_data_from_aws(self, account_id: str, list_unused: bool) -> dict:
         """
@@ -206,9 +216,9 @@ class RuntimeIamScanner:
         return list(map(lambda last_access: {"ServiceNamespace": last_access["ServiceNamespace"], "LastAccessed": last_access["LastAuthenticated"]},
                         filter(lambda last_access: last_access['TotalAuthenticatedEntities'] > 0, service_access_list)))
 
-    def _get_account_id_from_profile(self):
-        sts = self._session.client('sts')
-        return sts.get_caller_identity()['Account']
+    def _get_identity_details(self) -> (str, str):
+        caller_identity_resp = self._session.client('sts').get_caller_identity()
+        return caller_identity_resp['Account'], caller_identity_resp['Arn']
 
     @staticmethod
     def _get_account_id_from_existing_data():
