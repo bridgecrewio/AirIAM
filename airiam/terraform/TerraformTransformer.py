@@ -24,6 +24,11 @@ class TerraformTransformer:
 
     def transform(self, results: RuntimeReport, without_unused: bool, without_groups: bool, without_import: bool) -> (dict, str):
         try:
+            if not without_groups:
+                # todo: implement!
+                self.logger.warn('Migrating to the recommended groups isn\'t supported yet. Issue exists - '
+                                 'https://github.com/bridgecrewio/AirIAM/issues/20')
+                self.logger.warn('Will use the existing groups for terraform migration until it is implemented')
             entities_to_transform = self._list_entities_to_transform(results, without_unused, without_groups)
             entities_to_import = self.write_terraform_code(entities_to_transform)
             tf = Terraform(working_dir=self._result_dir)

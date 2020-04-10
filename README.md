@@ -13,7 +13,7 @@ AirIAM was created to promote immutable and version-controlled IAM management to
 
 - [Introduction](#introduction)
 - [Commands](#commands)
-- [Run Configurations](#run-configurations)
+- [Examples](#examples)
 - [Getting Started](#getting-started)
 - [Alternatives](#alternatives)
 - [Contributing](#contributing)
@@ -45,11 +45,72 @@ If you are interested in migrating a Prod account, contact us at info@bridgecrew
 
 - `find_unused` - Detects unused users, roles, groups, policies and policy attachments. It also adds links to automation scripts that could remove these entities entirely using Bridgecrew Community. [Learn more 
   about these scripts and automation](RecommendedIntegrations.md).
+  ```shell script
+    usage: airiam find_unused [-h] [-p PROFILE] [-l LAST_USED_THRESHOLD]
+                          [--no-cache] [-o {cli}]
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -p PROFILE, --profile PROFILE
+                            AWS profile to be used (default: None)
+      -l LAST_USED_THRESHOLD, --last-used-threshold LAST_USED_THRESHOLD
+                            "Last Used" threshold, in days, for an entity to be
+                            considered unused (default: 90)
+      --no-cache            Generate a fresh set of data from AWS IAM API calls
+                            (default: False)
+      -o {cli}, --output {cli}
+                            Output format (default: OutputFormat.cli)
+  ```
 - `recommend_groups` - Identifies what permissions are in use and creates 3 generalized groups according to that usage. Supported groups:
     - Admins - Users who have the AdministratorAccess policy attached. It will be added to the admins group which will have the managed policy `arn:aws:iam::aws:policy/AdministratorAccess` attached.
     - PowerUsers - Users who have write access to **any** of the services. In case of more than 10 policies being attached to that group, a number of groups will be created for PowerUsers, and the relevant users will be members of all of them.
     - ReadOnly - Users who only have read access to the account. Will be members of the readonly group which will have the managed policy `arn:aws:iam::aws:policy/ReadOnlyAccess` attached.
+  ```shell script
+    usage: airiam recommend_groups [-h] [-p PROFILE] [-o {cli}]
+                                   [-l LAST_USED_THRESHOLD] [--no-cache]
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      -p PROFILE, --profile PROFILE
+                            AWS profile to be used (default: None)
+      -o {cli}, --output {cli}
+                            Output format (default: OutputFormat.cli)
+      -l LAST_USED_THRESHOLD, --last-used-threshold LAST_USED_THRESHOLD
+                            "Last Used" threshold, in days, for an entity to be
+                            considered unused (default: 90)
+      --no-cache            Generate a fresh set of data from AWS IAM API calls
+                            (default: False)
+  ```
 - `terraform` - Creates Terraform files based on the outputs and the transformations applied by the optional arguments supplied.
+
+  ```shell script
+    usage: airiam terraform [-h] [-p PROFILE] [-d DIRECTORY] [--without-unused]
+                            [--without-groups] [-l LAST_USED_THRESHOLD]
+                            [--no-cache] [--without-import]
+    
+    optional arguments:
+      -h, --help            show this help message and exit
+      -p PROFILE, --profile PROFILE
+                            AWS profile to be used (default: None)
+      -d DIRECTORY, --directory DIRECTORY
+                            Path where the output terraform code and state will be
+                            stored (default: results)
+      --without-unused      Create terraform code without unused entities
+                            (default: False)
+      --without-groups      Create terraform code without recommendation for user
+                            groups (default: False)
+      -l LAST_USED_THRESHOLD, --last-used-threshold LAST_USED_THRESHOLD
+                            "Last Used" threshold, in days, for an entity to be
+                            considered unused (default: 90)
+      --no-cache            Generate a fresh set of data from AWS IAM API calls
+                            (default: False)
+      --without-import      Import the resulting entities to terraform's state
+                            file. Note - this might take a long time (default:
+                            False)
+  ```
+    Please note - by default, AirIAM will import the currently existing IAM entities and their relationships, which might take a while depending on the number of configurations. 
+    Since it replaces all hardcoded values with the matching terraform references, it will replace all group memberships and policy attachments.
+    AirIAM also tags all the resources it touched so it will be easy to identify the entities which are not managed through AirIAM. This results in terraform modifying the relevant entities by adding these tags.
 
 ### Usage
 
@@ -63,47 +124,14 @@ If the `terraform` command is specified it takes all the results and creates the
 ### Data Flow
 ![Data Flow](images/DataFlow.svg)
 
+## Examples
+
 ## Getting Started
 
 ### Installation
 
 ```sh
 pip install airiam 
-```
-
-### Run Configurations
-
-#### General configurations for all commands
-
-- `profile / p` defines which profile to use for AWS access. If none specified, the AWS credentials will be taken from 
-  the default places (environment variables, default profile etc.)
-- `last-unused-threshold / l` defines the threshold, in days, for entities to be marked as unused. Default value is 90
-- `no-cache` defines whether to reuse local data or re-scan. If this is the first time or the account was changed from
-  the last run, cache invalidation will occur anyway.
-
-#### `find_unused`
-
-- `output / o` defines the output format of the command. Default value is CLI.
-
-#### `recommend_groups`
-
-- `output / o` defines the output format of the command. Default value is CLI.
-
-#### `terraform`
-
-- `directory / d` defines the output directory for the terraform code. Default value is `results/`
-- `ignore / i` defines a path to a text file listing regexp of entities which will be ignored by the terraform code 
-  generator. 
-- `--without-unused` defines unused should not be moved to terraform.
-
-### Running the commands
-
-```sh
-airiam find_unused --profile dev --last-used-threshold 30 --no-cache
-
-airiam recommend_groups --profile dev --last-used-threshold 90 --no-cache -o json
-
-airiam terraform --profile dev --last-used-threshold 90 --no-cache --directory tf/iam -i ignore.txt --without-unused
 ```
 
 ## Alternatives
