@@ -36,7 +36,7 @@ class RuntimeIamScanner:
         iam_data = self._get_data_from_aws(account_id, list_unused)
 
         if command == 'terraform':
-            if 'user' in identity_arn:
+            if ':user/' in identity_arn:
                 user = next(obj for obj in iam_data['AccountUsers'] if obj['Arn'] == identity_arn)
                 if all(map(lambda policy_attachment: policy_attachment['PolicyName'] != 'AdministratorAccess', user['AttachedManagedPolicies'])):
                     self.logger.error(f'*-*-*-*-*-*-*-*')

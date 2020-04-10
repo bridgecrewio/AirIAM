@@ -16,7 +16,7 @@ class TestOrganizers(unittest.TestCase):
         current_dir = os.path.abspath(os.path.dirname(__file__))
         with open("{}/{}".format(current_dir, "../iam_data.json")) as f:
             iam_data = json.load(f)
-        self.report = RuntimeReport('000000000000', iam_data)
+        self.report = RuntimeReport('000000000000', 'arn:aws:iam::000000000000:user/testuser', iam_data)
         credential_report = iam_data['CredentialReport']
         account_users = iam_data['AccountUsers']
         account_roles = iam_data['AccountRoles']

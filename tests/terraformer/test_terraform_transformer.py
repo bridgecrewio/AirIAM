@@ -40,6 +40,6 @@ class TestTerraformTransformer(unittest.TestCase):
         current_dir = os.path.abspath(os.path.dirname(__file__))
         with open("{}/{}".format(current_dir, "../iam_data.json")) as f:
             iam_data = json.load(f)
-        self.report = RuntimeReport("012345678901", iam_data)
+        self.report = RuntimeReport("012345678901", 'arn:aws:iam::012345678901:user/testuser', iam_data)
         self.report.set_unused(self.unused_users, self.unused_roles, [], [], self.unattached_policies, self.redundant_group, [])
         self.report.set_reorg(self.user_clusters)
