@@ -1,14 +1,8 @@
 import copy
-import os
-import ssl
 
 from airiam.find_unused.find_unused import days_from_today
 from airiam.models.RuntimeReport import RuntimeReport
 from airiam.find_unused.PolicyAnalyzer import PolicyAnalyzer
-
-if not os.environ.get('PYTHONHTTPSVERIFY', '') and getattr(ssl, '_create_unverified_context', None):
-    # noinspection PyProtectedMember
-    ssl._create_default_https_context = ssl._create_unverified_context
 
 ADMIN_POLICY_ARN = 'arn:aws:iam::aws:policy/AdministratorAccess'
 READ_ONLY_ARN = 'arn:aws:iam::aws:policy/ReadOnlyAccess'

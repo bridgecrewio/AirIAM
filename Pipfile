@@ -8,12 +8,12 @@ pytest = "*"
 coverage ="*"
 coverage-badge = "*"
 pipenv-setup = "*"
+moto = "*"
 
 [packages]
 boto3 = "*"
 termcolor = "*"
 python-terraform = "*"
-moto = "*"
 colorama="*"
 requests="*"
 
