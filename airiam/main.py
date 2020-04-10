@@ -39,9 +39,9 @@ def run():
             exit()
 
     if args.command == 'terraform':
-        terraform_results = TerraformTransformer(logger, args.profile, args.directory)\
-            .transform(runtime_results, args.without_unused, args.without_groups, args.import_to_terraform)
-        Reporter.report_terraform(terraform_results)
+        entities_terraformed, result_dir = TerraformTransformer(logger, args.profile, args.directory)\
+            .transform(runtime_results, args.without_unused, args.without_groups, args.without_import)
+        Reporter.report_terraform(entities_terraformed, result_dir)
 
 
 def parse_args(args):
@@ -57,7 +57,6 @@ def parse_args(args):
     find_unused_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
     find_unused_parser.add_argument('-o', '--output', help='The output format for the unused entities', type=OutputFormat,
                                     choices=[output.name for output in OutputFormat], default=OutputFormat.cli)
-    find_unused_parser.add_argument('-i', '--ignore', help='A file for regex patterns to ignore', type=str, default=None)
 
     recommend_groups_parser = sub_parsers.add_parser('recommend_groups', help='Recommend IAM groups according to IAM users and their in-use privileges',
                                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -67,7 +66,6 @@ def parse_args(args):
     recommend_groups_parser.add_argument('-l', '--last-used-threshold', type=int, default=90,
                                          help='The "Last Used" threshold, in days, for an entity to be considered unused')
     recommend_groups_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
-    recommend_groups_parser.add_argument('-i', '--ignore', help='A file for regex patterns to ignore', type=str, default=None)
 
     tf_parser = sub_parsers.add_parser('terraform', help='Terraformize your runtime AWS IAM configurations',
                                        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -78,8 +76,7 @@ def parse_args(args):
     tf_parser.add_argument('-l', '--last-used-threshold', help='The "Last Used" threshold, in days, for an entity to be considered unused', type=int,
                            default=90)
     tf_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
-    tf_parser.add_argument('-i', '--ignore', help='A file for regex patterns to ignore', type=str, default=None)
-    tf_parser.add_argument('--import-to-terraform', help='Import the resulting terraform to a state file', action='store_true')
+    tf_parser.add_argument('--without-import', help='Import the resulting terraform to a state file', action='store_true')
     result = parser.parse_args(args)
     if result.version:
         Reporter.print_version()

@@ -22,13 +22,13 @@ class TerraformTransformer:
         if not os.path.exists(self._result_dir):
             os.mkdir(self._result_dir)
 
-    def transform(self, results: RuntimeReport, without_unused: bool, without_groups: bool, should_import: bool) -> str:
+    def transform(self, results: RuntimeReport, without_unused: bool, without_groups: bool, without_import: bool) -> (dict, str):
         try:
             entities_to_transform = self._list_entities_to_transform(results, without_unused, without_groups)
             entities_to_import = self.write_terraform_code(entities_to_transform)
             tf = Terraform(working_dir=self._result_dir)
             tf.init(backend=False)
-            if should_import:
+            if not without_import:
                 num_of_entities_to_import = len(entities_to_import)
                 print(f"Importing {num_of_entities_to_import} entities")
                 i = 1
@@ -42,7 +42,7 @@ class TerraformTransformer:
                 print("Imported all existing entities to state")
 
             tf.fmt()
-            return results
+            return entities_to_transform, self._result_dir
         except Exception as e:
             self.logger.error(e)
             raise e

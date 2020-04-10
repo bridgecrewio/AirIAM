@@ -1,21 +1,14 @@
 import json
 import re
+import requests
 
-import pandas as pd
-
-ACTION_TABLE_URL = 'https://raw.githubusercontent.com/salesforce/policy_sentry/master/policy_sentry/shared/data/action_table.csv'
+ACTION_TABLE_URL = 'https://raw.githubusercontent.com/salesforce/policy_sentry/master/policy_sentry/shared/data/iam-definition.json'
 ACTIONS_NOT_COVERED_BY_ACCESS_ADVISOR = ['iam:PassRole', 's3:GetObject', 's3:PutObject']
+
+action_map = {a['prefix']: a for a in requests.get(ACTION_TABLE_URL).json()}
 
 
 class PolicyAnalyzer:
-    def __init__(self):
-        action_table = pd.read_csv(ACTION_TABLE_URL, delimiter=";").to_dict('records')
-        self.action_map = {}
-        for action_obj in action_table:
-            if action_obj['service'] not in self.action_map:
-                self.action_map[action_obj['service']] = []
-            self.action_map[action_obj['service']].append(action_obj)
-
     @staticmethod
     def convert_to_list(list_or_single_object):
         if isinstance(list_or_single_object, list):
@@ -50,20 +43,19 @@ class PolicyAnalyzer:
              len(list(filter(re.compile(service.replace('*', '.*')).match, services_last_accessed))) > 0
              ]) == 0
 
-    def policy_is_write_access(self, policy_document):
+    @staticmethod
+    def policy_is_write_access(policy_document):
         actions = PolicyAnalyzer._get_policy_actions(policy_document)
         for action in actions:
             if action == '*' or '*' in action.split(':'):
                 return True
             [action_service, action_name] = action.split(':')
-            if '*' in action_name:
+            try:
                 action_regex = action_name.replace('*', '.*')
-                action_objs = list(filter(lambda action_obj: re.match(action_regex, action_obj['name']), self.action_map[action_service]))
-            else:
-                try:
-                    action_objs = [next(action_obj for action_obj in self.action_map[action_service] if action_obj['name'] == action_name)]
-                except StopIteration:
-                    action_objs = []
+                action_objs = list(filter(lambda privilege_obj: re.match(action_regex, privilege_obj['privilege']),
+                                          action_map[action_service]['privileges']))
+            except StopIteration:
+                action_objs = []
 
             for action_obj in action_objs:
                 if action_obj['access_level'] in ['Write', 'Delete', 'Permissions management']:

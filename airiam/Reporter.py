@@ -157,8 +157,11 @@ Check us out - https://www.bridgecrew.cloud
         print(SEPARATOR)
 
     @staticmethod
-    def report_terraform(terraform_results):
-        print(SEPARATOR)
+    def report_terraform(terraformed_entities: dict, result_dir: str):
+        print(colored('Successfully ', 'green', attrs=['bold']) + 'migrated your current IAM setup to terraform!')
+        print(f'Migrated {len(terraformed_entities["Users"])} users, {len(terraformed_entities["Groups"])} groups, {len(terraformed_entities["Roles"])} '
+              f'roles and {len(terraformed_entities["Policies"])} policies, as well as all connections between them, to terraform.')
+        print(f'Your terraform files can now be found at the directory you specified: ' + colored(result_dir, attrs=['underline']))
 
     @classmethod
     def print_version(cls):
