@@ -12,7 +12,6 @@ pipenv-setup = "*"
 [packages]
 boto3 = "*"
 termcolor = "*"
-pandas = "*"
 python-terraform = "*"
 moto = "*"
 colorama="*"
