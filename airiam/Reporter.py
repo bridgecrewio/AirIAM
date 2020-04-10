@@ -127,10 +127,12 @@ class Reporter:
     @staticmethod
     def print_prelude():
         print(colored(banner, 'yellow'))
-        print(f"""AirIAM - Least privilege AWS IAM Terraformer
-To continuously scan configurations, try the {colored("Bridgecrew", 'magenta', attrs=['bold'])} free community plan.
-https://www.bridgecrew.io
-""")
+        print()
+        print(colored('AirIAM - Least privilege AWS IAM Terraformer', attrs=['bold']))
+        print()
+        print(f'To continuously scan configurations, try the {colored("Bridgecrew", "magenta", attrs=["bold"])} free community plan.')
+        print('https://www.bridgecrew.io')
+        print()
 
     @staticmethod
     def report_groupings(report_with_recommendations: RuntimeReport):
