@@ -24,25 +24,30 @@ class RuntimeIamScanner:
         else:
             self._session = boto3.Session()
 
-    def evaluate_runtime_iam(self, list_unused: bool) -> RuntimeReport:
+    def evaluate_runtime_iam(self, list_unused: bool, command: str) -> RuntimeReport:
         """
         This method encapsulates all Runtime IAM data capture & classification
         :param list_unused:  A boolean indicating whether to list the unused AWS entities or not.
+        :param command:      The command inputted by the user
         :return: An instance of the report which describes which resources need to be reconfigured (and how),
                                 and which resources should be removed
         """
         account_id, identity_arn = self._get_identity_details()
         iam_data = self._get_data_from_aws(account_id, list_unused)
 
-        if 'user' in identity_arn:
-            user = next(obj for obj in iam_data['AccountUsers'] if obj['Arn'] == identity_arn)
-            if all(map(lambda policy_attachment: policy_attachment['PolicyName'] != 'AdministratorAccess', user['AttachedManagedPolicies'])):
-                self.logger.error(f'Calling user, {identity_arn.split("/").pop()}, '
-                                  'must have the admin policy DIRECTLY attached to avoid failures in data migration')
-                exit(1)
-        else:
-            iam_data['AccountRoles'] = list(filter(lambda r: r['RoleName'] != identity_arn.split('/').pop(1), iam_data['AccountRoles']))
-        print(f'Filtered {identity_arn} from the analysis')
+        if command == 'terraform':
+            if 'user' in identity_arn:
+                user = next(obj for obj in iam_data['AccountUsers'] if obj['Arn'] == identity_arn)
+                if all(map(lambda policy_attachment: policy_attachment['PolicyName'] != 'AdministratorAccess', user['AttachedManagedPolicies'])):
+                    self.logger.error(f'*-*-*-*-*-*-*-*')
+                    self.logger.error(f'Calling user, {identity_arn.split("/").pop()}, '
+                                      'must have the admin policy DIRECTLY attached to avoid failures in terraform data migration')
+                    self.logger.error(f'*-*-*-*-*-*-*-*')
+                    time.sleep(10)
+                iam_data['AccountUsers'].remove(user)
+            else:
+                iam_data['AccountRoles'] = list(filter(lambda r: r['RoleName'] != identity_arn.split('/').pop(1), iam_data['AccountRoles']))
+            print(f'Filtered {identity_arn} from the analysis')
 
         return RuntimeReport(account_id, identity_arn, iam_data)
 

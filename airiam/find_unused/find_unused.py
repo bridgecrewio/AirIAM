@@ -38,8 +38,8 @@ def filter_credentials_of_unused_users(unused_active_access_keys, unused_console
     return result_access_keys, result_console_logins
 
 
-def find_unused(logger, profile, refresh_cache, unused_threshold):
-    iam_report = RuntimeIamScanner(logger, profile, refresh_cache).evaluate_runtime_iam(True)
+def find_unused(logger, profile, refresh_cache, unused_threshold, command):
+    iam_report = RuntimeIamScanner(logger, profile, refresh_cache).evaluate_runtime_iam(True, command)
     raw_iam_data = iam_report.get_raw_data()
     credential_report = raw_iam_data['CredentialReport']
     account_users = raw_iam_data['AccountUsers']

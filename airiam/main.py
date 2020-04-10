@@ -26,7 +26,7 @@ def run():
     Reporter.print_prelude()
     args = parse_args(sys.argv[1:])
 
-    runtime_results = find_unused(logger, args.profile, args.no_cache, args.last_used_threshold)
+    runtime_results = find_unused(logger, args.profile, args.no_cache, args.last_used_threshold, args.command)
 
     if args.command == 'find_unused':
         Reporter.report_unused(runtime_results)
