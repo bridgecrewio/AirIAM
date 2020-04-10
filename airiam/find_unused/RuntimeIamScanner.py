@@ -1,6 +1,4 @@
-import copy
 import json
-import os
 import time
 
 import boto3
