@@ -5,7 +5,7 @@
 
 # AirIAM
 
-AirIAM an AWS IAM least privileges to Terraform execution framework. It compiles AWS IAM usage and leverages that data to create a least-privilege IAM Terraform that replaces the exiting IAM management method.
+AirIAM is an AWS IAM to least privilege Terraform execution framework. It compiles AWS IAM usage and leverages that data to create a least-privilege IAM Terraform that replaces the exiting IAM management method.
 
 AirIAM was created to promote immutable and version-controlled IAM management to replace today's manual and error prone methods.
 
