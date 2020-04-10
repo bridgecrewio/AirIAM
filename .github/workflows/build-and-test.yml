@@ -37,7 +37,7 @@ jobs:
         uses: ad-m/github-push-action@master
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-  bump-version:
+  bump-version-and-publish:
     needs: coverage
     runs-on: ubuntu-latest
     steps:
@@ -70,19 +70,6 @@ jobs:
           git push origin
           git tag $new_tag
           git push origin $new_tag
-  publish-package:
-    needs: bump-version
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - name: Set up Python 3.7
-        uses: actions/setup-python@v1
-        with:
-          python-version: 3.7
-      - uses: dschep/install-pipenv-action@v1
-      - name: Install dependencies
-        run: |
-          pipenv install --dev
       - name: create python package
         run: |
           git config --local user.email "action@github.com"

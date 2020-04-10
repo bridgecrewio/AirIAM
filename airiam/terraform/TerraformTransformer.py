@@ -28,6 +28,7 @@ class TerraformTransformer:
             entities_to_import = self.write_terraform_code(entities_to_transform)
             tf = Terraform(working_dir=self._result_dir)
             tf.init(backend=False)
+            tf.fmt()
             if not without_import:
                 num_of_entities_to_import = len(entities_to_import)
                 print(f"Importing {num_of_entities_to_import} entities")
@@ -41,7 +42,6 @@ class TerraformTransformer:
                     i += 1
                 print("Imported all existing entities to state")
 
-            tf.fmt()
             return entities_to_transform, self._result_dir
         except Exception as e:
             self.logger.error(e)
@@ -75,10 +75,9 @@ class TerraformTransformer:
                 elif 'Group' in policy_attachment_obj:
                     TerraformTransformer.remove_from_transformation(policy_attachment_obj, raw_entities_to_transform, 'Group')
 
-        if not without_consolidated_groups:
-            # todo: iterate over users fix group attachments
-            # todo: if without_unused, delete older groups
-            pass
+        # todo: iterate over users fix group attachments
+        # todo: if without_unused, delete older groups
+        # if not without_consolidated_groups:
 
         return raw_entities_to_transform
 
