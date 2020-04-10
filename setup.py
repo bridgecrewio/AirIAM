@@ -79,8 +79,6 @@ setup(
         "mock==4.0.2",
         "moto==1.3.14",
         "networkx==2.4",
-        "numpy==1.18.2",
-        "pandas==1.0.3",
         "pyasn1==0.4.8",
         "pycparser==2.20",
         "pyrsistent==0.15.7",
