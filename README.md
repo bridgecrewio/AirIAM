@@ -3,7 +3,9 @@
 ![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
 [![build](https://github.com/bridgecrewio/AirIAM/workflows/build/badge.svg)](https://github.com/bridgecrewio/airiam/actions?query=workflow%3Abuild) 
 
-![](docs/web/images/airiam-logo.png)
+<p align="center">
+    <img src="https://github.com/bridgecrewio/AirIAM/raw/master/docs/web/images/airiam-logo.png" height="100" />
+</p>
 
 AirIAM is an AWS IAM to least privilege Terraform execution framework. It compiles AWS IAM usage and leverages that data to create a least-privilege IAM Terraform that replaces the exiting IAM management method.
 
@@ -130,7 +132,7 @@ If the `terraform` command is specified it takes all the results and creates the
 ![Data Flow](images/DataFlow.svg)
 
 ## Examples
-![Example Movie](images/airiam.gif)
+![Example Movie](docs/web/images/airiam-recording.gif)
 
 ## Getting Started
 
