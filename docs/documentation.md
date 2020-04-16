@@ -27,7 +27,6 @@ $ pip install airiam
 ## CLI Options
 ```shell script
 $  airiam -h
-
      ____      __           _____      ____     __        __
     / __ \    |__|  _  ____|_   _|    / __ \   |   \    /   |
    / /  \ \    __  | |/ ___| | |     / /  \ \  | |\ \  / /| |
@@ -71,7 +70,6 @@ AirIAM reads credentials from [profiles that is defined in file](https://docs.aw
 Finding unused IAM entities:
 ```shell script
 $ airiam find_unused
-
      ____      __           _____      ____     __        __
     / __ \    |__|  _  ____|_   _|    / __ \   |   \    /   |
    / /  \ \    __  | |/ ___| | |     / /  \ \  | |\ \  / /| |
@@ -134,7 +132,6 @@ https://www.bridgecrew.io/
 Recommending groups output example:
 ```shell script
 $  airiam recommend_groups
-
      ____      __           _____      ____     __        __
     / __ \    |__|  _  ____|_   _|    / __ \   |   \    /   |
    / /  \ \    __  | |/ ___| | |     / /  \ \  | |\ \  / /| |
@@ -164,7 +161,6 @@ Poweruser: s3-user1
 Example `terraform` output:
 ```shell script
 $ airiam terraform                 
-
      ____      __           _____      ____     __        __
     / __ \    |__|  _  ____|_   _|    / __ \   |   \    /   |
    / /  \ \    __  | |/ ___| | |     / /  \ \  | |\ \  / /| |
@@ -191,12 +187,13 @@ Your terraform files can now be found at the directory you specified: results
 ```
 
 By default, the resulting terraform template will be stored in a folder called `results`. The directory structure:
-results
-|─ groups.tf
-|─ main.tf
-|─ policies.tf
-|─ roles.tf
-|─ terraform.tfstate
+
+results  
+|─ groups.tf  
+|─ main.tf  
+|─ policies.tf  
+|─ roles.tf  
+|─ terraform.tfstate  
 └─ users.tf
 
 ## Recommended Workflow
