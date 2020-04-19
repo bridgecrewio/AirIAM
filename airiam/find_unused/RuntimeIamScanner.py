@@ -36,16 +36,7 @@ class RuntimeIamScanner:
         iam_data = self._get_data_from_aws(account_id, list_unused)
 
         if command == 'terraform':
-            if ':user/' in identity_arn:
-                user = next(obj for obj in iam_data['AccountUsers'] if obj['Arn'] == identity_arn)
-                if all(map(lambda policy_attachment: policy_attachment['PolicyName'] != 'AdministratorAccess', user['AttachedManagedPolicies'])):
-                    self.logger.error(f'*-*-*-*-*-*-*-*')
-                    self.logger.error(f'Calling user, {identity_arn.split("/").pop()}, '
-                                      'must have the admin policy DIRECTLY attached to avoid failures in terraform data migration')
-                    self.logger.error(f'*-*-*-*-*-*-*-*')
-                    time.sleep(10)
-                iam_data['AccountUsers'].remove(user)
-            else:
+            if ':role/' in identity_arn:
                 iam_data['AccountRoles'] = list(filter(lambda r: r['RoleName'] != identity_arn.split('/').pop(1), iam_data['AccountRoles']))
             print(f'Filtered {identity_arn} from the analysis')
 

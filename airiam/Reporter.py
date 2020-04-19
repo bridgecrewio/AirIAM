@@ -8,8 +8,6 @@ from airiam.banner import banner
 from airiam.models import RuntimeReport
 from airiam.version import version
 
-SEPARATOR = '\n==================================================\n\n'
-
 init(autoreset=True)
 
 
@@ -28,8 +26,6 @@ class Reporter:
             print(colored(f'The following {len(unused_users)} users were found to be unused:', 'yellow', attrs=['bold']))
             for user in unused_users:
                 print(colored('Unused: ', 'red', attrs=['bold']) + f'{user["UserName"]}: last used {user["LastUsed"]} days ago')
-            print(f'\nTo delete these {len(unused_users)} users easily, utilize our scripts!')
-            print('https://www.bridgecrew.cloud/incidents/BC_AWS_IAM_35/remediation/DeleteUser')
             time.sleep(5)
         else:
             print(colored('No unused users were found in the account! Hurray!', color='green'))
@@ -41,8 +37,6 @@ class Reporter:
             for access_key_obj in unused_access_keys:
                 print(colored('Unused: ', 'red', attrs=['bold'])
                       + f'{access_key_obj["User"]} used access key #{access_key_obj["AccessKey"]} {access_key_obj["DaysSinceLastUse"]} days ago')
-            print(f'\nTo disable these {len(unused_access_keys)} access keys easily, utilize our scripts!')
-            print('https://www.bridgecrew.cloud/incidents/BC_AWS_IAM_4/remediation/IAMDisableUnusedCredentials')
             time.sleep(5)
         else:
             print(colored('No unused access keys were found in the account! Hurray!', color='green'))
@@ -61,8 +55,6 @@ class Reporter:
                     print(colored(console_login_profile['User'], 'red', attrs=['bold'])
                           + f' has password access to the AWS console ' + colored('WITHOUT MFA', 'red')
                           + f' but hasn\'t used it in the last {console_login_profile["DaysSinceLastUse"]} days')
-            print(f'\nTo delete these {len(unused_console_login_profiles)} Console Login Profiles easily, utilize our scripts!:')
-            print('https://www.bridgecrew.cloud/incidents/BC_AWS_IAM_3/remediation/IAMDisableUserConsoleLogin')
             time.sleep(5)
         else:
             print(colored('No unused Console Login Profiles were found in the account! Hurray!', color='green'))
@@ -73,8 +65,6 @@ class Reporter:
             print(colored(f'The following {len(unused_roles)} roles are unused:', 'yellow', attrs=['bold']))
             for role in unused_roles:
                 print(colored('Unused: ', 'red', attrs=['bold']) + f"{role['RoleName']}: last used {role['LastUsed']} days ago")
-            print(f'\nTo delete these {len(unused_roles)} roles easily, utilize our scripts! A script which deletes a list of roles:')
-            print('https://www.bridgecrew.cloud/incidents/BC_AWS_IAM_34/remediation/DeleteRole')
             time.sleep(5)
         else:
             print(colored('No unused roles were found in the account! Hurray!', color='green'))
@@ -89,8 +79,6 @@ class Reporter:
                 else:
                     msg = ' has no members'
                 print(colored(group['GroupName'], 'yellow', attrs=['bold']) + msg)
-            print(f'\nTo delete these {len(unused_groups)} groups easily, utilize our scripts!')
-            print('https://www.bridgecrew.cloud/incidents/BC_AWS_IAM_38/remediation/DeleteEmptyGroup')
             time.sleep(5)
         else:
             print(colored('No redundant groups were found in the account! Hurray!', color='green'))
@@ -101,8 +89,6 @@ class Reporter:
             print(colored(f'The following {len(unused_policies)} policies are redundant:', 'yellow', attrs=['bold']))
             for policy in unused_policies:
                 print(colored(policy['PolicyName'], 'yellow', attrs=['bold']) + f' is not attached to any user, group or role')
-            print(f'\nTo delete these {len(unused_policies)} policies easily, utilize our scripts!')
-            print('https://www.bridgecrew.cloud/incidents/BC_AWS_IAM_39/remediation/DeletePolicy')
             time.sleep(5)
         else:
             print(colored('No unattached policies were found in the account! Hurray!', color='green'))
@@ -115,14 +101,15 @@ class Reporter:
                 principal = policy_attachment.get('Role') or policy_attachment.get('User') or policy_attachment.get('Group')
                 print(colored('Policy attached but not used: ', 'yellow', attrs=['bold']) + colored(principal, 'grey', attrs=['bold']) +
                       f' is not using the privileges given by {colored(policy_attachment["PolicyArn"], "red", attrs=["bold"])}')
-            print(f'\nTo detach these policy attachments easily, utilize our scripts! A script which detaches policies from roles:')
-            print('https://www.bridgecrew.cloud/incidents/BC_AWS_IAM_41/remediation/DetachPolicyFromRole')
             time.sleep(5)
         else:
             print(colored('No unused policy attachments were found in the account! Hurray!', color='green'))
 
         print()
-        print(SEPARATOR)
+
+        print('If you prefer to to change the current runtime and not move to IaC but the number of entities above is intimidating - consider using '
+              'our playbooks, available at: ')
+        print('https://www.bridgecrew.io/')
 
     @staticmethod
     def print_prelude():
@@ -156,7 +143,6 @@ class Reporter:
             for user in read_only['Users']:
                 print(colored('ReadOnly: ', 'green') + user)
 
-        print(SEPARATOR)
 
     @staticmethod
     def report_terraform(terraformed_entities: dict, result_dir: str):

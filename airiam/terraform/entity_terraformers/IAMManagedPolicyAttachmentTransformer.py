@@ -13,12 +13,12 @@ class IAMManagedPolicyAttachmentTransformer(BaseEntityTransformer):
         super().__init__(f"aws_iam_{self._principal}_policy_attachment", attachment_name, entity_json)
 
     def _generate_hcl2_code(self, entity_json) -> str:
-        policy_arn = entity_json['PolicyArn']
+        policy_arn = f'"{entity_json["PolicyArn"]}"'
         if not self.is_aws_managed(entity_json['PolicyArn']):
-            policy_arn = f"aws_iam_policy.{BaseEntityTransformer.safe_name_converter(entity_json['PolicyName'])}"
+            policy_arn = f"aws_iam_policy.{BaseEntityTransformer.safe_name_converter(entity_json['PolicyName'])}.arn"
 
         return f"""resource "aws_iam_{self._principal}_policy_attachment" "{self._safe_name}" {{
-  policy_arn = "{policy_arn}"
+  policy_arn = {policy_arn}
   {self._principal} = aws_iam_{self._principal}.{self._safe_user_name}.name
 }}
 """
