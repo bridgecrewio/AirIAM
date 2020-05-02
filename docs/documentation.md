@@ -19,13 +19,14 @@ After you're familiar with the tool, check out the [recommended workflow](#recom
 The installation is quick and straightforward - install, configure input & scan.
 
 
-```shell script
+```
 # install from pypi using pip 
 $ pip install airiam
 ```
 
 ## CLI Options
-```shell script
+
+```
 $  airiam -h
      ____      __           _____      ____     __        __
     / __ \    |__|  _  ____|_   _|    / __ \   |   \    /   |
@@ -68,7 +69,8 @@ AirIAM reads credentials from [profiles that is defined in file](https://docs.aw
 ## Sample: Scan for unused entities (CLI)
 
 Finding unused IAM entities:
-```shell script
+
+```
 $ airiam find_unused
      ____      __           _____      ____     __        __
     / __ \    |__|  _  ____|_   _|    / __ \   |   \    /   |
@@ -130,7 +132,8 @@ https://www.bridgecrew.io/
   > > [CIS AWS Foundations](https://d1.awsstatic.com/whitepapers/compliance/AWS_CIS_Foundations_Benchmark.pdf) - "1.16 Ensure IAM policies are attached only to groups or roles (Scored)"
 
 Recommending groups output example:
-```shell script
+
+```
 $  airiam recommend_groups
      ____      __           _____      ____     __        __
     / __ \    |__|  _  ____|_   _|    / __ \   |   \    /   |
@@ -159,7 +162,8 @@ Poweruser: s3-user1
 
 ## Sample: Terraform results sample (CLI)
 Example `terraform` output:
-```shell script
+
+```
 $ airiam terraform                 
      ____      __           _____      ____     __        __
     / __ \    |__|  _  ____|_   _|    / __ \   |   \    /   |
