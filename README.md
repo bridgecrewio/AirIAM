@@ -2,6 +2,8 @@
 [![code_coverage](https://raw.githubusercontent.com/bridgecrewio/AirIAM/master/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/AirIAM/actions?query=workflow%3Abuild-and-test)
 ![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
 [![build](https://github.com/bridgecrewio/AirIAM/workflows/build/badge.svg)](https://github.com/bridgecrewio/airiam/actions?query=workflow%3Abuild) 
+[![PyPI](https://img.shields.io/pypi/v/airiam)](https://pypi.org/project/airiam/)
+[![Downloads](https://pepy.tech/badge/airiam)](https://pepy.tech/project/airiam)
 
 <p align="center">
     <img src="https://github.com/bridgecrewio/AirIAM/raw/master/docs/web/images/airiam-logo.png" height="100" />
