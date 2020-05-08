@@ -140,8 +140,27 @@ If the `terraform` command is specified it takes all the results and creates the
 
 ### Installation
 
-```sh
+### Using Pip
+```
 pip3 install airiam --user 
+```
+
+### Using brew (MacOS Only)
+```
+brew tap bridgecrewio/airiam https://github.com/bridgecrewio/airiam
+brew update
+brew install airiam
+```
+
+
+### FAQ
+If you run into the following error:
+```
+airiam is not recognized as an internal or external command
+```
+Please make sure python is in your `PATH` by running the following command:
+```
+export PATH="/Users//Library/Python/3.7/bin:$PATH"
 ```
 
 ## Alternatives
@@ -158,6 +177,9 @@ For static IAM policy linting, check out [Parliament](https://github.com/duo-lab
 
 For automatically creating IAM policies and managing them as code, check out  [aws-iam-generator](https://github.com/awslabs/aws-iam-generator),
 [PolicySentry](https://github.com/salesforce/policy_sentry).
+
+[Cloudsplaining](https://github.com/salesforce/cloudsplaining) is another tool from salesforce that analyzes exisitng IAM setup
+and identifies risky / over privileged roles. 
 
 These tools help create better policies, but do not help with existing AWS IAM setup.
 

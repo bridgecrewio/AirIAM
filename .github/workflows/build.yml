@@ -82,3 +82,23 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.pypi_password }}
+  update-brew:
+    needs: bump-version-and-publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v1
+        with:
+          python-version: 3.7
+      - uses: dschep/install-pipenv-action@v1
+      - name: publish brew
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          pipenv run pip install homebrew-pypi-poet
+          pipenv run pip install airiam -U
+          git pull
+          pipenv run poet -f airiam > HomebrewFormula/airiam.rb
+          git commit -m "update brew formula" airiam/version.py HomebrewFormula/airiam.rb || echo "No brew changes to commit"
+          git push origin
