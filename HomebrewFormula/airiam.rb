@@ -3,8 +3,8 @@ class Airiam < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/AirIAM"
-  url "https://files.pythonhosted.org/packages/68/9c/6b68d23fc5c21f90c0779674029e1446ef655399ecfcf469fd03b26e38cb/airiam-0.1.29.tar.gz"
-  sha256 "827b65a9aeb40d90612767a4e63ea5f566d9de3a8053e5d8b1e863aed1e28801"
+  url "https://files.pythonhosted.org/packages/17/03/29fce039a511a01b27718ce89ccb03487032df142a50ba211d147c9a2eee/airiam-0.1.31.tar.gz"
+  sha256 "757d16e0b11f3a99b3ca284995fb37e2f87c38a471fc4ed99f795a5975ad7a1a"
 
   depends_on "python3"
 
@@ -44,8 +44,8 @@ class Airiam < Formula
   end
 
   resource "jmespath" do
-    url "https://files.pythonhosted.org/packages/5c/40/3bed01fc17e2bb1b02633efc29878dfa25da479ad19a69cfb11d2b88ea8e/jmespath-0.9.5.tar.gz"
-    sha256 "cca55c8d153173e21baa59983015ad0daf603f9cb799904ff057bfb8ff8dc2d9"
+    url "https://files.pythonhosted.org/packages/3c/56/3f325b1eef9791759784aa5046a8f6a1aff8f7c898a2e34506771d3b99d8/jmespath-0.10.0.tar.gz"
+    sha256 "b85d0567b8666149a93172712e68920734333c0ce7e89b78b3e987f71e5ed4f9"
   end
 
   resource "python-dateutil" do
@@ -69,8 +69,8 @@ class Airiam < Formula
   end
 
   resource "six" do
-    url "https://files.pythonhosted.org/packages/21/9f/b251f7f8a76dec1d6651be194dfba8fb8d7781d10ab3987190de8391d08e/six-1.14.0.tar.gz"
-    sha256 "236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a"
+    url "https://files.pythonhosted.org/packages/6b/34/415834bfdafca3c5f451532e8a8d9ba89a21c9743a0c59fbd0205c7f9426/six-1.15.0.tar.gz"
+    sha256 "30639c035cdb23534cd4aa2dd52c3bf48f06e5f4a941509c8bafd8ce11080259"
   end
 
   resource "termcolor" do
