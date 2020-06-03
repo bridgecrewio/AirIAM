@@ -2,10 +2,12 @@ import json
 import time
 
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 
 from airiam.models.RuntimeReport import RuntimeReport
 
+config = Config(retries={'max_attempts': 10, 'mode': 'standard'})
 IAM_DATA_FILE_NAME = "iam_data.json"
 ERASE_LINE = '\x1b[2K'
 
@@ -52,7 +54,7 @@ class RuntimeIamScanner:
             print("Reusing local data")
         else:
             print(f"Getting all IAM configurations for account {account_id}")
-            iam = self._session.client('iam')
+            iam = self._session.client('iam', config=config)
             iam.generate_credential_report()
             account_users, account_roles, account_groups, account_policies = RuntimeIamScanner.get_account_iam_configuration(iam)
             print("Getting IAM credential report")
