@@ -15,23 +15,34 @@ AirIAM was created to promote immutable and version-controlled IAM management to
 
 ## **Table of contents**
 
+- [**Table of contents**](#table-of-contents)
 - [Introduction](#introduction)
+- [Features](#features)
 - [Commands](#commands)
+  - [Usage](#usage)
+  - [Data Flow](#data-flow)
 - [Examples](#examples)
 - [Getting Started](#getting-started)
+  - [Installation](#installation)
+  - [Using Pip](#using-pip)
+  - [Using brew (MacOS Only)](#using-brew-macos-only)
+  - [FAQ](#faq)
 - [Alternatives](#alternatives)
+  - [AWS IAM Cleanup Tools](#aws-iam-cleanup-tools)
+  - [AWS IAM Policy Management Tools](#aws-iam-policy-management-tools)
+  - [Migration of AWS to Terraform Tools](#migration-of-aws-to-terraform-tools)
 - [Contributing](#contributing)
 - [Support](#support)
 
 ## Introduction
 
-AirIAM scans existing IAM usage patterns and provides a simple method to migrate IAM configurations into a rightsized 
-Terraform plan. It identifies unused users, roles, groups, policies and policy attachments and replaces them with a 
-Least Privileges Terraform code modeled to manage AWS IAM.
+AirIAM scans existing IAM usage patterns and provides a simple method to migrate IAM configurations into a right-sized
+Terraform plan. It identifies unused users, roles, groups, policies and policy attachments and replaces them with a
+Least Privileges Terraform code modelled to manage AWS IAM.
 
 By moving all IAM configurations into Terraform code, admins can start tracking, auditing and modifying IAM configurations as part of their standard infrastructure-as-code development provisioning processes.
 
-AirIAM is battle-tested and is recommended for use in Dev, QA and test environments that have been previously managed by humans. It is design to result in minimal impact on existing workloads. 
+AirIAM is battle-tested and is recommended for use in Dev, QA and test environments that have been previously managed by humans. It is design to result in minimal impact on existing workloads.
 
 If you are interested in migrating a Prod account, contact us at info@bridgecrew.io for some helpful tips.
 
@@ -41,7 +52,7 @@ If you are interested in migrating a Prod account, contact us at info@bridgecrew
 
 - Detects unused IAM resources using native AWS and [Amazon Access Advisor](https://aws.amazon.com/blogs/security/identify-unused-iam-roles-remove-confidently-last-used-timestamp/) APIs.
 - Provides scripts to remove unused entities en-masse.
-- Effortless migration of existing IAM configurations into a simple Least Privileges Terraform model. 
+- Effortless migration of existing IAM configurations into a simple Least Privileges Terraform model.
 - Integrates with [Checkov](https://checkov.io), a static-code analysis tool for Terraform, to track unwanted configuration changes and configuration drift.
 
 
@@ -131,9 +142,11 @@ If `recommend_groups` is specified, after the stage of group recommendation the 
 If the `terraform` command is specified it takes all the results and creates the Terraform code and state file required to replace the existing IAM configuration.
 
 ### Data Flow
+
 ![Data Flow](images/DataFlow.svg)
 
 ## Examples
+
 ![Example Movie](docs/web/images/airiam-recording.gif)
 
 ## Getting Started
@@ -141,25 +154,30 @@ If the `terraform` command is specified it takes all the results and creates the
 ### Installation
 
 ### Using Pip
-```
-pip3 install airiam --user 
+
+```cli
+pip3 install airiam --user
 ```
 
 ### Using brew (MacOS Only)
-```
+
+```cli
 brew tap bridgecrewio/airiam https://github.com/bridgecrewio/airiam
 brew update
 brew install airiam
 ```
 
-
 ### FAQ
+
 If you run into the following error:
-```
+
+```error
 airiam is not recognized as an internal or external command
 ```
+
 Please make sure python is in your `PATH` by running the following command:
-```
+
+```path
 export PATH="/Users//Library/Python/3.7/bin:$PATH"
 ```
 
@@ -173,19 +191,19 @@ The main difference between these tools and AirIAM is that AirIAM also moves the
 
 ### AWS IAM Policy Management Tools
 
-For static IAM policy linting, check out [Parliament](https://github.com/duo-labs/parliament). Parliament is actually integrated into AirIAM, and is run on the policies it gets from your AWS account. 
+For static IAM policy linting, check out [Parliament](https://github.com/duo-labs/parliament). Parliament is actually integrated into AirIAM, and is run on the policies it gets from your AWS account.
 
 For automatically creating IAM policies and managing them as code, check out  [aws-iam-generator](https://github.com/awslabs/aws-iam-generator),
 [PolicySentry](https://github.com/salesforce/policy_sentry).
 
-[Cloudsplaining](https://github.com/salesforce/cloudsplaining) is another tool from salesforce that analyzes exisitng IAM setup
-and identifies risky / over privileged roles. 
+[Cloudsplaining](https://github.com/salesforce/cloudsplaining) is another tool from salesforce that analyzes existing IAM set-up
+and identifies risky / over privileged roles.
 
-These tools help create better policies, but do not help with existing AWS IAM setup.
+These tools help create better policies, but do not help with existing AWS IAM set-up.
 
-### Migration of AWS to terraform Tools
+### Migration of AWS to Terraform Tools
 
-For other tools that help migrate existing AWS IAM setup to terraform, check out 
+For other tools that help migrate existing AWS IAM set-up to terraform, check out
 [terracognita](https://github.com/cycloidio/terracognita/) and [terraforming](https://github.com/dtan4/terraforming).
 AirIAM is the only tool which supports migrating all relevant IAM entities to terraform v0.12.
 
@@ -193,11 +211,11 @@ AirIAM is the only tool which supports migrating all relevant IAM entities to te
 
 Contribution is welcomed!
 
-We would love to hear about other IAM governance models for additional use cases as well as new ways to identify over-permissive IAM resources. 
+We would love to hear about other IAM governance models for additional use cases as well as new ways to identify over-permissive IAM resources.
 
 ## Support
 
-[Bridgecrew](https://bridgecrew.io) builds and maintains AirIAM to encourage the adoption of IAM-as-code and enforcement of IAM Rightsizing and Least Privileges best practices in policy-as-code. 
+[Bridgecrew](https://bridgecrew.io) builds and maintains AirIAM to encourage the adoption of IAM-as-code and enforcement of IAM Rightsizing and Least Privileges best practices in policy-as-code.
 
 Start with our [Documentation](https://bridgecrewio.github.io/airiam/) for quick tutorials and examples.
 
