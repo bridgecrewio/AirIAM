@@ -164,6 +164,8 @@ class RuntimeIamScanner:
             results[arn] = job_id
         print(ERASE_LINE + "\rGenerated reports for all principals")
 
+        time.sleep(2)
+
         i = 1
         for arn in results:
             job_id = results[arn]
