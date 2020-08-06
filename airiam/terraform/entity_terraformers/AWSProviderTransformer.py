@@ -10,6 +10,7 @@ class AWSProviderTransformer(BaseEntityTransformer):
             provider_code = f"""provider "aws" {{
   region  = "{entity_json['region']}"
   profile = "{entity_json['profile']}"
+  version = "~> 2.0"
 }}
 
 """

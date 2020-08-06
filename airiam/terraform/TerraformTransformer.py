@@ -32,6 +32,7 @@ class TerraformTransformer:
             entities_to_transform = self._list_entities_to_transform(results, without_unused, without_groups)
             entities_to_import = self.write_terraform_code(entities_to_transform)
             tf = Terraform(working_dir=self._result_dir)
+            print("Initializing terraform")
             tf.init(backend=False)
             tf.fmt()
             if not without_import:
