@@ -3,8 +3,8 @@ class Airiam < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/AirIAM"
-  url "https://files.pythonhosted.org/packages/17/03/29fce039a511a01b27718ce89ccb03487032df142a50ba211d147c9a2eee/airiam-0.1.31.tar.gz"
-  sha256 "757d16e0b11f3a99b3ca284995fb37e2f87c38a471fc4ed99f795a5975ad7a1a"
+  url "https://files.pythonhosted.org/packages/02/12/c65cbf138d20c028b2b595facaae1145abdb3e8d70ad305567feeb227706/airiam-0.1.32.tar.gz"
+  sha256 "246dc7f7b5e01acd3b8f4c4d1327eda62d6ab390ead34e3660bf14c5cbb81c16"
 
   depends_on "python3"
 
@@ -79,8 +79,8 @@ class Airiam < Formula
   end
 
   resource "urllib3" do
-    url "https://files.pythonhosted.org/packages/05/8c/40cd6949373e23081b3ea20d5594ae523e681b6f472e600fbc95ed046a36/urllib3-1.25.9.tar.gz"
-    sha256 "3018294ebefce6572a474f0604c2021e33b3fd8006ecd11d62107a5d2a963527"
+    url "https://files.pythonhosted.org/packages/81/f4/87467aeb3afc4a6056e1fe86626d259ab97e1213b1dfec14c7cb5f538bf0/urllib3-1.25.10.tar.gz"
+    sha256 "91056c15fa70756691db97756772bb1eb9678fa585d9184f24534b100dc60f4a"
   end
 
   def install
