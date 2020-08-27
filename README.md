@@ -4,6 +4,7 @@
 [![build](https://github.com/bridgecrewio/AirIAM/workflows/build/badge.svg)](https://github.com/bridgecrewio/airiam/actions?query=workflow%3Abuild) 
 [![PyPI](https://img.shields.io/pypi/v/airiam)](https://pypi.org/project/airiam/)
 [![Downloads](https://pepy.tech/badge/airiam)](https://pepy.tech/project/airiam)
+[![slack-community](https://slack.bridgecrew.io/badge.svg)](https://slack.bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=airiam)
 
 <p align="center">
     <img src="https://github.com/bridgecrewio/AirIAM/raw/master/docs/web/images/airiam-logo.png" height="100" />
