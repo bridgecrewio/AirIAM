@@ -66,7 +66,7 @@ def find_unused_users(users, credential_report, unused_threshold) -> (list, list
     unused_users = []
     used_users = []
     for user in users:
-        credentials = next(creds for creds in credential_report if creds['user'] == user['UserName'])
+        credentials = next((creds for creds in credential_report if creds['user'] == user['UserName']), {})
         last_used_in_days = min(
             days_from_today(credentials.get('access_key_1_last_used_date', 'N/A')),
             days_from_today(credentials.get('access_key_2_last_used_date', 'N/A')),
