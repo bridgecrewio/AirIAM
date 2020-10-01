@@ -2,7 +2,7 @@ import json
 import re
 import requests
 
-ACTION_TABLE_URL = 'https://raw.githubusercontent.com/salesforce/policy_sentry/master/policy_sentry/shared/data/iam-definition.json'
+ACTION_TABLE_URL = 'https://raw.githubusercontent.com/salesforce/policy_sentry/8d480b572d0431c37fd21ccb02555327429c09c4/policy_sentry/shared/data/iam-definition.json'
 ACTIONS_NOT_COVERED_BY_ACCESS_ADVISOR = ['iam:PassRole', 's3:GetObject', 's3:PutObject']
 
 action_map = {a['prefix']: a for a in requests.get(ACTION_TABLE_URL).json()}
