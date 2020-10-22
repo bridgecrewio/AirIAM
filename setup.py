@@ -33,7 +33,7 @@ setup(
         ]
     },
     install_requires=[
-        "boto3==1.12.39",
+        "boto3>=1.12.43",
         "colorama==0.4.3",
         "python-terraform==0.10.1",
         "requests==2.23.0",
