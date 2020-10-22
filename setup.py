@@ -36,7 +36,7 @@ setup(
         "boto3>=1.12.43",
         "colorama==0.4.3",
         "python-terraform==0.10.1",
-        "requests==2.23.0",
+        "requests>=2.22.0",
         "termcolor==1.1.0"
     ],
     license="Apache License 2.0",
