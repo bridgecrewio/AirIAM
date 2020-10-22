@@ -26,9 +26,9 @@ class TerraformTransformer:
         try:
             if not without_groups:
                 # todo: implement!
-                self.logger.warn('Migrating to the recommended groups isn\'t supported yet. Issue exists - '
-                                 'https://github.com/bridgecrewio/AirIAM/issues/20')
-                self.logger.warn('Will use the existing groups for terraform migration until it is implemented')
+                self.logger.warning('Migrating to the recommended groups isn\'t supported yet. Issue exists - '
+                                    'https://github.com/bridgecrewio/AirIAM/issues/20')
+                self.logger.warning('Will use the existing groups for terraform migration until it is implemented')
             entities_to_transform = self._list_entities_to_transform(results, without_unused, without_groups)
             entities_to_import = self.write_terraform_code(entities_to_transform)
             tf = Terraform(working_dir=self._result_dir)
@@ -64,7 +64,7 @@ class TerraformTransformer:
         if without_unused:
             unused = report.get_unused()
             unused_entities = unused['Users'] + unused['Roles'] + unused['Policies'] + unused['Groups'] + unused['PolicyAttachments']
-            self.logger.warn(f'Filtering out {len(unused_entities)} entities from terraform. These entities will have to be handled manually')
+            self.logger.warning(f'Filtering out {len(unused_entities)} entities from terraform. These entities will have to be handled manually')
             for user in unused['Users']:
                 raw_entities_to_transform['Users'].remove(user)
             for role in unused['Roles']:
