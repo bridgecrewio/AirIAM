@@ -3,19 +3,19 @@ class Airiam < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/AirIAM"
-  url "https://files.pythonhosted.org/packages/c4/4d/f5d7eec859feb3a11c62db2db5ab298c50b1f81bee94a08045d567f392cd/airiam-0.1.39.tar.gz"
-  sha256 "3b7db4a3a6a74eab8578e93574d56cc44d72ccc3f854d54cf0e8fa0fbf20a8f1"
+  url "https://files.pythonhosted.org/packages/9a/06/26291a1783a58f107a0f34c12bf4bace94e72fd7692c67f8a4e2a70c158d/airiam-0.1.40.tar.gz"
+  sha256 "70d3e0a8529a53592b7bac026454562d4fc871ed3a24bc8ef092679de1842beb"
 
   depends_on "python3"
 
   resource "boto3" do
-    url "https://files.pythonhosted.org/packages/2e/ed/c78be6e55442756a53c3dafe086e3c72534bfe7904e683ecca3678521f9b/boto3-1.12.39.tar.gz"
-    sha256 "970bd7b332e73d7b51077ed36772c634811b38c81b0cc6ed0f910e50d7ebadf8"
+    url "https://files.pythonhosted.org/packages/65/2c/9a391b553fb45bd8dd94ab8267819fa3e37e590bcee72589c61cc8498fc4/boto3-1.16.2.tar.gz"
+    sha256 "fb0e3dc534d6e34371c3b471fb3de8c287b18f700382b7b9bdb56e8c32ef83e4"
   end
 
   resource "botocore" do
-    url "https://files.pythonhosted.org/packages/0c/47/b88dcace59102cffe24e4b2d15f6c7b60df8ee79f82e9c2264d5c90a3c01/botocore-1.15.49.tar.gz"
-    sha256 "a474131ba7a7d700b91696a27e8cdcf1b473084addf92f90b269ebd8f5c3d3e0"
+    url "https://files.pythonhosted.org/packages/96/00/403c0dda71ab03717da15e6c63df8319b0075568ab025e2abebcfe5a742c/botocore-1.19.2.tar.gz"
+    sha256 "dc52d4eb5c2a4360506bdd8a99aca7ebc31c56849faf98c707e5201fcbb56957"
   end
 
   resource "certifi" do
@@ -31,11 +31,6 @@ class Airiam < Formula
   resource "colorama" do
     url "https://files.pythonhosted.org/packages/82/75/f2a4c0c94c85e2693c229142eb448840fba0f9230111faa889d1f541d12d/colorama-0.4.3.tar.gz"
     sha256 "e96da0d330793e2cb9485e9ddfd918d456036c7149416295932478192f4436a1"
-  end
-
-  resource "docutils" do
-    url "https://files.pythonhosted.org/packages/93/22/953e071b589b0b1fee420ab06a0d15e5aa0c7470eb9966d60393ce58ad61/docutils-0.15.2.tar.gz"
-    sha256 "a2aeea129088da402665e92e0b25b04b073c04b2dce4ab65caaa38b7ce2e1a99"
   end
 
   resource "idna" do
