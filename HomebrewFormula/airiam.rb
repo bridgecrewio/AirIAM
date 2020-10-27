@@ -3,19 +3,19 @@ class Airiam < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/AirIAM"
-  url "https://files.pythonhosted.org/packages/9a/06/26291a1783a58f107a0f34c12bf4bace94e72fd7692c67f8a4e2a70c158d/airiam-0.1.40.tar.gz"
-  sha256 "70d3e0a8529a53592b7bac026454562d4fc871ed3a24bc8ef092679de1842beb"
+  url "https://files.pythonhosted.org/packages/20/f2/fdd4653335c68c15a61ce9fc83e003299a72b1adcd6063804e32feea3b3a/airiam-0.1.41.tar.gz"
+  sha256 "3f3dea7e33eb5a4d0635270cf6d283bffd02afb48f5f1ca4e0abe954f57cc6fb"
 
   depends_on "python3"
 
   resource "boto3" do
-    url "https://files.pythonhosted.org/packages/65/2c/9a391b553fb45bd8dd94ab8267819fa3e37e590bcee72589c61cc8498fc4/boto3-1.16.2.tar.gz"
-    sha256 "fb0e3dc534d6e34371c3b471fb3de8c287b18f700382b7b9bdb56e8c32ef83e4"
+    url "https://files.pythonhosted.org/packages/83/c2/1d4ccb8d0772b37d2f5d14e784babbf6a51aca6dd2786da842cd912e98b4/boto3-1.16.5.tar.gz"
+    sha256 "163bf25d7c28be24392744485cf180bee4ff5e84c4ee891a32501e89dc352982"
   end
 
   resource "botocore" do
-    url "https://files.pythonhosted.org/packages/96/00/403c0dda71ab03717da15e6c63df8319b0075568ab025e2abebcfe5a742c/botocore-1.19.2.tar.gz"
-    sha256 "dc52d4eb5c2a4360506bdd8a99aca7ebc31c56849faf98c707e5201fcbb56957"
+    url "https://files.pythonhosted.org/packages/32/21/1bd5ec2c3d836f09abe46f48b9236d8c3d39a5b2828caffce0bf77786301/botocore-1.19.5.tar.gz"
+    sha256 "2bacdfb1eb66c885be18b7557202160f9eb48d81e16881e1ce5176881cc9d8aa"
   end
 
   resource "certifi" do
@@ -54,8 +54,8 @@ class Airiam < Formula
   end
 
   resource "requests" do
-    url "https://files.pythonhosted.org/packages/f5/4f/280162d4bd4d8aad241a21aecff7a6e46891b905a4341e7ab549ebaf7915/requests-2.23.0.tar.gz"
-    sha256 "b3f43d496c6daba4493e7c431722aeb7dbc6288f52a6e04e7b6023b0247817e6"
+    url "https://files.pythonhosted.org/packages/da/67/672b422d9daf07365259958912ba533a0ecab839d4084c487a5fe9a5405f/requests-2.24.0.tar.gz"
+    sha256 "b3559a131db72c33ee969480840fff4bb6dd111de7dd27c8ee1f820f4f00231b"
   end
 
   resource "s3transfer" do
