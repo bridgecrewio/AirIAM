@@ -67,15 +67,25 @@ def find_unused_users(users, credential_report, unused_threshold) -> (list, list
     used_users = []
     for user in users:
         credentials = next((creds for creds in credential_report if creds['user'] == user['UserName']), {})
-        last_used_in_days = min(
-            days_from_today(credentials.get('access_key_1_last_used_date', 'N/A')),
-            days_from_today(credentials.get('access_key_2_last_used_date', 'N/A')),
-            days_from_today(credentials.get('password_last_used', 'N/A')),
-        )
-        user['LastUsed'] = last_used_in_days
+        
+        findMinimumUsed = []
+        findMinimumUsed.append(days_from_today(credentials.get('access_key_1_last_used_date', 'N/A')))
+        findMinimumUsed.append(days_from_today(credentials.get('access_key_2_last_used_date', 'N/A')))
+        findMinimumUsed.append(days_from_today(credentials.get('password_last_used', 'N/A')))
+        try:
+            # Needs to be >= here not just >, as we need to catch "0" for accessed "today", which will fail both if and elif below and put the user into "used_users" so any unused keys can be caught later.
+            last_used_in_days = min(i for i in findMinimumUsed if i >= 0)
+        except:
+            last_used_in_days = min(i for i in findMinimumUsed if i < 0)
+
         if last_used_in_days >= unused_threshold:
+            user['LastUsed'] = last_used_in_days
+            unused_users.append(user)
+        elif last_used_in_days < 0:
+            user['LastUsed'] = last_used_in_days
             unused_users.append(user)
         else:
+            user['LastUsed'] = last_used_in_days
             used_users.append(user)
     return unused_users, used_users
 
@@ -86,15 +96,15 @@ def find_unused_active_credentials(users, credential_report, unused_threshold) -
     for user in users:
         credentials = next(creds for creds in credential_report if creds['user'] == user['UserName'])
         access_key_1_unused_days = days_from_today(credentials.get('access_key_1_last_used_date', 'N/A'))
-        if credentials['access_key_1_active'] == 'true' and access_key_1_unused_days >= unused_threshold:
+        if ((credentials['access_key_1_active'] == 'true') and ((access_key_1_unused_days < 0) or (access_key_1_unused_days >= unused_threshold))):
             unused_access_keys.append({'User': user['UserName'], 'AccessKey': '1', 'DaysSinceLastUse': access_key_1_unused_days})
 
         access_key_2_unused_days = days_from_today(credentials.get('access_key_2_last_used_date', 'N/A'))
-        if credentials['access_key_2_active'] == 'true' and access_key_2_unused_days >= unused_threshold:
+        if ((credentials['access_key_2_active'] == 'true') and ((access_key_2_unused_days < 0) or (access_key_2_unused_days >= unused_threshold))):
             unused_access_keys.append({'User': user['UserName'], 'AccessKey': '2', 'DaysSinceLastUse': access_key_2_unused_days})
 
         days_since_password_last_used = days_from_today(credentials.get('password_last_used', 'N/A'))
-        if credentials['password_enabled'] == 'true' and days_since_password_last_used >= unused_threshold:
+        if ((credentials['password_enabled'] == 'true') and ((days_since_password_last_used < 0) or (days_since_password_last_used >= unused_threshold))):
             unused_console_login_profiles.append({'User': user['UserName'], 'MFAEnabled': credentials['mfa_active'] == 'true',
                                                   'DaysSinceLastUse': days_since_password_last_used})
     return unused_access_keys, unused_console_login_profiles
@@ -105,12 +115,12 @@ def find_unused_roles(roles, unused_threshold) -> (list, list):
     used_roles = []
     for role in roles:
         if len(role['LastAccessed']) == 0:
-            role['LastUsed'] = 365
+            role['LastUsed'] = -1
             unused_roles.append(role)
         else:
             last_used = max(map(lambda last_access: last_access['LastAccessed'], role.get('LastAccessed', [])))
             role['LastUsed'] = days_from_today(last_used)
-            if role['LastUsed'] >= unused_threshold:
+            if (role['LastUsed'] < 0) or (role['LastUsed'] >= unused_threshold):
                 unused_roles.append(role)
             else:
                 used_roles.append(role)
@@ -155,7 +165,7 @@ def find_unused_policy_attachments(users: list, roles: dict, account_policies: l
     potential_unused_group_policy_attachments = []
     for user in users:
         services_in_use = list(map(lambda last_access: last_access['ServiceNamespace'],
-                                   filter(lambda last_access: days_from_today(last_access['LastAccessed']) < unused_threshold, user['LastAccessed'])))
+                                   filter(lambda last_access: days_from_today(last_access['LastAccessed']) >0< unused_threshold, user['LastAccessed'])))
         user_attached_managed_policies = copy.deepcopy(user['AttachedManagedPolicies'])
         for group_name in user['GroupList']:
             group_managed_policies = next(g['AttachedManagedPolicies'] for g in account_groups if g['GroupName'] == group_name)
@@ -200,7 +210,7 @@ def get_unused_role_policy_attachments(account_policies, principal):
 
 def days_from_today(str_date_from_today):
     if str_date_from_today in ['no_information', 'N/A']:
-        return 365
+        return -1
     date = dt.datetime.fromisoformat(str_date_from_today).replace(tzinfo=None)
     delta = dt.datetime.now() - date
 

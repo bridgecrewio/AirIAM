@@ -25,7 +25,11 @@ class Reporter:
         if len(unused_users) > 0:
             print(colored(f'The following {len(unused_users)} users were found to be unused:', 'yellow', attrs=['bold']))
             for user in unused_users:
-                print(colored('Unused: ', 'red', attrs=['bold']) + f'{user["UserName"]}: last used {user["LastUsed"]} days ago')
+                if user["LastUsed"] == -1:
+                    ending = "Never used!"
+                else:
+                    ending = "last used {} days ago".format(user["LastUsed"])
+                print(colored('Unused: ', 'red', attrs=['bold']) + f'{user["UserName"]}: {ending}')
             time.sleep(5)
         else:
             print(colored('No unused users were found in the account! Hurray!', color='green'))
@@ -64,7 +68,11 @@ class Reporter:
         if len(unused_roles) > 0:
             print(colored(f'The following {len(unused_roles)} roles are unused:', 'yellow', attrs=['bold']))
             for role in unused_roles:
-                print(colored('Unused: ', 'red', attrs=['bold']) + f"{role['RoleName']}: last used {role['LastUsed']} days ago")
+                if role['LastUsed'] == -1:
+                    ending = "Never used!"
+                else:
+                    ending = "last used {} days ago".format(role['LastUsed'])
+                print(colored('Unused: ', 'red', attrs=['bold']) + f'{role["RoleName"]}: {ending}')
             time.sleep(5)
         else:
             print(colored('No unused roles were found in the account! Hurray!', color='green'))
