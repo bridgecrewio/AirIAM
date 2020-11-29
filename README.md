@@ -27,6 +27,7 @@ AirIAM was created to promote immutable and version-controlled IAM management to
   - [Installation](#installation)
   - [Using Pip](#using-pip)
   - [Using brew (MacOS Only)](#using-brew-macos-only)
+  - [Recommended flow](#recommended-flow)
   - [FAQ](#faq)
 - [Alternatives](#alternatives)
   - [AWS IAM Cleanup Tools](#aws-iam-cleanup-tools)
@@ -167,6 +168,17 @@ brew tap bridgecrewio/airiam https://github.com/bridgecrewio/airiam
 brew update
 brew install airiam
 ```
+
+### Recommended Flow
+The recommended workflow for using this tool is as follows:
+
+1. Run the `find_unused` command and delete the unused access keys + unused console logins - these cannot be migrated to terraform because they hold secrets known only to the relevant user - his password and private credentials.
+2. Run the `terraform` command without any flags, creating a terraform setup that mirrors your existing IAM setup. This will take a while as all of the entities will be imported to your state file
+3. Commit the terraform files (without the state file) to a new repository.
+4. Run the terraform command again, this time with the flag `--without-import` and `--without-unused`. This will edit the .tf files to contain only the entities that are in use.
+5. Create a new branch and commit the new terraform files.
+6. Create a Pull Request / Merge Request from this branch to the default branch. Check out the differences and make sure all the changes are good. Consult relevant stakeholders in your organization if necessary.
+7. After approval - merge the PR and apply the changes using terraform apply. Please note this action will require Admin IAM access to the account.
 
 ### FAQ
 
