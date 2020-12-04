@@ -1,5 +1,6 @@
 import copy
 import datetime as dt
+from datetime import timezone
 
 from airiam.find_unused.PolicyAnalyzer import PolicyAnalyzer
 from airiam.find_unused.RuntimeIamScanner import RuntimeIamScanner
@@ -211,7 +212,7 @@ def get_unused_role_policy_attachments(account_policies, principal):
 def days_from_today(str_date_from_today):
     if str_date_from_today in ['no_information', 'N/A']:
         return -1
-    date = dt.datetime.fromisoformat(str_date_from_today).replace(tzinfo=None)
-    delta = dt.datetime.now() - date
+    date = dt.datetime.fromisoformat(str_date_from_today)
+    delta = dt.datetime.now().astimezone(timezone.utc) - date
 
     return delta.days
