@@ -129,7 +129,7 @@ def find_unused_roles(roles, unused_threshold) -> (list, list):
 
 
 def find_unattached_policies(policies) -> list:
-    return list(filter(lambda policy: policy['AttachmentCount'] == 0, policies))
+    return list(filter(lambda policy: policy['AttachmentCount'] == 0 and policy['PermissionsBoundaryUsageCount'] == 0 , policies))
 
 
 def find_redundant_groups(groups, users) -> list:
