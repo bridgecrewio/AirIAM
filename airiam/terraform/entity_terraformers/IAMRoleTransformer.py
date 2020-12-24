@@ -28,15 +28,15 @@ class IAMRoleTransformer(BaseEntityTransformer):
             self._sub_entities_to_import += transformer.entities_to_import()
 
         tags = self.transform_tags(entity_json)
-        permission_boundary = ''
-        if 'PermissionBoundary' in entity_json:
-            permission_boundary = f'permission_boundary = "{entity_json["PermissionBoundary"]["PermissionBoundaryArn"]}'
+        permissions_boundary = ''
+        if 'PermissionsBoundary' in entity_json:
+            permissions_boundary = f'permissions_boundary = "{entity_json["PermissionsBoundary"]["PermissionsBoundaryArn"]}"'
 
         return f"""resource "aws_iam_role" "{self._safe_name}" {{
   name                  = "{entity_json['RoleName']}"
   path                  = "{entity_json['Path']}"
   description           = \"{entity_json['Description']}\"
-  {permission_boundary}
+  {permissions_boundary}
   assume_role_policy = {assume_policy_document.identifier()}.json
 
   {tags}
