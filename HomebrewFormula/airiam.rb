@@ -3,19 +3,19 @@ class Airiam < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/AirIAM"
-  url "https://files.pythonhosted.org/packages/24/c1/5ce3ba72d8721b7c0593190745e270425edc0cd0b3f3a8e6cb5e0bf5e101/airiam-0.1.46.tar.gz"
-  sha256 "d2b91eb9d53a7bb74b36b1418b9e9fa2c1af8f0f576d113ae7c68e3a22ca86d9"
+  url "https://files.pythonhosted.org/packages/a1/2a/449fc92a22dbabbd2849db4740548e03106420ce25df91ae8c9c77a06037/airiam-0.1.47.tar.gz"
+  sha256 "4f12493ef9ff1081e5af8880fe35ce30cc91180d8735ddf976f8bf7eab6d56f4"
 
   depends_on "python3"
 
   resource "boto3" do
-    url "https://files.pythonhosted.org/packages/7f/d2/f94d742fda62b5f0dce27fd966cafbdd88bc2691f623b49ba7eac6d94a69/boto3-1.16.51.tar.gz"
-    sha256 "11dc492682cf2a4f8ff397b0a109837340ef93e77ca2e65715ce24ecf043717c"
+    url "https://files.pythonhosted.org/packages/51/ab/2f0571fc563f0f62d419d101b827325f9ce8037b925b7180151f18ba05cb/boto3-1.17.5.tar.gz"
+    sha256 "d6aafb804fca2b67c65dda78ad8b4afed901e004071208b84c804d345ad9ebba"
   end
 
   resource "botocore" do
-    url "https://files.pythonhosted.org/packages/0b/31/d4505c314b4d9643f1b32a34c97f6d8fecf20d4f8611520bc07f2747794e/botocore-1.19.51.tar.gz"
-    sha256 "b204c5b477b043c7f61cba5db479c6b25f684f7409b71a8ecdb5a6b3f57b5cb4"
+    url "https://files.pythonhosted.org/packages/33/da/6614e38d4e8484a0c1c141a21a3365e38d7f698014f0688e78442e3d661d/botocore-1.20.5.tar.gz"
+    sha256 "04a1df759681f5f171accb354d863bfed0774d64a4e8ee35ff49835755660a4e"
   end
 
   resource "certifi" do
@@ -59,8 +59,8 @@ class Airiam < Formula
   end
 
   resource "s3transfer" do
-    url "https://files.pythonhosted.org/packages/50/de/2b688c062107942486c81a739383b1432a72717d9a85a6a1a692f003c70c/s3transfer-0.3.3.tar.gz"
-    sha256 "921a37e2aefc64145e7b73d50c71bb4f26f46e4c9f414dc648c6245ff92cf7db"
+    url "https://files.pythonhosted.org/packages/08/e1/3ee2096ebaeeb8c186d20ed16c8faf4a503913e5c9a0e14cd6b8ffc405a3/s3transfer-0.3.4.tar.gz"
+    sha256 "7fdddb4f22275cf1d32129e21f056337fd2a80b6ccef1664528145b72c49e6d2"
   end
 
   resource "six" do
@@ -74,8 +74,8 @@ class Airiam < Formula
   end
 
   resource "urllib3" do
-    url "https://files.pythonhosted.org/packages/29/e6/d1a1d78c439cad688757b70f26c50a53332167c364edb0134cadd280e234/urllib3-1.26.2.tar.gz"
-    sha256 "19188f96923873c92ccb987120ec4acaa12f0461fa9ce5d3d0772bc965a39e08"
+    url "https://files.pythonhosted.org/packages/d7/8d/7ee68c6b48e1ec8d41198f694ecdc15f7596356f2ff8e6b1420300cf5db3/urllib3-1.26.3.tar.gz"
+    sha256 "de3eedaad74a2683334e282005cd8d7f22f4d55fa690a2a1020a416cb0a47e73"
   end
 
   def install
