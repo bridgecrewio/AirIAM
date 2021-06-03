@@ -1,5 +1,6 @@
 import copy
 import datetime as dt
+import logging
 from datetime import timezone
 
 from airiam.find_unused.PolicyAnalyzer import PolicyAnalyzer
@@ -95,7 +96,11 @@ def find_unused_active_credentials(users, credential_report, unused_threshold) -
     unused_access_keys = []
     unused_console_login_profiles = []
     for user in users:
-        credentials = next(creds for creds in credential_report if creds['user'] == user['UserName'])
+        try:
+            credentials = next(creds for creds in credential_report if creds['user'] == user['UserName'])
+        except StopIteration:
+            logging.warning(f'Failed to find credentials for user {user["UserName"]}, skipping this user')
+            continue
         access_key_1_unused_days = days_from_today(credentials.get('access_key_1_last_used_date', 'N/A'))
         if ((credentials['access_key_1_active'] == 'true') and ((access_key_1_unused_days < 0) or (access_key_1_unused_days >= unused_threshold))):
             unused_access_keys.append({'User': user['UserName'], 'AccessKey': '1', 'DaysSinceLastUse': access_key_1_unused_days})
