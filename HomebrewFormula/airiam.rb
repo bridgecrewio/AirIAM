@@ -3,19 +3,19 @@ class Airiam < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/AirIAM"
-  url "https://files.pythonhosted.org/packages/66/0b/34a87e19158c1b8efeab06e4f1a3c29556f166558dea8cdeba6b2cfe65fc/airiam-0.1.48.tar.gz"
-  sha256 "1e3451d1f746bd8b719edf6adf19f22563d9466674b39033d155d197a5cf9b5e"
+  url "https://files.pythonhosted.org/packages/4f/a5/34aea971905775d531a14499da6365d22196a45a20ae0fb2bd18ec29ab61/airiam-0.1.49.tar.gz"
+  sha256 "f5a94667a0ffe538fb231b1cd4058678c153c49ef05734ae430721d83fe3e65e"
 
   depends_on "python3"
 
   resource "boto3" do
-    url "https://files.pythonhosted.org/packages/b5/48/ec62ebe81e6e5d31859d7741693ab6407f9422d8a32b546ab7a519694190/boto3-1.17.85.tar.gz"
-    sha256 "8352dffe768af9e1471323c8e443cc66a114891572bf832bec3cc2eec47838f6"
+    url "https://files.pythonhosted.org/packages/06/ca/151d6af767ef03eacc40b90571e22c0febb7594d7e1f19a297ac7ad9c935/boto3-1.17.86.tar.gz"
+    sha256 "4f15867701b28ca78eb56cfc4ff5f0e5ee7db42558dbc445f1a7395e467ac3e9"
   end
 
   resource "botocore" do
-    url "https://files.pythonhosted.org/packages/47/99/6caacd7d0fcd4cb0e092f4b7a57bc98cac86555a5a943f13454f09133ca0/botocore-1.20.85.tar.gz"
-    sha256 "d8992096d9c04e7be331924a59677e591cce6a3c6bd3a4c8fe26b00700d5255a"
+    url "https://files.pythonhosted.org/packages/de/bc/f6941643657202082fe5b5a82e187c320caeb3964a084d34fb7f0ed08720/botocore-1.20.86.tar.gz"
+    sha256 "bbdfd2adedb0cc9117cf411ef51cbd8fc19798e21e414f831ad9781e507ff1da"
   end
 
   resource "certifi" do
