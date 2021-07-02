@@ -7,6 +7,8 @@ from termcolor import colored
 from airiam.banner import banner
 from airiam.models import RuntimeReport
 from airiam.version import version
+from airiam.models.Deleter import Deleter
+
 
 init(autoreset=True)
 
@@ -17,7 +19,9 @@ class OutputFormat(Enum):
 
 class Reporter:
     @staticmethod
-    def report_unused(runtime_results: RuntimeReport) -> None:
+    def report_unused(runtime_results: RuntimeReport, profile: str, prompt_delete: bool, auto_delete: bool) -> None:
+        if prompt_delete or auto_delete:
+            deleter = Deleter()
         print(f'Identifying unused IAM entities in the account...\n')
         time.sleep(2)
         unused = runtime_results.get_unused()
@@ -73,6 +77,14 @@ class Reporter:
                 else:
                     ending = "last used {} days ago".format(role['LastUsed'])
                 print(colored('Unused: ', 'red', attrs=['bold']) + f'{role["RoleName"]}: {ending}')
+                if prompt_delete:
+                    res = input('Delete? [y/N] ')
+                    if 'y' == res:
+                        deleter.delete_role(role["RoleName"])
+                    else:
+                        print('Skipped')
+                elif auto_delete:
+                    deleter.delete_role(role["RoleName"])
             time.sleep(5)
         else:
             print(colored('No unused roles were found in the account! Hurray!', color='green'))
@@ -97,6 +109,14 @@ class Reporter:
             print(colored(f'The following {len(unused_policies)} policies are redundant:', 'yellow', attrs=['bold']))
             for policy in unused_policies:
                 print(colored(policy['PolicyName'], 'yellow', attrs=['bold']) + f' is not attached to any user, group or role')
+                if prompt_delete:
+                    res = input('Delete? [y/N] ')
+                    if 'y' == res:
+                        deleter.delete_policy(policy['Arn'])
+                    else:
+                        print('Skipped')
+                elif auto_delete:
+                    deleter.delete_policy(policy['Arn'])
             time.sleep(5)
         else:
             print(colored('No unattached policies were found in the account! Hurray!', color='green'))

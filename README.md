@@ -1,7 +1,7 @@
 [![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io)
 [![code_coverage](https://raw.githubusercontent.com/bridgecrewio/AirIAM/master/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/AirIAM/actions?query=workflow%3Abuild-and-test)
 ![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
-[![build](https://github.com/bridgecrewio/AirIAM/workflows/build/badge.svg)](https://github.com/bridgecrewio/airiam/actions?query=workflow%3Abuild) 
+[![build](https://github.com/bridgecrewio/AirIAM/workflows/build/badge.svg)](https://github.com/bridgecrewio/airiam/actions?query=workflow%3Abuild)
 [![PyPI](https://img.shields.io/pypi/v/airiam)](https://pypi.org/project/airiam/)
 [![Downloads](https://pepy.tech/badge/airiam)](https://pepy.tech/project/airiam)
 [![slack-community](https://slack.bridgecrew.io/badge.svg)](https://slack.bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=airiam)
@@ -56,11 +56,12 @@ If you are interested in migrating a Prod account, contact us at info@bridgecrew
 - Provides scripts to remove unused entities en-masse.
 - Effortless migration of existing IAM configurations into a simple Least Privileges Terraform model.
 - Integrates with [Checkov](https://checkov.io), a static-code analysis tool for Terraform, to track unwanted configuration changes and configuration drift.
+- Optional Deletion (interactive or not) of unused resources
 
 
 ## Commands
 
-- `find_unused` - Detects unused users, roles, groups, policies and policy attachments. It also adds links to automation scripts that could remove these entities entirely using Bridgecrew Community. [Learn more 
+- `find_unused` - Detects unused users, roles, groups, policies and policy attachments. It also adds links to automation scripts that could remove these entities entirely using Bridgecrew Community. [Learn more
   about these scripts and automation](RecommendedIntegrations.md).
   ```shell script
     usage: airiam find_unused [-h] [-p PROFILE] [-l LAST_USED_THRESHOLD]
@@ -75,6 +76,8 @@ If you are interested in migrating a Prod account, contact us at info@bridgecrew
                             considered unused (default: 90)
       --no-cache            Generate a fresh set of data from AWS IAM API calls
                             (default: False)
+      --prompt-delete       Offer to delete unused resources
+      --auto-delete         Automatically delete unused resources   
       -o {cli}, --output {cli}
                             Output format (default: OutputFormat.cli)
   ```
@@ -85,7 +88,7 @@ If you are interested in migrating a Prod account, contact us at info@bridgecrew
   ```shell script
     usage: airiam recommend_groups [-h] [-p PROFILE] [-o {cli}]
                                    [-l LAST_USED_THRESHOLD] [--no-cache]
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       -p PROFILE, --profile PROFILE
@@ -104,7 +107,7 @@ If you are interested in migrating a Prod account, contact us at info@bridgecrew
     usage: airiam terraform [-h] [-p PROFILE] [-d DIRECTORY] [--without-unused]
                             [--without-groups] [-l LAST_USED_THRESHOLD]
                             [--no-cache] [--without-import]
-    
+
     optional arguments:
       -h, --help            show this help message and exit
       -p PROFILE, --profile PROFILE
@@ -129,16 +132,16 @@ If you are interested in migrating a Prod account, contact us at info@bridgecrew
 
     a. AirIAM replaces all hardcoded values with the matching terraform references, which results in replacements of all group memberships and policy attachments.
     If this is run using a user, please make sure the user has the relevant privileges directly attached. A matching warning will be displayed if relevant.
-    
+
     c. AirIAM tags all the resources it touched so it will be easy to identify the entities which are not managed through AirIAM. This results in terraform modifying the relevant entities by adding these tags.
-    
+
     d. By default, AirIAM will import the currently existing IAM entities and their relationships, which might take a while depending on the number of configurations.
 
 ### Usage
 
 The three commands above run sequentially, and in-sync, as seen in the diagram below.
 
-When executing, AirIAM starts by scanning a selected AWS account using the specified profile. 
+When executing, AirIAM starts by scanning a selected AWS account using the specified profile.
 If `find_unused` is specified, the results are printed and the execution completes.
 If `recommend_groups` is specified, after the stage of group recommendation the results are printed and the execution completes.
 If the `terraform` command is specified it takes all the results and creates the Terraform code and state file required to replace the existing IAM configuration.
@@ -196,9 +199,9 @@ export PATH="/Users//Library/Python/3.7/bin:$PATH"
 
 ## Alternatives
 
-### AWS IAM Cleanup Tools 
+### AWS IAM Cleanup Tools
 
-For AWS IAM usage scanners check out [CloudTracker](https://github.com/duo-labs/cloudtracker), [Trailscraper](https://github.com/flosell/trailscraper/), 
+For AWS IAM usage scanners check out [CloudTracker](https://github.com/duo-labs/cloudtracker), [Trailscraper](https://github.com/flosell/trailscraper/),
 [Aadvark](https://github.com/Netflix-Skunkworks/aardvark) & [Repokid](https://github.com/Netflix/repokid).
 The main difference between these tools and AirIAM is that AirIAM also moves the problem into static terraform code form, which allows an entire set of code analysis tools to manage and identify deviations and changes.
 

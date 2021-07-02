@@ -29,7 +29,7 @@ def run():
     runtime_results = find_unused(logger, args.profile, args.no_cache, args.last_used_threshold, args.command)
 
     if args.command == 'find_unused':
-        Reporter.report_unused(runtime_results)
+        Reporter.report_unused(runtime_results=runtime_results, profile=args.profile, prompt_delete=args.prompt_delete, auto_delete=args.auto_delete)
         exit()
 
     if args.command == 'recommend_groups' or args.command == 'terraform' and not args.without_groups:
@@ -57,6 +57,8 @@ def parse_args(args):
     find_unused_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
     find_unused_parser.add_argument('-o', '--output', help='Output format', type=OutputFormat,
                                     choices=[output.name for output in OutputFormat], default=OutputFormat.cli)
+    find_unused_parser.add_argument('--prompt-delete', help='Delete unused resources, prompting for each one', action='store_true')
+    find_unused_parser.add_argument('--auto-delete', help='Delete unused resources without asking for confirmation', action='store_true')
 
     recommend_groups_parser = sub_parsers.add_parser('recommend_groups', help='Recommend IAM groups according to IAM users and their in-use privileges',
                                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
