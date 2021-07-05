@@ -34,6 +34,14 @@ class Reporter:
                 else:
                     ending = "last used {} days ago".format(user["LastUsed"])
                 print(colored('Unused: ', 'red', attrs=['bold']) + f'{user["UserName"]}: {ending}')
+                if prompt_delete:
+                    res = input('Delete? [y/N] ')
+                    if 'y' == res:
+                        deleter.delete_user(user["UserName"])
+                    else:
+                        print('Skipped')
+                elif auto_delete:
+                    deleter.delete_user(user["UserName"])
             time.sleep(5)
         else:
             print(colored('No unused users were found in the account! Hurray!', color='green'))
@@ -45,6 +53,14 @@ class Reporter:
             for access_key_obj in unused_access_keys:
                 print(colored('Unused: ', 'red', attrs=['bold'])
                       + f'{access_key_obj["User"]} used access key #{access_key_obj["AccessKey"]} {access_key_obj["DaysSinceLastUse"]} days ago')
+            if prompt_delete:
+                res = input('Delete? [y/N] ')
+                if 'y' == res:
+                    deleter.delete_access_key(access_key_obj["User"], access_key_obj["AccessKey"])
+                else:
+                    print('Skipped')
+            elif auto_delete:
+                deleter.delete_access_key(access_key_obj["User"], access_key_obj["AccessKey"])
             time.sleep(5)
         else:
             print(colored('No unused access keys were found in the account! Hurray!', color='green'))
@@ -63,6 +79,14 @@ class Reporter:
                     print(colored(console_login_profile['User'], 'red', attrs=['bold'])
                           + f' has password access to the AWS console ' + colored('WITHOUT MFA', 'red')
                           + f' but hasn\'t used it in the last {console_login_profile["DaysSinceLastUse"]} days')
+                if prompt_delete:
+                    res = input('Delete? [y/N] ')
+                    if 'y' == res:
+                        deleter.delete_login_profile(console_login_profile)
+                    else:
+                        print('Skipped')
+                elif auto_delete:
+                    deleter.delete_login_profile(console_login_profile)
             time.sleep(5)
         else:
             print(colored('No unused Console Login Profiles were found in the account! Hurray!', color='green'))
@@ -99,6 +123,14 @@ class Reporter:
                 else:
                     msg = ' has no members'
                 print(colored(group['GroupName'], 'yellow', attrs=['bold']) + msg)
+            if prompt_delete:
+                res = input('Delete? [y/N] ')
+                if 'y' == res:
+                    deleter.delete_group(group["GroupName"])
+                else:
+                    print('Skipped')
+            elif auto_delete:
+                deleter.delete_group(group["GroupName"])
             time.sleep(5)
         else:
             print(colored('No redundant groups were found in the account! Hurray!', color='green'))
@@ -129,6 +161,14 @@ class Reporter:
                 principal = policy_attachment.get('Role') or policy_attachment.get('User') or policy_attachment.get('Group')
                 print(colored('Policy attached but not used: ', 'yellow', attrs=['bold']) + colored(principal, 'grey', attrs=['bold']) +
                       f' is not using the privileges given by {colored(policy_attachment["PolicyArn"], "red", attrs=["bold"])}')
+                if prompt_delete:
+                    res = input('Delete? [y/N] ')
+                    if 'y' == res:
+                        deleter.detach_policy_from_principal(policy_attachment)
+                    else:
+                        print('Skipped')
+                elif auto_delete:
+                    deleter.detach_policy_from_principal(policy_attachment)
             time.sleep(5)
         else:
             print(colored('No unused policy attachments were found in the account! Hurray!', color='green'))
