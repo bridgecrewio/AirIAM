@@ -18,7 +18,7 @@ jobs:
       - run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
-          pipenv update
+          pipenv  --python 3.7 update
           git add -u
           git commit -m "update pipenv packages"
         env:
