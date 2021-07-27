@@ -14,8 +14,8 @@ jobs:
       - uses: actions/setup-python@v2
         with:
           python-version: 3.7
-      - uses: dschep/install-pipenv-action@v1
       - run: |
+          python -m pip install --upgrade pipenv wheel
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           pipenv  --python 3.7 update
