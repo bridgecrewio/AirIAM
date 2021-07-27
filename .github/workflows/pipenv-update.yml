@@ -35,4 +35,3 @@ jobs:
           labels: automated pr
           branch: pipenvfix
           branch-suffix: timestamp
-{"mode":"full","isActive":false}
