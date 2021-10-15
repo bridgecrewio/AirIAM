@@ -50,7 +50,7 @@ class TerraformTransformer:
 
             return entities_to_transform, self._result_dir
         except Exception as e:
-            self.logger.error(e)
+            self.logger.error(e, stack_info=True)
             raise e
 
     def _list_entities_to_transform(self, report: RuntimeReport, without_unused: bool, without_consolidated_groups: bool) -> dict:
