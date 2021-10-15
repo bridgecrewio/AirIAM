@@ -53,7 +53,7 @@ class PolicyAnalyzer:
             try:
                 action_regex = action_name.replace('*', '.*')
                 action_objs = list(filter(lambda privilege_obj: re.match(action_regex, privilege_obj['privilege']),
-                                          action_map[action_service]['privileges']))
+                                          None if action_map.get(action_service,None) is None else action_map[action_service]['privileges']))
             except StopIteration:
                 action_objs = []
 
