@@ -9,13 +9,13 @@ class Airiam < Formula
   depends_on "python3"
 
   resource "boto3" do
-    url "https://files.pythonhosted.org/packages/f1/25/4773ca66ec580636c4e8ab473c9e5375a266746f3dbfe4f85235b9c67211/boto3-1.18.62.tar.gz"
-    sha256 "364a0fd497147ff0e15327f653223b05e60a1afce002995e5b1106084355352e"
+    url "https://files.pythonhosted.org/packages/b9/69/f9a67beba5f4ecec4c2de79854091b07a9c51e886b75b6ad408f390bec75/boto3-1.18.59.tar.gz"
+    sha256 "40e948276010e5eb23f0625afe9b323146e16a45dbeade0acd558eababd8b8ce"
   end
 
   resource "botocore" do
-    url "https://files.pythonhosted.org/packages/60/dc/d214623d85eb3c8dcb26a60ea15df43ac81747bcb26db5cc957affb4c517/botocore-1.21.62.tar.gz"
-    sha256 "c92fee381c6f2771f7ec2bffaff2938b8a1c2a957560815a01ad77c975268fdd"
+    url "https://files.pythonhosted.org/packages/da/dd/a6c7040b83cd49978d36e8dc0cda9f57e551600e045e1c88ad31f0539a8a/botocore-1.21.59.tar.gz"
+    sha256 "c947215f45653609682dc448195a3bfcf0f7da193fd7b17b739656db5442221a"
   end
 
   resource "certifi" do
@@ -34,8 +34,8 @@ class Airiam < Formula
   end
 
   resource "idna" do
-    url "https://files.pythonhosted.org/packages/62/08/e3fc7c8161090f742f504f40b1bccbfc544d4a4e09eb774bf40aafce5436/idna-3.3.tar.gz"
-    sha256 "9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"
+    url "https://files.pythonhosted.org/packages/cb/38/4c4d00ddfa48abe616d7e572e02a04273603db446975ab46bbcd36552005/idna-3.2.tar.gz"
+    sha256 "467fbad99067910785144ce333826c71fb0e63a425657295239737f7ecd125f3"
   end
 
   resource "jmespath" do
