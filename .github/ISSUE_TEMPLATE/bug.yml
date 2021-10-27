@@ -52,6 +52,29 @@ body:
       label: "🧱 Your Environment"
       description: "Is your environment customized in any way?"
       placeholder: "I use Cloudflare for ..."
+  - type: textarea
+    id: python-version
+    validations:
+      required: true
+    attributes:
+      label: "Python Version"
+      description: "What is the version of Python which you used?"
+  - type: textarea
+    id:  checkov-version
+    validations:
+      required: true
+    attributes:
+      label: "checkov-version"
+      description: "What is the version of Checkov which you used?"
+
+  - type: textarea
+    id: output
+    validations:
+      required: true
+    attributes:
+      label: "Share output with the environment variable LOG_LEVEL set to DEBUG"
+      
+      
   - type: checkboxes
     id: no-duplicate-issues
     attributes:
