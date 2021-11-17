@@ -47,6 +47,7 @@ class PolicyAnalyzer:
     def policy_is_write_access(policy_document):
         actions = PolicyAnalyzer._get_policy_actions(policy_document)
         for action in actions:
+            print(action)
             if action == '*' or '*' in action.split(':'):
                 return True
             [action_service, action_name] = action.split(':')
