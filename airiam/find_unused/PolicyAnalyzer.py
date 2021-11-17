@@ -47,10 +47,6 @@ class PolicyAnalyzer:
     def policy_is_write_access(policy_document):
         actions = PolicyAnalyzer._get_policy_actions(policy_document)
         for action in actions:
-            print(action)
-            print(action_map)
-            print(action_map[action_service]['privileges'])
-            print(action_map.get(action_service,None))
             if action == '*' or '*' in action.split(':'):
                 return True
             [action_service, action_name] = action.split(':')
@@ -60,6 +56,11 @@ class PolicyAnalyzer:
                                           None if action_map.get(action_service,None) is None else action_map[action_service]['privileges']))
             except StopIteration:
                 action_objs = []
+                 print(action)
+                 print(action_map)
+                 print(action_service)
+                 print(action_map[action_service]['privileges'])
+                 print(action_map.get(action_service,None))
 
             for action_obj in action_objs:
                 if action_obj['access_level'] in ['Write', 'Delete', 'Permissions management']:
