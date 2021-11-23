@@ -83,6 +83,7 @@ jobs:
           user: __token__
           password: ${{ secrets.pypi_password }}
   update-brew:
+    needs: bump-version-and-publish
     runs-on: [self-hosted, public, linux, x64]
     steps:
       - uses: actions/checkout@v2
