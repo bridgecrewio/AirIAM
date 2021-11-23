@@ -3,19 +3,19 @@ class Airiam < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/AirIAM"
-  url "https://files.pythonhosted.org/packages/0d/1e/b9265805f3b95c8ec938dd3e3e6816e0c285e4785c7832eeca2582f1ba60/airiam-0.1.50.tar.gz"
-  sha256 "f1d5edce15b20f7d5b66d6f2fa80f702780ea90614b15afe5700f12d714eb416"
+  url "https://files.pythonhosted.org/packages/8c/96/dddf20b0698aa3fdcc9858d8a9af81da57074d6c6336fed442e9f16d6dce/airiam-0.1.52.tar.gz"
+  sha256 "15a196f205f6187e1c438d8ef661a3c78094c09844dbaac406fc8cb821ba40c3"
 
   depends_on "python3"
 
   resource "boto3" do
-    url "https://files.pythonhosted.org/packages/b9/69/f9a67beba5f4ecec4c2de79854091b07a9c51e886b75b6ad408f390bec75/boto3-1.18.59.tar.gz"
-    sha256 "40e948276010e5eb23f0625afe9b323146e16a45dbeade0acd558eababd8b8ce"
+    url "https://files.pythonhosted.org/packages/06/2c/db79832fcbedc1735c369b81389986dcc0fc3c8327d5eac4c93c05f0e52a/boto3-1.20.11.tar.gz"
+    sha256 "035191ad6c7e8aed972e1374f4e0ecb38767c497fd6c961e4ae33898b62f78fb"
   end
 
   resource "botocore" do
-    url "https://files.pythonhosted.org/packages/da/dd/a6c7040b83cd49978d36e8dc0cda9f57e551600e045e1c88ad31f0539a8a/botocore-1.21.59.tar.gz"
-    sha256 "c947215f45653609682dc448195a3bfcf0f7da193fd7b17b739656db5442221a"
+    url "https://files.pythonhosted.org/packages/3e/d7/9486a58b34ad75671b41a4a46afb05b6da5b8e0d90cb091c75dadcabca0d/botocore-1.23.11.tar.gz"
+    sha256 "497234f137810909289a600433cec5583ea8dc05a78b644653d76484138d78b9"
   end
 
   resource "certifi" do
@@ -34,8 +34,8 @@ class Airiam < Formula
   end
 
   resource "idna" do
-    url "https://files.pythonhosted.org/packages/cb/38/4c4d00ddfa48abe616d7e572e02a04273603db446975ab46bbcd36552005/idna-3.2.tar.gz"
-    sha256 "467fbad99067910785144ce333826c71fb0e63a425657295239737f7ecd125f3"
+    url "https://files.pythonhosted.org/packages/62/08/e3fc7c8161090f742f504f40b1bccbfc544d4a4e09eb774bf40aafce5436/idna-3.3.tar.gz"
+    sha256 "9d643ff0a55b762d5cdb124b8eaa99c66322e2157b69160bc32796e824360e6d"
   end
 
   resource "jmespath" do
