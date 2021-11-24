@@ -1,6 +1,8 @@
 import json
+from sys import path
 import time
-
+import pathlib
+import os
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
@@ -10,6 +12,16 @@ from airiam.models.RuntimeReport import RuntimeReport
 config = Config(retries={'max_attempts': 10, 'mode': 'standard'})
 IAM_DATA_FILE_NAME = "iam_data.json"
 ERASE_LINE = '\x1b[2K'
+
+
+def get_iam_data_file(account_id=None):
+    if account_id is None:
+        return IAM_DATA_FILE_NAME
+    else:
+        parent = f"./aircache/{account_id}"
+        pathlib.Path(parent).mkdir(parents=True, exist_ok=True)
+        p = f"{parent}/{IAM_DATA_FILE_NAME}"
+        return p
 
 
 class RuntimeIamScanner:
@@ -39,7 +51,8 @@ class RuntimeIamScanner:
 
         if command == 'terraform':
             if ':role/' in identity_arn:
-                iam_data['AccountRoles'] = list(filter(lambda r: r['RoleName'] != identity_arn.split('/').pop(1), iam_data['AccountRoles']))
+                iam_data['AccountRoles'] = list(filter(
+                    lambda r: r['RoleName'] != identity_arn.split('/').pop(1), iam_data['AccountRoles']))
             print(f'Filtered {identity_arn} from the analysis')
 
         return RuntimeReport(account_id, identity_arn, iam_data)
@@ -49,25 +62,39 @@ class RuntimeIamScanner:
         This method encapsulates all the API calls made to the AWS IAM service to gather data for later analysis
         :return: The IAM data that was pulled from the account, as was also saved locally for quicker re-runs
         """
-        data_account_id = RuntimeIamScanner._get_account_id_from_existing_data()
+
+        data_account_id = RuntimeIamScanner._get_account_id_from_existing_data(
+            account_id
+        )
+
+        iam_file_name = get_iam_data_file(account_id)
+        print("IAM FILE NAME", iam_file_name)
+        print("Data account  id", data_account_id)
+
         if not self.refresh_cache and data_account_id == account_id:
             print("Reusing local data")
         else:
             print(f"Getting all IAM configurations for account {account_id}")
             iam = self._session.client('iam', config=config)
             iam.generate_credential_report()
-            account_users, account_roles, account_groups, account_policies = RuntimeIamScanner.get_account_iam_configuration(iam)
+            account_users, account_roles, account_groups, account_policies = RuntimeIamScanner.get_account_iam_configuration(
+                iam)
             print("Getting IAM credential report")
-            csv_credential_report = iam.get_credential_report()['Content'].decode('utf-8')
-            credential_report = RuntimeIamScanner.convert_csv_to_json(csv_credential_report)
+            csv_credential_report = iam.get_credential_report()[
+                'Content'].decode('utf-8')
+            credential_report = RuntimeIamScanner.convert_csv_to_json(
+                csv_credential_report)
 
             if list_unused:
                 account_principals = account_users + account_roles
-                entity_arn_list = list(map(lambda e: e['Arn'], account_principals))
-                last_accessed_map = self._generate_last_access(iam, entity_arn_list)
+                entity_arn_list = list(
+                    map(lambda e: e['Arn'], account_principals))
+                last_accessed_map = self._generate_last_access(
+                    iam, entity_arn_list)
 
                 for arn, last_accessed_list in last_accessed_map.items():
-                    entity = next(entity for entity in account_principals if entity['Arn'] == arn)
+                    entity = next(
+                        entity for entity in account_principals if entity['Arn'] == arn)
                     entity['LastAccessed'] = last_accessed_list
 
             print("Collecting password configurations for all IAM users in the account")
@@ -89,9 +116,10 @@ class RuntimeIamScanner:
                 'AccountGroups': account_groups,
                 'AccountPolicies': account_policies
             }
-            with open(IAM_DATA_FILE_NAME, "w") as iam_file:
-                json.dump(iam_data, iam_file, indent=4, sort_keys=True, default=str)
-        with open(IAM_DATA_FILE_NAME) as iam_data_file:
+            with open(get_iam_data_file(account_id=account_id), "w") as iam_file:
+                json.dump(iam_data, iam_file, indent=4,
+                          sort_keys=True, default=str)
+        with open(get_iam_data_file(account_id=account_id)) as iam_data_file:
             iam_data = json.load(iam_data_file)
 
         return iam_data
@@ -111,7 +139,8 @@ class RuntimeIamScanner:
         account_policies = []
         account_groups = []
         response_iterator = paginator.paginate(
-            Filter=['User', 'Role', 'Group', 'LocalManagedPolicy', 'AWSManagedPolicy'],
+            Filter=['User', 'Role', 'Group',
+                    'LocalManagedPolicy', 'AWSManagedPolicy'],
             PaginationConfig={
                 'PageSize': 100,
                 'StartingToken': marker
@@ -124,7 +153,8 @@ class RuntimeIamScanner:
             account_policies.extend(page['Policies'])
 
         for policy in account_policies:
-            policy['Description'] = iam.get_policy(PolicyArn=policy['Arn'])['Policy'].get('Description', '')
+            policy['Description'] = iam.get_policy(PolicyArn=policy['Arn'])[
+                'Policy'].get('Description', '')
 
         marker = None
         list_roles_result = []
@@ -139,10 +169,13 @@ class RuntimeIamScanner:
             list_roles_result.extend(page['Roles'])
 
         for role in account_roles:
-            role['Description'] = next(role_obj.get('Description', '') for role_obj in list_roles_result if role_obj['RoleName'] == role['RoleName'])
+            role['Description'] = next(role_obj.get(
+                'Description', '') for role_obj in list_roles_result if role_obj['RoleName'] == role['RoleName'])
 
-        account_policies = list(filter(lambda p: p['Arn'].split(':')[4] != '', account_policies))
-        account_roles = list(filter(lambda r: r['Arn'].split('/')[1] != 'aws-service-role', account_roles))
+        account_policies = list(
+            filter(lambda p: p['Arn'].split(':')[4] != '', account_policies))
+        account_roles = list(filter(lambda r: r['Arn'].split(
+            '/')[1] != 'aws-service-role', account_roles))
         return account_users, account_roles, account_groups, account_policies
 
     def _generate_last_access(self, iam, arn_list: list):
@@ -151,14 +184,17 @@ class RuntimeIamScanner:
         count = len(arn_list)
         for arn in arn_list:
             try:
-                print(ERASE_LINE + f"\r{i} of {count}: Generating report for {arn}", end="")
-                job_id = iam.generate_service_last_accessed_details(Arn=arn)['JobId']
+                print(ERASE_LINE +
+                      f"\r{i} of {count}: Generating report for {arn}", end="")
+                job_id = iam.generate_service_last_accessed_details(Arn=arn)[
+                    'JobId']
                 i += 1
             except ClientError as error:
                 if error.response['Error']['Code'] == 'Throttling':
                     print('Reached throttling, sleeping for 5 seconds')
                     time.sleep(5)
-                    job_id = iam.generate_service_last_accessed_details(Arn=arn)['JobId']
+                    job_id = iam.generate_service_last_accessed_details(Arn=arn)[
+                        'JobId']
                 else:
                     raise error
             results[arn] = job_id
@@ -170,9 +206,11 @@ class RuntimeIamScanner:
         for arn in results:
             job_id = results[arn]
             try:
-                print(ERASE_LINE + f"\r{i} of {count}: Getting report for {arn}", end="")
+                print(ERASE_LINE +
+                      f"\r{i} of {count}: Getting report for {arn}", end="")
                 results[arn] = RuntimeIamScanner.simplify_service_access_result(
-                    iam.get_service_last_accessed_details(JobId=job_id)['ServicesLastAccessed']
+                    iam.get_service_last_accessed_details(
+                        JobId=job_id)['ServicesLastAccessed']
                 )
                 i += 1
             except ClientError as error:
@@ -180,7 +218,8 @@ class RuntimeIamScanner:
                     print('Reached throttling, sleeping for 5 seconds')
                     time.sleep(5)
                     results[arn] = RuntimeIamScanner.simplify_service_access_result(
-                        iam.get_service_last_accessed_details(JobId=job_id)['ServicesLastAccessed']
+                        iam.get_service_last_accessed_details(
+                            JobId=job_id)['ServicesLastAccessed']
                     )
                 else:
                     raise error
@@ -217,14 +256,15 @@ class RuntimeIamScanner:
                         filter(lambda last_access: last_access['TotalAuthenticatedEntities'] > 0, service_access_list)))
 
     def _get_identity_details(self) -> (str, str):
-        caller_identity_resp = self._session.client('sts').get_caller_identity()
+        caller_identity_resp = self._session.client(
+            'sts').get_caller_identity()
         return caller_identity_resp['Account'], caller_identity_resp['Arn']
 
     @staticmethod
-    def _get_account_id_from_existing_data():
+    def _get_account_id_from_existing_data(account_id=None):
         # noinspection PyBroadException
         try:
-            with open(IAM_DATA_FILE_NAME) as iam_data_file:
+            with open(get_iam_data_file(account_id=account_id)) as iam_data_file:
                 iam_data = json.load(iam_data_file)
             return iam_data['AccountUsers'][0]['Arn'].split(":")[4]
         except Exception:
