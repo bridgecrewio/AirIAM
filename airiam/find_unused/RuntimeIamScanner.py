@@ -14,7 +14,7 @@ IAM_DATA_FILE_NAME = "iam_data.json"
 ERASE_LINE = '\x1b[2K'
 
 
-def get_iam_data_file(account_id=None):
+def get_iam_data_file(account_id: str):
     parent = f"./aircache/{account_id}"
     pathlib.Path(parent).mkdir(parents=True, exist_ok=True)
     p = f"{parent}/{IAM_DATA_FILE_NAME}"
