@@ -15,13 +15,10 @@ ERASE_LINE = '\x1b[2K'
 
 
 def get_iam_data_file(account_id=None):
-    if account_id is None:
-        return IAM_DATA_FILE_NAME
-    else:
-        parent = f"./aircache/{account_id}"
-        pathlib.Path(parent).mkdir(parents=True, exist_ok=True)
-        p = f"{parent}/{IAM_DATA_FILE_NAME}"
-        return p
+    parent = f"./aircache/{account_id}"
+    pathlib.Path(parent).mkdir(parents=True, exist_ok=True)
+    p = f"{parent}/{IAM_DATA_FILE_NAME}"
+    return p
 
 
 class RuntimeIamScanner:
