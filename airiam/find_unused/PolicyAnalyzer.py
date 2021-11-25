@@ -1,11 +1,12 @@
 import json
+import logging
 import re
 import requests
 
-ACTION_TABLE_URL = 'https://raw.githubusercontent.com/salesforce/policy_sentry/8d480b572d0431c37fd21ccb02555327429c09c4/policy_sentry/shared/data/iam-definition.json'
+ACTION_TABLE_URL = 'https://raw.githubusercontent.com/salesforce/policy_sentry/master/policy_sentry/shared/data/iam-definition.json'
 ACTIONS_NOT_COVERED_BY_ACCESS_ADVISOR = ['iam:PassRole', 's3:GetObject', 's3:PutObject']
 
-action_map = {a['prefix']: a for a in requests.get(ACTION_TABLE_URL).json()}
+action_map = requests.get(ACTION_TABLE_URL).json()
 
 
 class PolicyAnalyzer:
@@ -52,10 +53,14 @@ class PolicyAnalyzer:
             [action_service, action_name] = action.split(':')
             try:
                 action_regex = action_name.replace('*', '.*')
-                action_objs = list(filter(lambda privilege_obj: re.match(action_regex, privilege_obj['privilege']),
-                                          None if action_map.get(action_service,None) is None else action_map[action_service]['privileges']))
+                action_objs = []
+                for priv, priv_obj in action_map.get(action_service, {}).get('privileges', []).items():
+                    if re.match(action_regex, priv):
+                        action_objs.append(priv_obj)
             except StopIteration:
                 action_objs = []
+                logging.warning(f'The action {action} is not in the actions map!')
+                logging.debug(f'action_map = {action_map}')
 
             for action_obj in action_objs:
                 if action_obj['access_level'] in ['Write', 'Delete', 'Permissions management']:
