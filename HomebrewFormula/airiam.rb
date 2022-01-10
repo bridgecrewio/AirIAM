@@ -3,19 +3,19 @@ class Airiam < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/AirIAM"
-  url "https://files.pythonhosted.org/packages/90/87/3a294b5e2aa1713179314ff5a4b342ff0ccfddd3d3cd2d4a5eae2811493b/airiam-0.1.55.tar.gz"
-  sha256 "760aae90e9397e88d6fbe81c9ead1f62fa2bdb1fe0731cffe126ca61a3546e3d"
+  url "https://files.pythonhosted.org/packages/5b/dd/753ece5426ab7a9d0940b9913742a59924c8f8d4bb00ed93b3f956f75ee7/airiam-0.1.56.tar.gz"
+  sha256 "855069c7120304fd1a7daa483e9fea4582044e4499726545ca36f9b6a1884a96"
 
   depends_on "python3"
 
   resource "boto3" do
-    url "https://files.pythonhosted.org/packages/06/2c/db79832fcbedc1735c369b81389986dcc0fc3c8327d5eac4c93c05f0e52a/boto3-1.20.11.tar.gz"
-    sha256 "035191ad6c7e8aed972e1374f4e0ecb38767c497fd6c961e4ae33898b62f78fb"
+    url "https://files.pythonhosted.org/packages/fb/11/886b584276ebe4d8c89d5216626f846fa3a7406b3b1f41a8fd77dc6e00d6/boto3-1.20.27.tar.gz"
+    sha256 "9364b6310891e4ce478d8379ce114de3ede46e53beb1012cda07121e969ced5a"
   end
 
   resource "botocore" do
-    url "https://files.pythonhosted.org/packages/3e/d7/9486a58b34ad75671b41a4a46afb05b6da5b8e0d90cb091c75dadcabca0d/botocore-1.23.11.tar.gz"
-    sha256 "497234f137810909289a600433cec5583ea8dc05a78b644653d76484138d78b9"
+    url "https://files.pythonhosted.org/packages/25/55/6ae036d9245ebc506b7a4e8f964a533a843a03c182c79c57968fd1b2cf19/botocore-1.23.27.tar.gz"
+    sha256 "fac6515997a7e86216a280ae57f6a80b3560ed5fb157c84e87a9341936773437"
   end
 
   resource "certifi" do
@@ -24,8 +24,8 @@ class Airiam < Formula
   end
 
   resource "charset-normalizer" do
-    url "https://files.pythonhosted.org/packages/9f/c5/334c019f92c26e59637bb42bd14a190428874b2b2de75a355da394cf16c1/charset-normalizer-2.0.7.tar.gz"
-    sha256 "e019de665e2bcf9c2b64e2e5aa025fa991da8720daa3c1138cadd2fd1856aed0"
+    url "https://files.pythonhosted.org/packages/68/e4/e014e7360fc6d1ccc507fe0b563b4646d00e0d4f9beec4975026dd15850b/charset-normalizer-2.0.9.tar.gz"
+    sha256 "b0b883e8e874edfdece9c28f314e3dd5badf067342e42fb162203335ae61aa2c"
   end
 
   resource "colorama" do
@@ -54,8 +54,8 @@ class Airiam < Formula
   end
 
   resource "requests" do
-    url "https://files.pythonhosted.org/packages/e7/01/3569e0b535fb2e4a6c384bdbed00c55b9d78b5084e0fb7f4d0bf523d7670/requests-2.26.0.tar.gz"
-    sha256 "b8aa58f8cf793ffd8782d3d8cb19e66ef36f7aba4353eec859e74678b01b07a7"
+    url "https://files.pythonhosted.org/packages/c0/e3/826e27b942352a74b656e8f58b4dc7ed9495ce2d4eeb498181167c615303/requests-2.27.0.tar.gz"
+    sha256 "8e5643905bf20a308e25e4c1dd379117c09000bf8a82ebccc462cfb1b34a16b5"
   end
 
   resource "s3transfer" do
