@@ -1,8 +1,10 @@
+import concurrent.futures
 import json
-from sys import path
-import time
-import pathlib
+import logging
 import os
+import pathlib
+import time
+
 import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
@@ -65,8 +67,8 @@ class RuntimeIamScanner:
         )
 
         iam_file_name = get_iam_data_file(account_id)
-        print("IAM FILE NAME", iam_file_name)
-        print("Data account  id", data_account_id)
+        logging.debug("IAM FILE NAME", iam_file_name)
+        logging.debug("Data account  id", data_account_id)
 
         if not self.refresh_cache and data_account_id == account_id:
             print("Reusing local data")
@@ -177,51 +179,38 @@ class RuntimeIamScanner:
 
     def _generate_last_access(self, iam, arn_list: list):
         results = {}
-        i = 1
-        count = len(arn_list)
-        for arn in arn_list:
-            try:
-                print(ERASE_LINE +
-                      f"\r{i} of {count}: Generating report for {arn}", end="")
-                job_id = iam.generate_service_last_accessed_details(Arn=arn)[
-                    'JobId']
-                i += 1
-            except ClientError as error:
-                if error.response['Error']['Code'] == 'Throttling':
-                    print('Reached throttling, sleeping for 5 seconds')
-                    time.sleep(5)
-                    job_id = iam.generate_service_last_accessed_details(Arn=arn)[
-                        'JobId']
-                else:
-                    raise error
-            results[arn] = job_id
-        print(ERASE_LINE + "\rGenerated reports for all principals")
+        futures = []
+        print(ERASE_LINE + f"\rGenerating usage reports for {len(arn_list)} principals")
 
-        time.sleep(2)
-
-        i = 1
-        for arn in results:
-            job_id = results[arn]
-            try:
-                print(ERASE_LINE +
-                      f"\r{i} of {count}: Getting report for {arn}", end="")
-                results[arn] = RuntimeIamScanner.simplify_service_access_result(
-                    iam.get_service_last_accessed_details(
-                        JobId=job_id)['ServicesLastAccessed']
-                )
-                i += 1
-            except ClientError as error:
-                if error.response['Error']['Code'] == 'Throttling':
-                    print('Reached throttling, sleeping for 5 seconds')
-                    time.sleep(5)
-                    results[arn] = RuntimeIamScanner.simplify_service_access_result(
-                        iam.get_service_last_accessed_details(
-                            JobId=job_id)['ServicesLastAccessed']
-                    )
-                else:
-                    raise error
-        print(ERASE_LINE + "\rReceived usage results for all principals")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=os.getenv("MAX_WORKERS", 5)) as executor:
+            for arn in arn_list:
+                futures.append(executor.submit(
+                    RuntimeIamScanner._generate_last_access_for_entity,
+                    arn,
+                    iam,
+                    results
+                ))
+        concurrent.futures.wait(futures)
+        print(f"\rReceived reports for {len(arn_list)} principals")
         return results
+
+    @staticmethod
+    def _generate_last_access_for_entity(arn: str, iam: boto3.client, results: dict):
+        try:
+            print(f"Generating report for {arn}")
+            job_id = iam.generate_service_last_accessed_details(Arn=arn)['JobId']
+            result = {'JobStatus': 'IN_PROGRESS'}
+            for i in range(3):
+                result = iam.get_service_last_accessed_details(JobId=job_id)
+                if result['JobStatus'] != 'COMPLETED':
+                    time.sleep(3)
+                else:
+                    break
+            results[arn] = RuntimeIamScanner.simplify_service_access_result(result['ServicesLastAccessed'])
+        except Exception as err:
+            logging.error(f"Caught an error while getting the service last accessed details for {arn}, {str(err)}")
+            del results[arn]
+            raise err
 
     @staticmethod
     def convert_csv_to_json(csv_report: str):
