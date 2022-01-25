@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - master
+
+concurrency:
+  group: 'build'
+  cancel-in-progress: true
+
 jobs:
   coverage:
     runs-on: [self-hosted, public, linux, x64]
