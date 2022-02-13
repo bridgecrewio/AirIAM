@@ -21,8 +21,13 @@ class PolicyAnalyzer:
         policy_statements = PolicyAnalyzer.convert_to_list(policy_document['Statement'])
         actions_list = []
         for statement in policy_statements:
-            if statement['Effect'] == 'Allow' and statement.get('Action'):
-                actions_list.extend(PolicyAnalyzer.convert_to_list(statement['Action']))
+            if statement['Effect'] == 'Allow':
+                if statement.get('Action'):
+                    actions_list.extend(PolicyAnalyzer.convert_to_list(statement['Action']))
+                else:
+                    logging.warning('The following statement is an Allow statement with no Actions defined, which is '
+                                    'considered bad practice as it might allow implicit permissions')
+                    logging.warning(json.dumps(statement))
         return actions_list
 
     @staticmethod
