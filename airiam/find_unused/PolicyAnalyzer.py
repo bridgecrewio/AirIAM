@@ -21,7 +21,7 @@ class PolicyAnalyzer:
         policy_statements = PolicyAnalyzer.convert_to_list(policy_document['Statement'])
         actions_list = []
         for statement in policy_statements:
-            if statement['Effect'] == 'Allow':
+            if statement['Effect'] == 'Allow' and statement.get('Action'):
                 actions_list.extend(PolicyAnalyzer.convert_to_list(statement['Action']))
         return actions_list
 
