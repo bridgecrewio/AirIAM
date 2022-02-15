@@ -3,19 +3,19 @@ class Airiam < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/AirIAM"
-  url "https://files.pythonhosted.org/packages/fc/4e/c7922bd990aaf00ebdfb60182da63f5525342dd5b2c6a2dcd011b439dd4a/airiam-0.1.61.tar.gz"
-  sha256 "e3eeedabbc8070b9961a90730cafb448d35009d1157c7e89dd0893230d4ef161"
+  url "https://files.pythonhosted.org/packages/79/f1/164d13003280c4eded922bb9c75156094df3172b2bf8cac978c99fbb21f7/airiam-0.1.62.tar.gz"
+  sha256 "d23a9dcbb02ac52d63b06d0b2b35a5ae758185ecbe960d22a2956d9288722087"
 
   depends_on "python3"
 
   resource "boto3" do
-    url "https://files.pythonhosted.org/packages/59/00/e339f18d3f920c85f6b5ff4080a8e3a7ac55339a3071cca2d2b32ebc2309/boto3-1.20.50.tar.gz"
-    sha256 "c62362e3105c918272a95c9f4881587c3a3c68aa5fedcd322313def3688c9f7b"
+    url "https://files.pythonhosted.org/packages/43/3f/a101f08cc93930b03ac06baf0d5f1b7c7ab0cdd76127bbb37e8dc9b7fe72/boto3-1.21.0.tar.gz"
+    sha256 "cc40566dec3f48611a82ace07b29489848e9bd35a51e3e992d1902a3c037e9fc"
   end
 
   resource "botocore" do
-    url "https://files.pythonhosted.org/packages/39/50/eca036b0c44e6826a49e743095e009d533f3fb81bdbf871eb5f5766fe56c/botocore-1.23.50.tar.gz"
-    sha256 "109d9a200f70268d5429423fd8052f6fed5e041853d6621081692ea5ad7f70c7"
+    url "https://files.pythonhosted.org/packages/02/8c/f3f6ce40815587d03996d956fd9b2de16b16e430e4bfe0bc9bf37e917453/botocore-1.24.0.tar.gz"
+    sha256 "47723cef6112f451630bf2446cfd6be2782cc1d6b1b92acb12ff00797588c5f3"
   end
 
   resource "certifi" do
@@ -24,8 +24,8 @@ class Airiam < Formula
   end
 
   resource "charset-normalizer" do
-    url "https://files.pythonhosted.org/packages/e8/e8/b6cfd28fb430b2ec9923ad0147025bf8bbdf304b1eb3039b69f1ce44ed6e/charset-normalizer-2.0.11.tar.gz"
-    sha256 "98398a9d69ee80548c762ba991a4728bfc3836768ed226b3945908d1a688371c"
+    url "https://files.pythonhosted.org/packages/56/31/7bcaf657fafb3c6db8c787a865434290b726653c912085fbd371e9b92e1c/charset-normalizer-2.0.12.tar.gz"
+    sha256 "2857e29ff0d34db842cd7ca3230549d1a697f96ee6d3fb071cfa6c7393832597"
   end
 
   resource "colorama" do
