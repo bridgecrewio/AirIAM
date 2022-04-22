@@ -4,13 +4,18 @@ on:
   push:
     branches:
       - master
+
+concurrency:
+  group: 'build'
+  cancel-in-progress: true
+
 jobs:
   coverage:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.7
       - uses: dschep/install-pipenv-action@v1
@@ -39,11 +44,11 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
   bump-version-and-publish:
     needs: coverage
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.7
       - uses: dschep/install-pipenv-action@v1
@@ -84,11 +89,11 @@ jobs:
           password: ${{ secrets.pypi_password }}
   update-brew:
     needs: bump-version-and-publish
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, public, linux, x64]
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v2
       - name: Set up Python 3.7
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: 3.7
       - uses: dschep/install-pipenv-action@v1
