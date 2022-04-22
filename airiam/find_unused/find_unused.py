@@ -9,26 +9,32 @@ from airiam.find_unused.RuntimeIamScanner import RuntimeIamScanner
 
 def filter_attachments_of_unused_entities(unused_policy_attachments, unused_users, unused_roles,
                                           redundant_groups) -> list:
-    unused_role_names = list(map(lambda role_obj: role_obj['RoleName'], unused_roles))
-    unused_user_names = list(map(lambda user_obj: user_obj['UserName'], unused_users))
-    redundant_group_names = list(map(lambda group_obj: group_obj['GroupName'], redundant_groups))
+    unused_role_names = list(
+        map(lambda role_obj: role_obj['RoleName'], unused_roles))
+    unused_user_names = list(
+        map(lambda user_obj: user_obj['UserName'], unused_users))
+    redundant_group_names = list(
+        map(lambda group_obj: group_obj['GroupName'], redundant_groups))
     unused_policy_attachments_of_in_use_principals = []
     for policy_attachment_obj in unused_policy_attachments:
         if 'Role' in policy_attachment_obj:
             if policy_attachment_obj['Role'] not in unused_role_names:
-                unused_policy_attachments_of_in_use_principals.append(policy_attachment_obj)
+                unused_policy_attachments_of_in_use_principals.append(
+                    policy_attachment_obj)
         elif 'User' in policy_attachment_obj:
             if policy_attachment_obj['User'] not in unused_user_names:
-                unused_policy_attachments_of_in_use_principals.append(policy_attachment_obj)
+                unused_policy_attachments_of_in_use_principals.append(
+                    policy_attachment_obj)
         elif 'Group' in policy_attachment_obj:
             if policy_attachment_obj['Group'] not in redundant_group_names:
-                unused_policy_attachments_of_in_use_principals.append(policy_attachment_obj)
+                unused_policy_attachments_of_in_use_principals.append(
+                    policy_attachment_obj)
 
     return unused_policy_attachments_of_in_use_principals
 
 
 def filter_credentials_of_unused_users(unused_active_access_keys, unused_console_login_profiles, unused_users) -> (
-list, list):
+        list, list):
     result_access_keys = []
     result_console_logins = []
     for access_key in unused_active_access_keys:
@@ -44,23 +50,27 @@ list, list):
     return result_access_keys, result_console_logins
 
 
-def find_unused(logger, profile, refresh_cache, unused_threshold, command):
-    iam_report = RuntimeIamScanner(logger, profile, refresh_cache).evaluate_runtime_iam(True, command)
+def find_unused(logger, profile, refresh_cache, unused_threshold, command, only_old):
+    iam_report = RuntimeIamScanner(
+        logger, profile, refresh_cache).evaluate_runtime_iam(True, command)
     raw_iam_data = iam_report.get_raw_data()
     credential_report = raw_iam_data['CredentialReport']
     account_users = raw_iam_data['AccountUsers']
     account_roles = raw_iam_data['AccountRoles']
     account_policies = raw_iam_data['AccountPolicies']
     account_groups = raw_iam_data['AccountGroups']
-    unused_users, used_users = find_unused_users(account_users, credential_report, unused_threshold)
+    unused_users, used_users = find_unused_users(
+        account_users, credential_report, unused_threshold, only_old)
     unused_active_access_keys, unused_console_login_profiles = find_unused_active_credentials(account_users,
                                                                                               credential_report,
-                                                                                              unused_threshold)
+                                                                                              unused_threshold,
+                                                                                              only_old)
     unattached_policies = find_unattached_policies(account_policies)
     redundant_groups = find_redundant_groups(account_groups, account_users)
-    unused_roles, used_roles = find_unused_roles(account_roles, unused_threshold)
+    unused_roles, used_roles = find_unused_roles(
+        account_roles, unused_threshold, only_old)
     unused_policy_attachments = find_unused_policy_attachments(account_users, account_roles, account_policies,
-                                                               account_groups, unused_threshold)
+                                                               account_groups, unused_threshold, only_old)
 
     unused_access_keys, unused_console_access = filter_credentials_of_unused_users(unused_active_access_keys,
                                                                                    unused_console_login_profiles,
@@ -73,15 +83,18 @@ def find_unused(logger, profile, refresh_cache, unused_threshold, command):
     return iam_report
 
 
-def find_unused_users(users, credential_report, unused_threshold) -> (list, list):
+def find_unused_users(users, credential_report, unused_threshold, only_old) -> (list, list):
     unused_users = []
     used_users = []
     for user in users:
-        credentials = next((creds for creds in credential_report if creds['user'] == user['UserName']), {})
+        credentials = next(
+            (creds for creds in credential_report if creds['user'] == user['UserName']), {})
 
         findMinimumUsed = [
-            days_from_today(credentials.get('access_key_1_last_used_date', 'N/A')),
-            days_from_today(credentials.get('access_key_2_last_used_date', 'N/A')),
+            days_from_today(credentials.get(
+                'access_key_1_last_used_date', 'N/A')),
+            days_from_today(credentials.get(
+                'access_key_2_last_used_date', 'N/A')),
             days_from_today(credentials.get('password_last_used', 'N/A'))
         ]
         try:
@@ -103,47 +116,64 @@ def find_unused_users(users, credential_report, unused_threshold) -> (list, list
     return unused_users, used_users
 
 
-def find_unused_active_credentials(users, credential_report, unused_threshold) -> (list, list):
+def find_unused_active_credentials(users, credential_report, unused_threshold, only_old) -> (list, list):
     unused_access_keys = []
     unused_console_login_profiles = []
     for user in users:
         try:
-            credentials = next(creds for creds in credential_report if creds['user'] == user['UserName'])
+            credentials = next(
+                creds for creds in credential_report if creds['user'] == user['UserName'])
         except StopIteration:
-            logging.warning(f'Failed to find credentials for user {user["UserName"]}, skipping this user')
+            logging.warning(
+                f'Failed to find credentials for user {user["UserName"]}, skipping this user')
             continue
-        access_key_1_unused_days = days_from_today(credentials.get('access_key_1_last_used_date', 'N/A'))
+        access_key_1_unused_days = days_from_today(
+            credentials.get('access_key_1_last_used_date', 'N/A'))
+        access_key_1_unrotated_days = days_from_today(
+            credentials.get('access_key_1_last_rotated', 'N/A'))
         if ((credentials['access_key_1_active'] == 'true') and (
-                (access_key_1_unused_days < 0) or (access_key_1_unused_days >= unused_threshold))):
+                (access_key_1_unused_days < 0) or (access_key_1_unused_days >= unused_threshold)) and (
+                (not only_old) ^ (access_key_1_unrotated_days >= unused_threshold))):
             unused_access_keys.append(
                 {'User': user['UserName'], 'AccessKey': '1', 'DaysSinceLastUse': access_key_1_unused_days})
 
-        access_key_2_unused_days = days_from_today(credentials.get('access_key_2_last_used_date', 'N/A'))
+        access_key_2_unused_days = days_from_today(
+            credentials.get('access_key_2_last_used_date', 'N/A'))
+        access_key_2_unrotated_days = days_from_today(
+            credentials.get('access_key_2_last_rotated', 'N/A'))
         if ((credentials['access_key_2_active'] == 'true') and (
-                (access_key_2_unused_days < 0) or (access_key_2_unused_days >= unused_threshold))):
+                (access_key_2_unused_days < 0) or (access_key_2_unused_days >= unused_threshold)) and (
+                (not only_old) ^ (access_key_2_unrotated_days >= unused_threshold))):
             unused_access_keys.append(
                 {'User': user['UserName'], 'AccessKey': '2', 'DaysSinceLastUse': access_key_2_unused_days})
 
-        days_since_password_last_used = days_from_today(credentials.get('password_last_used', 'N/A'))
+        days_since_password_last_used = days_from_today(
+            credentials.get('password_last_used', 'N/A'))
+        days_since_password_changed = days_from_today(
+            credentials.get('password_last_changed', 'N/A'))
         if ((credentials['password_enabled'] == 'true') and (
-                (days_since_password_last_used < 0) or (days_since_password_last_used >= unused_threshold))):
+                (days_since_password_last_used < 0) or (days_since_password_last_used >= unused_threshold))
+                and ((not only_old) ^ days_since_password_changed >= unused_threshold)):
             unused_console_login_profiles.append(
                 {'User': user['UserName'], 'MFAEnabled': credentials['mfa_active'] == 'true',
                  'DaysSinceLastUse': days_since_password_last_used})
     return unused_access_keys, unused_console_login_profiles
 
 
-def find_unused_roles(roles, unused_threshold) -> (list, list):
+def find_unused_roles(roles, unused_threshold, only_old) -> (list, list):
     unused_roles = []
     used_roles = []
     for role in roles:
+        if only_old and days_from_today(role.get('CreateDate')) < unused_threshold:
+            continue
         if role.get('LastAccessed') is None:
             used_roles.append(role)
         elif len(role['LastAccessed']) == 0:
             role['LastUsed'] = -1
             unused_roles.append(role)
         else:
-            last_used = max(map(lambda last_access: last_access['LastAccessed'], role.get('LastAccessed', [])))
+            last_used = max(map(
+                lambda last_access: last_access['LastAccessed'], role.get('LastAccessed', [])))
             role['LastUsed'] = days_from_today(last_used)
             if (role['LastUsed'] < 0) or (role['LastUsed'] >= unused_threshold):
                 unused_roles.append(role)
@@ -175,7 +205,8 @@ def _find_groups_with_no_members(group_list: list, user_list: list):
     for user in user_list:
         for group in user['GroupList']:
             try:
-                group_obj = next(g for g in empty_groups if g['GroupName'] == group)
+                group_obj = next(
+                    g for g in empty_groups if g['GroupName'] == group)
                 empty_groups.remove(group_obj)
             except StopIteration:
                 pass
@@ -184,18 +215,24 @@ def _find_groups_with_no_members(group_list: list, user_list: list):
 
 
 def find_unused_policy_attachments(users: list, roles: dict, account_policies: list, account_groups: list,
-                                   unused_threshold) -> list:
+                                   unused_threshold, only_old) -> list:
     unused_policy_attachments = []
     for role in roles:
-        unused_policy_attachments += get_unused_role_policy_attachments(account_policies, role)
+        if only_old and (days_from_today(role['CreateDate']) < unused_threshold):
+            continue
+        unused_policy_attachments += get_unused_role_policy_attachments(
+            account_policies, role)
 
     used_group_policy_attachments = []
     potential_unused_group_policy_attachments = []
     for user in users:
+        if only_old and (days_from_today(user['CreateDate']) < unused_threshold):
+            continue
         services_in_use = list(map(lambda last_access: last_access['ServiceNamespace'],
                                    filter(lambda last_access: days_from_today(
                                        last_access['LastAccessed']) > 0 < unused_threshold, user['LastAccessed'])))
-        user_attached_managed_policies = copy.deepcopy(user['AttachedManagedPolicies'])
+        user_attached_managed_policies = copy.deepcopy(
+            user['AttachedManagedPolicies'])
         for group_name in user['GroupList']:
             group_managed_policies = next(
                 g['AttachedManagedPolicies'] for g in account_groups if g['GroupName'] == group_name)
@@ -203,19 +240,26 @@ def find_unused_policy_attachments(users: list, roles: dict, account_policies: l
                 list(map(lambda group_policy: {**group_policy, 'Group': group_name}, group_managed_policies)))
 
         for policy_attachment_obj in user_attached_managed_policies:
-            policy_obj = next(p for p in account_policies if policy_attachment_obj['PolicyArn'] == p['Arn'])
+            policy_obj = next(
+                p for p in account_policies if policy_attachment_obj['PolicyArn'] == p['Arn'])
             policy_document = \
-            next(version for version in policy_obj['PolicyVersionList'] if version['IsDefaultVersion'])['Document']
-            policy_is_unused = PolicyAnalyzer.is_policy_unused(policy_document, services_in_use)
+                next(version for version in policy_obj['PolicyVersionList'] if version['IsDefaultVersion'])[
+                     'Document']
+            policy_is_unused = PolicyAnalyzer.is_policy_unused(
+                policy_document, services_in_use)
             if policy_attachment_obj.get('Group'):
                 attachment_id = f'{policy_attachment_obj["PolicyName"]}/{policy_attachment_obj["Group"]}'
                 if policy_is_unused:
-                    potential_unused_group_policy_attachments.append({**policy_attachment_obj, 'id': attachment_id})
+                    potential_unused_group_policy_attachments.append(
+                        {**policy_attachment_obj, 'id': attachment_id})
                 else:
-                    used_group_policy_attachments.append({**policy_attachment_obj, 'id': attachment_id})
+                    used_group_policy_attachments.append(
+                        {**policy_attachment_obj, 'id': attachment_id})
             elif policy_is_unused:
-                unused_policy_attachments.append({**policy_attachment_obj, 'User': user['UserName']})
-    used_group_policy_attachments = {v['id']: v for v in used_group_policy_attachments}
+                unused_policy_attachments.append(
+                    {**policy_attachment_obj, 'User': user['UserName']})
+    used_group_policy_attachments = {
+        v['id']: v for v in used_group_policy_attachments}
 
     for policy_attachment_obj in potential_unused_group_policy_attachments:
         attachment_id = f'{policy_attachment_obj["PolicyName"]}/{policy_attachment_obj["Group"]}'
@@ -229,16 +273,20 @@ def get_unused_role_policy_attachments(account_policies, principal):
     unused_policy_attachments = []
     if principal.get('LastAccessed') is None:
         return unused_policy_attachments
-    services_last_accessed = list(map(lambda access_obj: access_obj['ServiceNamespace'], principal.get('LastAccessed')))
+    services_last_accessed = list(map(
+        lambda access_obj: access_obj['ServiceNamespace'], principal.get('LastAccessed')))
     for managed_policy in principal['AttachedManagedPolicies']:
-        policy_obj = next(pol for pol in account_policies if pol['Arn'] == managed_policy['PolicyArn'])
+        policy_obj = next(
+            pol for pol in account_policies if pol['Arn'] == managed_policy['PolicyArn'])
         policy_document = next(version for version in policy_obj['PolicyVersionList'] if version['IsDefaultVersion'])[
             'Document']
         if PolicyAnalyzer.is_policy_unused(policy_document, services_last_accessed):
-            unused_policy_attachments.append({"Role": principal['RoleName'], "PolicyArn": managed_policy['PolicyArn']})
+            unused_policy_attachments.append(
+                {"Role": principal['RoleName'], "PolicyArn": managed_policy['PolicyArn']})
     for inline_policy in principal.get('RolePolicyList', []):
         if PolicyAnalyzer.is_policy_unused(inline_policy['PolicyDocument'], services_last_accessed):
-            unused_policy_attachments.append({"Role": principal['RoleName'], "PolicyArn": inline_policy['PolicyName']})
+            unused_policy_attachments.append(
+                {"Role": principal['RoleName'], "PolicyArn": inline_policy['PolicyName']})
 
     return unused_policy_attachments
 

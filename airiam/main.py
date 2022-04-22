@@ -14,7 +14,8 @@ def configure_logger(logging_level=logging.INFO):
     console = logging.StreamHandler()
     console.setLevel(logging.DEBUG)
     # set a format which is simpler for console use
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    formatter = logging.Formatter(
+        "%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     # tell the handler to use this format
     console.setFormatter(formatter)
     return logging
@@ -26,14 +27,17 @@ def run():
     Reporter.print_prelude()
     args = parse_args(sys.argv[1:])
 
-    runtime_results = find_unused(logger, args.profile, args.no_cache, args.last_used_threshold, args.command)
+    runtime_results = find_unused(
+        logger, args.profile, args.no_cache, args.last_used_threshold, args.command, args.only_old)
 
     if args.command == 'find_unused':
-        Reporter.report_unused(runtime_results=runtime_results, profile=args.profile, prompt_delete=args.prompt_delete, auto_delete=args.auto_delete)
+        Reporter.report_unused(runtime_results=runtime_results, profile=args.profile,
+                               prompt_delete=args.prompt_delete, auto_delete=args.auto_delete, only_old=args.only_old)
         exit()
 
     if args.command == 'recommend_groups' or args.command == 'terraform' and not args.without_groups:
-        report_with_recommendations = recommend_groups(logger, runtime_results, args.last_used_threshold)
+        report_with_recommendations = recommend_groups(
+            logger, runtime_results, args.last_used_threshold)
         if args.command == 'recommend_groups':
             Reporter.report_groupings(report_with_recommendations)
             exit()
@@ -45,39 +49,54 @@ def run():
 
 
 def parse_args(args):
-    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-v', '--version', help='Get AirIAM\'s version', action='store_true')
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-v', '--version',
+                        help='Get AirIAM\'s version', action='store_true')
+    parser.add_argument(
+        '--only-old', help='Only resources created before threshold', action='store_true')
 
     sub_parsers = parser.add_subparsers(title='commands', dest='command')
     find_unused_parser = sub_parsers.add_parser('find_unused', help='Scan your runtime IAM for unused entities',
                                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    find_unused_parser.add_argument('-p', '--profile', help='AWS profile to be used', type=str, default=None)
+    find_unused_parser.add_argument(
+        '-p', '--profile', help='AWS profile to be used', type=str, default=None)
     find_unused_parser.add_argument('-l', '--last-used-threshold', help='"Last Used" threshold, in days, for an entity to be considered unused',
                                     type=int, default=90)
-    find_unused_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
+    find_unused_parser.add_argument(
+        '--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
     find_unused_parser.add_argument('-o', '--output', help='Output format', type=OutputFormat,
                                     choices=[output.name for output in OutputFormat], default=OutputFormat.cli)
-    find_unused_parser.add_argument('--prompt-delete', help='Delete unused resources, prompting for each one', action='store_true')
-    find_unused_parser.add_argument('--auto-delete', help='Delete unused resources without asking for confirmation', action='store_true')
+    find_unused_parser.add_argument(
+        '--prompt-delete', help='Delete unused resources, prompting for each one', action='store_true')
+    find_unused_parser.add_argument(
+        '--auto-delete', help='Delete unused resources without asking for confirmation', action='store_true')
 
     recommend_groups_parser = sub_parsers.add_parser('recommend_groups', help='Recommend IAM groups according to IAM users and their in-use privileges',
                                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    recommend_groups_parser.add_argument('-p', '--profile', help='AWS profile to be used', type=str, default=None)
+    recommend_groups_parser.add_argument(
+        '-p', '--profile', help='AWS profile to be used', type=str, default=None)
     recommend_groups_parser.add_argument('-o', '--output', help='Output format', type=OutputFormat,
                                          choices=[output.name for output in OutputFormat], default=OutputFormat.cli)
     recommend_groups_parser.add_argument('-l', '--last-used-threshold', type=int, default=90,
                                          help='"Last Used" threshold, in days, for an entity to be considered unused')
-    recommend_groups_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
+    recommend_groups_parser.add_argument(
+        '--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
 
     tf_parser = sub_parsers.add_parser('terraform', help='Terraformize your runtime AWS IAM configurations',
                                        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    tf_parser.add_argument('-p', '--profile', help='AWS profile to be used', type=str)
-    tf_parser.add_argument('-d', '--directory', help='Path where the output terraform code and state will be stored', type=str, default='results')
-    tf_parser.add_argument('--without-unused', help='Create terraform code without unused entities', action='store_true')
-    tf_parser.add_argument('--without-groups', help='Create terraform code without recommendation for user groups', action='store_true')
+    tf_parser.add_argument(
+        '-p', '--profile', help='AWS profile to be used', type=str)
+    tf_parser.add_argument(
+        '-d', '--directory', help='Path where the output terraform code and state will be stored', type=str, default='results')
+    tf_parser.add_argument(
+        '--without-unused', help='Create terraform code without unused entities', action='store_true')
+    tf_parser.add_argument(
+        '--without-groups', help='Create terraform code without recommendation for user groups', action='store_true')
     tf_parser.add_argument('-l', '--last-used-threshold', help='"Last Used" threshold, in days, for an entity to be considered unused', type=int,
                            default=90)
-    tf_parser.add_argument('--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
+    tf_parser.add_argument(
+        '--no-cache', help='Generate a fresh set of data from AWS IAM API calls', action='store_true')
     tf_parser.add_argument('--without-import', help='Import the resulting entities to terraform\'s state file. Note - this might take a long time',
                            action='store_true')
     result = parser.parse_args(args)
