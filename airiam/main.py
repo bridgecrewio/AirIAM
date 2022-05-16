@@ -85,4 +85,5 @@ def parse_args(args):
     if not result.command:
         parser.print_help(sys.stderr)
         sys.exit(1)
+
     return result
