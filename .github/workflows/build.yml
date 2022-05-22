@@ -44,7 +44,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
   bump-version-and-publish:
     needs: coverage
-    runs-on: [self-hosted, public, linux, x64]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3.7
