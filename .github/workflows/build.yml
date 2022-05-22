@@ -57,7 +57,7 @@ jobs:
           pipenv install --dev
       - name: update docs and bump version
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN_2 }}
+          GITHUB_TOKEN: ${{ secrets.PAT_3 }}
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
