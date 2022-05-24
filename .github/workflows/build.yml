@@ -72,7 +72,12 @@ jobs:
           ## update python version
           echo "version = '$new_tag'" > 'airiam/version.py'
           git commit -m "bump version" airiam/version.py || echo "No changes to commit"
-          git push origin
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: update git tag
+        run: |
           git tag $new_tag
           git push origin $new_tag
       - name: create python package
