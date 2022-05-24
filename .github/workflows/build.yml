@@ -75,7 +75,7 @@ jobs:
       - name: Push changes
         uses: ad-m/github-push-action@master
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.PAT_TOKEN_2 }}
       - name: update git tag
         run: |
           git tag $new_tag
