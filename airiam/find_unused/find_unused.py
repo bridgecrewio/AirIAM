@@ -28,7 +28,7 @@ def filter_attachments_of_unused_entities(unused_policy_attachments, unused_user
 
 
 def filter_credentials_of_unused_users(unused_active_access_keys, unused_console_login_profiles, unused_users) -> (
-list, list):
+                                       list, list):
     result_access_keys = []
     result_console_logins = []
     for access_key in unused_active_access_keys:
