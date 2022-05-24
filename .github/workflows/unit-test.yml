@@ -7,7 +7,9 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.PAT_TOKEN_2 }}
       - name: Set up Python 3.7
         uses: actions/setup-python@v1
         with:
