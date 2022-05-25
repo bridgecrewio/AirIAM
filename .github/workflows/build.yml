@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+    paths-ignore:
+      - 'coverage.svg'
+      - 'airiam/version.py'
 
 concurrency:
   group: 'build'
