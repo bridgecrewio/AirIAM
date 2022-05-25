@@ -3,8 +3,8 @@ class Airiam < Formula
 
   desc "Shiny new formula"
   homepage "https://github.com/bridgecrewio/AirIAM"
-  url "https://files.pythonhosted.org/packages/95/30/0124e15f3999a82ee9a67a2f89ed2cfe5d471d76d717463dd934d627af6c/airiam-0.1.63.tar.gz"
-  sha256 "80eadaacc3f7729e970ca765e45dd78ac9c7919aad4d43a1b219cba46f64062e"
+  url "https://files.pythonhosted.org/packages/2c/8e/cdc0da1c7ad3605e6a6be719bd1982aefd27afe14f748510666bc49f212f/airiam-0.1.78.tar.gz"
+  sha256 "dc29ec4352014f907699d7b00affe946f334318b5f621ebab47f6ce33f591a8b"
 
   depends_on "python3"
 
