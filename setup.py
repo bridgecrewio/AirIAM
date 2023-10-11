@@ -43,8 +43,6 @@ setup(
     name="airiam",
     version=version,
     description="Least privilege AWS IAM Terraformer",
-    author="bridgecrew",
-    author_email="meet@bridgecrew.io",
     url="https://github.com/bridgecrewio/AirIAM",
     packages=setuptools.find_packages(exclude=["tests*"]),
     scripts=["bin/airiam","bin/airiam.cmd"],

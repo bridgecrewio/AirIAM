@@ -38,9 +38,6 @@ v0.1.22
 
 AirIAM - Least privilege AWS IAM Terraformer
 
-To continuously scan configurations, try the Bridgecrew free community plan.
-https://www.bridgecrew.io
-
 usage: airiam [-h] [-v] {find_unused,recommend_groups,terraform} ...
 
 optional arguments:
@@ -82,9 +79,6 @@ v0.1.22
 
 AirIAM - Least privilege AWS IAM Terraformer
 
-To continuously scan configurations, try the Bridgecrew free community plan.
-https://www.bridgecrew.io
-
 INFO:botocore.credentials:Found credentials in shared credentials file: ~/.aws/credentials
 Reusing local data
 Identifying unused IAM entities in the account...
@@ -114,9 +108,6 @@ unattached-policy is not attached to any user, group or role
 The following 1 policy attachments are unused:
 Policy attached but not used: s3-user1 is not using the privileges given by arn:aws:iam::000000000000:policy/sts-policy
 
-If you prefer to to change the current runtime and not move to IaC but the number of entities above is intimidating - consider using our playbooks, available at: 
-https://www.bridgecrew.io/
-
 ```
 
 ## Sample: Recommend IAM grouping (CLI)
@@ -145,9 +136,6 @@ v0.1.22
 
 AirIAM - Least privilege AWS IAM Terraformer
 
-To continuously scan configurations, try the Bridgecrew free community plan.
-https://www.bridgecrew.io
-
 INFO:botocore.credentials:Found credentials in shared credentials file: ~/.aws/credentials
 Reusing local data
 INFO:root:Analyzing data for account 000000000000
@@ -174,9 +162,6 @@ $ airiam terraform
 v0.1.22 
 
 AirIAM - Least privilege AWS IAM Terraformer
-
-To continuously scan configurations, try the Bridgecrew free community plan.
-https://www.bridgecrew.io
 
 INFO:botocore.credentials:Found credentials in shared credentials file: ~/.aws/credentials
 Reusing local data
