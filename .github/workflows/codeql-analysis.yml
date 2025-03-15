@@ -32,9 +32,9 @@ jobs:
       security-events: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38  # v5
         with:
           python-version: '3.10'
       - name: Setup python for CodeQL
@@ -42,21 +42,23 @@ jobs:
           python -m pip install --upgrade pip pipenv
           echo "CODEQL_PYTHON=$(which python)" >> $GITHUB_ENV
       - name: Check Pipfile.lock changed
-        uses: tj-actions/verify-changed-files@v5.5
-        id: changed_files
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36  # v3
+        id: changed
         with:
-          files: Pipfile.lock
+          filters: |
+            pipfile:
+              - 'Pipfile.lock'
       - name: Setup dependencies if they changed
-        if: steps.changed_files.outputs.files_changed == 'true'
+        if: steps.changed.outputs.pipfile == 'true'
         run: |
           pipenv lock -r > requirements.txt
           pip install -r requirements.txt
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
+        uses: github/codeql-action/init@80f993039571a6de66594ecaa432875a6942e8e0  # v2
         with:
           languages: python
           setup-python-dependencies: false
       - name: Autobuild
-        uses: github/codeql-action/autobuild@v1
+        uses: github/codeql-action/autobuild@80f993039571a6de66594ecaa432875a6942e8e0  # v2
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v1
+        uses: github/codeql-action/analyze@80f993039571a6de66594ecaa432875a6942e8e0  # v2
