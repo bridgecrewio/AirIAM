@@ -54,7 +54,7 @@ setup(
         'Environment :: Console',
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
-        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Security',
         'Topic :: Software Development :: Build Tools'
     ]
