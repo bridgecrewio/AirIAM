@@ -9,8 +9,8 @@ class Airiam < Formula
   depends_on "python3"
 
   resource "boto3" do
-    url ""
-    sha256 ""
+    url "https://files.pythonhosted.org/packages/57/e9/b2e32fbf241c9846d16f2d72b6071586d81ad718397b20b03a617438989c/boto3-1.26.137.tar.gz"
+    sha256 "cac699fc46b43c10ca12aa6ea087c0b979613c5e3570aea11d86891652cb581e"
   end
 
   resource "botocore" do
