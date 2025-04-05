@@ -115,18 +115,11 @@ class Reporter:
 
         print()
 
-        print('If you prefer to to change the current runtime and not move to IaC but the number of entities above is intimidating - consider using '
-              'our playbooks, available at: ')
-        print('https://www.bridgecrew.io/')
-
     @staticmethod
     def print_prelude():
         print(colored(banner, 'yellow'))
         print()
         print(colored('AirIAM - Least privilege AWS IAM Terraformer', attrs=['bold']))
-        print()
-        print(f'To continuously scan configurations, try the {colored("Bridgecrew", "magenta", attrs=["bold"])} free community plan.')
-        print('https://www.bridgecrew.io')
         print()
 
     @staticmethod

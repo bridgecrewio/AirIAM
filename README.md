@@ -1,10 +1,8 @@
-[![Maintained by Bridgecrew.io](https://img.shields.io/badge/maintained%20by-bridgecrew.io-blueviolet)](https://bridgecrew.io)
 [![code_coverage](https://raw.githubusercontent.com/bridgecrewio/AirIAM/master/coverage.svg?sanitize=true)](https://github.com/bridgecrewio/AirIAM/actions?query=workflow%3Abuild-and-test)
 ![Terraform Version](https://img.shields.io/badge/tf-%3E%3D0.12.0-blue.svg)
 [![build](https://github.com/bridgecrewio/AirIAM/workflows/build/badge.svg)](https://github.com/bridgecrewio/airiam/actions?query=workflow%3Abuild) 
 [![PyPI](https://img.shields.io/pypi/v/airiam)](https://pypi.org/project/airiam/)
 [![Downloads](https://pepy.tech/badge/airiam)](https://pepy.tech/project/airiam)
-[![slack-community](https://slack.bridgecrew.io/badge.svg)](https://slack.bridgecrew.io/?utm_source=github&utm_medium=organic_oss&utm_campaign=airiam)
 
 <p align="center">
     <img src="https://github.com/bridgecrewio/AirIAM/raw/master/docs/web/images/airiam-logo.png" height="100" />
@@ -46,8 +44,6 @@ By moving all IAM configurations into Terraform code, admins can start tracking,
 
 AirIAM is battle-tested and is recommended for use in Dev, QA and test environments that have been previously managed by humans. It is design to result in minimal impact on existing workloads.
 
-If you are interested in migrating a Prod account, contact us at info@bridgecrew.io for some helpful tips.
-
 ![flow](images/ComponentDiagram.png)
 
 ## Features
@@ -60,8 +56,7 @@ If you are interested in migrating a Prod account, contact us at info@bridgecrew
 
 ## Commands
 
-- `find_unused` - Detects unused users, roles, groups, policies and policy attachments. It also adds links to automation scripts that could remove these entities entirely using Bridgecrew Community. [Learn more 
-  about these scripts and automation](RecommendedIntegrations.md).
+- `find_unused` - Detects unused users, roles, groups, policies and policy attachments.
   ```shell script
     usage: airiam find_unused [-h] [-p PROFILE] [-l LAST_USED_THRESHOLD]
                           [--no-cache] [-o {cli}]
@@ -228,8 +223,6 @@ We would love to hear about other IAM governance models for additional use cases
 
 ## Support
 
-[Bridgecrew](https://bridgecrew.io) builds and maintains AirIAM to encourage the adoption of IAM-as-code and enforcement of IAM Rightsizing and Least Privileges best practices in policy-as-code.
+Start with our [Documentation](https://airiam.io/documentation) for quick tutorials and examples.
 
-Start with our [Documentation](https://bridgecrewio.github.io/airiam/) for quick tutorials and examples.
-
-If you need direct support you can contact us at info@bridgecrew.io.
+If you still need support you can leverage our [community Slack](https://codifiedsecurity.slack.com/).
