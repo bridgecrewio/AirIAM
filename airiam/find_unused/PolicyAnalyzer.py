@@ -59,7 +59,7 @@ class PolicyAnalyzer:
             try:
                 action_regex = action_name.replace('*', '.*')
                 action_objs = []
-                for priv, priv_obj in action_map.get(action_service, {}).get('privileges', []).items():
+                for priv, priv_obj in action_map.get(action_service, {}).get('privileges', {}).items():
                     if re.match(action_regex, priv):
                         action_objs.append(priv_obj)
             except StopIteration:
